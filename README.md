@@ -1,6 +1,6 @@
 ![GitHub](https://img.shields.io/github/license/iqcToolbox/iqcToolbox?color=green)
 [![Tests](https://github.com/iqcToolbox/iqcToolbox/actions/workflows/ci.yml/badge.svg)](https://github.com/iqcToolbox/iqcToolbox/actions/workflows/ci.yml)
-[![Coverage](https://codecov.io/gh/iqcToolbox/iqcToolbox/branch/develop/graph/badge.svg?token=C3E2E3V80K)](https://codecov.io/gh/iqcToolbox/iqcToolbox)
+[![codecov](https://codecov.io/gh/iqcToolbox/iqcToolbox/branch/master/graph/badge.svg?token=IFVoWciLew)](https://codecov.io/gh/iqcToolbox/iqcToolbox)
 ![PRs Welcome](https://img.shields.io/badge/PRs-welcome-green)
 ![GitHub commits since latest release (by date) for a branch](https://img.shields.io/github/commits-since/iqcToolbox/iqcToolbox/latest/develop) (on `develop` branch)
 
