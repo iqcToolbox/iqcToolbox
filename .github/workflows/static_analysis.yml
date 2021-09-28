@@ -12,10 +12,7 @@ on:
   workflow_dispatch:
 
 env:
-  MATHWORKS_SKIP_ACTIVATION: true
-  MATHWORKS_ACCOUNT: ${{ secrets.MATHWORKS_ACCOUNT }}
-  MATHWORKS_TOKEN: ${{ secrets.MATHWORKS_TOKEN }}
-  CODECOV_TOKEN: ${{ secrets.CODECOVE_TOKEN }}
+  CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
 jobs:
   # This workflow executes a matrix of jobs for different OS and MATLAB versions
