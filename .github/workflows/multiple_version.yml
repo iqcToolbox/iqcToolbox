@@ -38,7 +38,7 @@ jobs:
 
       # Install iqcToolbox
       - name: Install iqcToolbox
-        uses: matlab-actions/run-command@private-repo-pilot
+        uses: matlab-actions/run-command@v0
         with:
           command: addpath('scripts'); installIqcToolbox(1);
 
