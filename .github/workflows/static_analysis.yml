@@ -1,0 +1,57 @@
+# Runs static analysis on .m files
+
+name: Static Analysis
+
+# Controls when the action will run. 
+on:
+  # Triggers the workflow on push or pull request events
+  pull_request:
+    branches: [ master, develop ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+env:
+  MATHWORKS_SKIP_ACTIVATION: true
+  MATHWORKS_ACCOUNT: ${{ secrets.MATHWORKS_ACCOUNT }}
+  MATHWORKS_TOKEN: ${{ secrets.MATHWORKS_TOKEN }}
+  CODECOV_TOKEN: ${{ secrets.CODECOVE_TOKEN }}
+
+jobs:
+  # This workflow executes a matrix of jobs for different OS and MATLAB versions
+  static-analysis:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks out base commit of merge
+      - name: Base checkout
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          fetch-depth: 0
+
+      # Sets up MATLAB on the GitHub Actions runner
+      - name: Setup MATLAB
+        uses: matlab-actions/setup-matlab@private-repo-pilot
+
+      # Use static analyzer and rules from HEAD commit
+      - name: Checkout static_analyzer and rules
+        run: git checkout ${{ github.event.pull_request.head.sha }} -- +tests/static_analyzer_base.m +tests/chkcode_rules.txt
+
+      # Run static analysis on base commit
+      - name: Base static analysis
+        uses: matlab-actions/run-command@private-repo-pilot
+        with:
+          command: addpath(genpath('src')); [info, files] = tests.static_analyzer_base; save('old_results', 'info', 'files');
+
+      # Save old results and checkout head commit
+      - name: Switching to head commit
+        run: git add old_results.mat; git stash; git checkout ${{ github.event.pull_request.head.sha }}; git stash pop
+
+      # Run static analysis on merge commit
+      - name: Diff static analysis on merge commit
+        uses: matlab-actions/run-command@private-repo-pilot
+        with:
+          command: addpath(genpath('src')); load('old_results', 'info', 'files'); [diff_info, diff_files, new_error] = tests.static_analyzer_diff(info, files); assert(~new_error);

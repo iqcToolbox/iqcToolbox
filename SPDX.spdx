@@ -1,0 +1,5 @@
+SPDXVersion: SPDX-2.1
+PackageName: iqcToolbox
+PackageOriginator: MIT Lincoln Laboratory
+PackageHomePage: https://github.com/iqcToolbox/iqcToolbox
+PackageLicenseDeclared: GPL-2.0

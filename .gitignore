@@ -1,0 +1,6 @@
+*~
+dependencies/
+configuration/install_configuration.mat
+*.asv
++tests/coverage.xml
++tests/test_results.mat

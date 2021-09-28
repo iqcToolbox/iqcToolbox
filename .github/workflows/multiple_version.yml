@@ -1,0 +1,59 @@
+# Checks tests across different OS and MATLAB versions
+
+name: Multiple OS/MATLAB
+
+# Controls when the action will run.
+on:
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+env:
+  MATHWORKS_SKIP_ACTIVATION: true
+  MATHWORKS_ACCOUNT: ${{ secrets.MATHWORKS_ACCOUNT }}
+  MATHWORKS_TOKEN: ${{ secrets.MATHWORKS_TOKEN }}
+  CODECOV_TOKEN: ${{ secrets.CODECOVE_TOKEN }}
+
+jobs:
+  # This workflow executes a matrix of jobs for different OS and MATLAB versions
+  multiple-versions:
+    # The type of runner that the job will run on
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-18.04, ubuntu-latest]
+        release: [R2020b, R2021a]
+        include:
+          - os: ubuntu-18.04
+            release: R2020a
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+
+      # Sets up MATLAB on the GitHub Actions runner
+      - name: Setup MATLAB
+        uses: matlab-actions/setup-matlab@private-repo-pilot
+        with:
+          release: ${{ matrix.release }}
+
+
+      # Install iqcToolbox
+      - name: Install iqcToolbox
+        uses: matlab-actions/run-command@private-repo-pilot
+        with:
+          command: addpath('scripts'); installIqcToolbox(1);
+
+      # Run tests script
+      - name: Run all tests
+        uses: matlab-actions/run-command@private-repo-pilot
+#        continue-on-error: true
+        with:
+          command: addpath('scripts'); initializeIqcToolbox; tests.run_tests_script
+
+      # Throw error if tests failed
+      - name: Check if tests failed
+        uses: matlab-actions/run-command@private-repo-pilot
+        with:
+          command: load('+tests/test_results', 'result'); assertSuccess(result);

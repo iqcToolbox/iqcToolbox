@@ -1,0 +1,62 @@
+# Continuous-Integration workflow for iqcToolbox
+
+name: All iqcToolbox tests
+
+# Controls when the action will run. 
+on:
+  # Triggers the workflow on push or pull request events
+  push:
+    branches: [ master, develop ]
+  pull_request:
+    branches: [ master, develop ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+env:
+  MATHWORKS_SKIP_ACTIVATION: true
+  MATHWORKS_ACCOUNT: ${{ secrets.MATHWORKS_ACCOUNT }}
+  MATHWORKS_TOKEN: ${{ secrets.MATHWORKS_TOKEN }}
+  CODECOV_TOKEN: ${{ secrets.CODECOVE_TOKEN }}
+
+jobs:
+  # This workflow contains a single job called "test-and-save-cov"
+  test-and-save-cov:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+
+      # Sets up MATLAB on the GitHub Actions runner
+      - name: Setup MATLAB
+        uses: matlab-actions/setup-matlab@private-repo-pilot
+#        with:
+#          release: ${{ R2021a }}
+
+      # Install iqcToolbox
+      - name: Install iqcToolbox
+        uses: matlab-actions/run-command@private-repo-pilot
+        with:
+          command: addpath('scripts'); installIqcToolbox(true, false);
+
+      # Run tests script
+      - name: Run all tests
+        uses: matlab-actions/run-command@private-repo-pilot
+#        continue-on-error: true
+        with:
+          command: addpath('scripts'); initializeIqcToolbox; tests.run_tests_script
+
+      # Upload coverage report
+      - name: Upload coverage report
+        uses: codecov/codecov-action@v1
+        with:
+          file: +tests/coverage.xml
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+      # Throw error if tests failed
+      - name: Check if tests failed
+        uses: matlab-actions/run-command@private-repo-pilot
+        with:
+          command: load('+tests/test_results', 'result'); assertSuccess(result);
