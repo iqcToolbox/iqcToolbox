@@ -14,10 +14,7 @@ on:
   workflow_dispatch:
 
 env:
-  MATHWORKS_SKIP_ACTIVATION: true
-  MATHWORKS_ACCOUNT: ${{ secrets.MATHWORKS_ACCOUNT }}
-  MATHWORKS_TOKEN: ${{ secrets.MATHWORKS_TOKEN }}
-  CODECOV_TOKEN: ${{ secrets.CODECOVE_TOKEN }}
+  CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
 jobs:
   # This workflow contains a single job called "test-and-save-cov"
@@ -31,19 +28,19 @@ jobs:
 
       # Sets up MATLAB on the GitHub Actions runner
       - name: Setup MATLAB
-        uses: matlab-actions/setup-matlab@private-repo-pilot
+        uses: matlab-actions/setup-matlab@v0
 #        with:
 #          release: ${{ R2021a }}
 
       # Install iqcToolbox
       - name: Install iqcToolbox
-        uses: matlab-actions/run-command@private-repo-pilot
+        uses: matlab-actions/run-command@v0
         with:
           command: addpath('scripts'); installIqcToolbox(true, false);
 
       # Run tests script
       - name: Run all tests
-        uses: matlab-actions/run-command@private-repo-pilot
+        uses: matlab-actions/run-command@v0
 #        continue-on-error: true
         with:
           command: addpath('scripts'); initializeIqcToolbox; tests.run_tests_script
@@ -57,6 +54,6 @@ jobs:
 
       # Throw error if tests failed
       - name: Check if tests failed
-        uses: matlab-actions/run-command@private-repo-pilot
+        uses: matlab-actions/run-command@v0
         with:
           command: load('+tests/test_results', 'result'); assertSuccess(result);

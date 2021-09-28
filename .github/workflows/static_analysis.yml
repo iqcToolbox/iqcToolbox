@@ -12,10 +12,7 @@ on:
   workflow_dispatch:
 
 env:
-  MATHWORKS_SKIP_ACTIVATION: true
-  MATHWORKS_ACCOUNT: ${{ secrets.MATHWORKS_ACCOUNT }}
-  MATHWORKS_TOKEN: ${{ secrets.MATHWORKS_TOKEN }}
-  CODECOV_TOKEN: ${{ secrets.CODECOVE_TOKEN }}
+  CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
 jobs:
   # This workflow executes a matrix of jobs for different OS and MATLAB versions
@@ -34,7 +31,7 @@ jobs:
 
       # Sets up MATLAB on the GitHub Actions runner
       - name: Setup MATLAB
-        uses: matlab-actions/setup-matlab@private-repo-pilot
+        uses: matlab-actions/setup-matlab@v0
 
       # Use static analyzer and rules from HEAD commit
       - name: Checkout static_analyzer and rules
@@ -42,7 +39,7 @@ jobs:
 
       # Run static analysis on base commit
       - name: Base static analysis
-        uses: matlab-actions/run-command@private-repo-pilot
+        uses: matlab-actions/run-command@v0
         with:
           command: addpath(genpath('src')); [info, files] = tests.static_analyzer_base; save('old_results', 'info', 'files');
 
@@ -52,6 +49,6 @@ jobs:
 
       # Run static analysis on merge commit
       - name: Diff static analysis on merge commit
-        uses: matlab-actions/run-command@private-repo-pilot
+        uses: matlab-actions/run-command@v0
         with:
           command: addpath(genpath('src')); load('old_results', 'info', 'files'); [diff_info, diff_files, new_error] = tests.static_analyzer_diff(info, files); assert(~new_error);
