@@ -89,7 +89,8 @@ function testValidFlagSetCorrectly(testCase)
     % previous to the fix.
     load(fullfile('+tests', '+iqc_analysis', 'dataIqcAnalysisNominal'),...
          'lft_test')
-    [~, valid, ~, ~] = iqcAnalysis(lft_test);
+    options = AnalysisOptions('verbose', false);
+    [~, valid, ~, ~] = iqcAnalysis(lft_test, 'analysis_options', options);
     verifyTrue(testCase, valid)
 end
 

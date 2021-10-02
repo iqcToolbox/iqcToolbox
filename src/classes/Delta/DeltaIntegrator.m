@@ -46,7 +46,7 @@ methods
         horizon_period = [0, 1];
         validateattributes(dim_outin, 'numeric', {'numel', 1})
         % Calling Delta constructor
-        this_delta@Delta('S', dim_outin, dim_outin, horizon_period);                    
+        this_delta@Delta('Integrator', dim_outin, dim_outin, horizon_period);                    
     end
 
     function disp(this_delta)

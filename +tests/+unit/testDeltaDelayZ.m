@@ -44,7 +44,7 @@ classdef testDeltaDelayZ < matlab.unittest.TestCase
             dim_outin = 3;
             timestep = 0.5;
             delta_delay_z = DeltaDelayZ(dim_outin, timestep);
-            verifyEqual(testCase, delta_delay_z.name, 'Z')
+            verifyEqual(testCase, delta_delay_z.name, 'DelayZ')
             verifyEqual(testCase, delta_delay_z.dim_in, dim_outin)
             verifyEqual(testCase, delta_delay_z.dim_out, dim_outin)
             verifyEqual(testCase, delta_delay_z.dim_in, delta_delay_z.dim_out)
@@ -56,7 +56,7 @@ classdef testDeltaDelayZ < matlab.unittest.TestCase
         function testOneArgConstructor(testCase)
             dim_outin = 2;
             delta_delay_z = DeltaDelayZ(dim_outin);
-            verifyEqual(testCase, delta_delay_z.name, 'Z')
+            verifyEqual(testCase, delta_delay_z.name, 'DelayZ')
             verifyEqual(testCase, delta_delay_z.dim_in, dim_outin)
             verifyEqual(testCase, delta_delay_z.dim_out, dim_outin)
             verifyEqual(testCase, delta_delay_z.dim_in, delta_delay_z.dim_out)
@@ -64,7 +64,7 @@ classdef testDeltaDelayZ < matlab.unittest.TestCase
 
         function testZeroArgConstructor(testCase)
             delta_delay_z = DeltaDelayZ();
-            verifyEqual(testCase, delta_delay_z.name, 'Z')
+            verifyEqual(testCase, delta_delay_z.name, 'DelayZ')
             verifyEqual(testCase, delta_delay_z.dim_in, 1)
             verifyEqual(testCase, delta_delay_z.dim_out, 1)
             verifyEqual(testCase, delta_delay_z.dim_in, delta_delay_z.dim_out)

@@ -40,7 +40,7 @@ classdef testDeltaIntegrator < matlab.unittest.TestCase
         function testFullConstructor(testCase)
             dim_outin = 2;
             delta_integrator = DeltaIntegrator(dim_outin);
-            verifyEqual(testCase, delta_integrator.name, 'S')
+            verifyEqual(testCase, delta_integrator.name, 'Integrator')
             verifyEqual(testCase, delta_integrator.dim_in, dim_outin)
             verifyEqual(testCase, delta_integrator.dim_out, dim_outin)
             verifyEqual(testCase,...
@@ -50,7 +50,7 @@ classdef testDeltaIntegrator < matlab.unittest.TestCase
 
         function testZeroArgConstructor(testCase)
             delta_integrator = DeltaIntegrator();
-            verifyEqual(testCase, delta_integrator.name, 'S')
+            verifyEqual(testCase, delta_integrator.name, 'Integrator')
             verifyEqual(testCase, delta_integrator.dim_in, 1)
             verifyEqual(testCase, delta_integrator.dim_out, 1)
             verifyEqual(testCase,...

@@ -79,7 +79,7 @@ methods
         end
 
         % Calling Delta constructor
-        this_delta@Delta('Z', dim_out, dim_in, horizon_period);
+        this_delta@Delta('DelayZ', dim_out, dim_in, horizon_period);
         % Setting specialized properties of DeltaDelayZ
         assert(all(timestep == -1) || all(timestep > 0),...
                'DeltaDelayZ:DeltaDelayZ',...
