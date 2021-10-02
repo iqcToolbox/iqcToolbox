@@ -61,7 +61,7 @@ function testMultipleDeltaRemoval(testCase)
     
     % Cut out DeltaDelayZ as well
     d_lft = toLft(g.d);
-    d_nominal1 = removeUncertainty(lft, {'Z', 't1', 't2'});
+    d_nominal1 = removeUncertainty(lft, {'DelayZ', 't1', 't2'});
     d_nominal2 = removeUncertainty(lft, [1, 2, 3]);
     verifyEqual(testCase, d_nominal1, d_lft)
     verifyEqual(testCase, d_nominal2, d_lft)    
