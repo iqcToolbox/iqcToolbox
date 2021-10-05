@@ -30,7 +30,7 @@ jobs:
         run: python3 -m pip install sphinx-rtd-theme
 
       - name: Run sphinx
-        run: (cd ./docs/sphinx-docs && make html)
+        run: (cd ./docs && make html)
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
