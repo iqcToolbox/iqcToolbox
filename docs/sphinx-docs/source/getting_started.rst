@@ -6,4 +6,4 @@ This section is created by exporting from the Matlab Live Script document `getti
 Feel free to download and work through that file in MATLAB or just read it here.
 
 .. raw:: html
-   :file: ../mat_html/gettingStarted.html
+   :file: ../../mat_html/gettingStarted.html
