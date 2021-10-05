@@ -5,3 +5,4 @@ configuration/install_configuration.mat
 +tests/coverage.xml
 +tests/test_results.mat
 docs/mat_html
+docs/sphinx-docs/build

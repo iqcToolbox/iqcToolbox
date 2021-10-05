@@ -1,0 +1,39 @@
+name: Publish to Github page
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.8'
+
+      - name: Upgrade pip
+        run: |
+          python3 -m pip install --upgrade pip
+
+      - name: Install sphinx package
+        run: python3 -m pip install sphinx
+
+      - name: Install sphinx_rtd_theme
+        run: python3 -m pip install sphinx-rtd-theme
+
+      - name: Run sphinx
+        run: (cd ./docs/ && make html)
+
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          destination_dir: ./docs
+          publish_dir: ./docs/build/html
