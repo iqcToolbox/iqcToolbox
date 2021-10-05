@@ -143,13 +143,13 @@ if nargin == 1
                this_perf.name);
         this_perf.chan_in = repmat(this_perf.chan_in, 1, total_time);
     end
-    if ~isempty(this_perf.gain) && length(this_perf.gain) ~= total_time
-        assert(length(this_perf.gain) == 1,...
-               'PerformanceL2Induced:matchHorizonPeriod',...
-               'gain of %s is not compatible w/ horizon_period',...
-               this_perf.name);
-        this_perf.gain = this_perf.gain * ones(1, total_time);
-    end           
+%     if ~isempty(this_perf.gain) && length(this_perf.gain) ~= total_time
+%         assert(length(this_perf.gain) == 1,...
+%                'PerformanceL2Induced:matchHorizonPeriod',...
+%                'gain of %s is not compatible w/ horizon_period',...
+%                this_perf.name);
+%         this_perf.gain = this_perf.gain * ones(1, total_time);
+%     end           
 else
 % Changing this_perf.horizon_period and other properties of this_perf to
 % a new horizon_period
@@ -158,9 +158,9 @@ else
         makeNewIndices(this_perf.horizon_period, new_horizon_period);
 
     % Set properties according to indices
-    if ~isempty(this_perf.gain)
-        this_perf.gain        = this_perf.gain(indices);
-    end
+%     if ~isempty(this_perf.gain)
+%         this_perf.gain        = this_perf.gain(indices);
+%     end
     this_perf.chan_out        = this_perf.chan_out(indices);
     this_perf.chan_in         = this_perf.chan_in(indices);
     this_perf.horizon_period  = new_horizon_period;
