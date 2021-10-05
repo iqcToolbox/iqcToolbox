@@ -14,6 +14,22 @@ jobs:
         with:
           fetch-depth: 0
 
+#      - name: Setup MATLAB
+#        uses: matlab-actions/setup-matlab@v0
+#        with:
+#          release: R2020a
+
+#      - name: Address MATLAB lib bug
+#        run: |
+#          cd /usr/local/MATLAB/R2020a/cefclient/sys/glib/glnxa64/
+#          sudo mkdir exclude
+#          sudo mv libglib-2.0.so* exclude/
+
+#      - name: Save mlx code
+#        uses: matlab-actions/run-command@v0
+#        with:
+#          command: addpath(genpath('docs')); export_mlx;
+
       - name: Setup Python
         uses: actions/setup-python@v2
         with:
