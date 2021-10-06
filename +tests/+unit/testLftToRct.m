@@ -27,6 +27,7 @@ end
 methods(Test)
     
 function testCorrectConversionWithUncertainties(testCase)
+    rng(1633561107)
 % Generate random LFTs and check that they convert correctly
 for i = 1:10
     if mod(i, 2)
@@ -81,9 +82,12 @@ for i = 1:10
         else
             if lft_r.timestep
                 unc_sample{j} = drss(randi([1, 10]), del_size(1), del_size(2));
+                unc_sample{j}.a = unc_sample{j}.a * 0.9;
                 unc_sample{j}.Ts = lft_r.timestep;
             else
                 unc_sample{j} = rss(randi([1, 10]), del_size(1), del_size(2));
+                unc_sample{j}.a = unc_sample{j}.a -...
+                                  0.1 * eye(size(unc_sample{j}.a, 1));
             end
             del_sample{j} = toLft(unc_sample{j});
         end
