@@ -18,6 +18,8 @@ classdef DisturbanceTimeWindow < Disturbance
 %                     the initial timestep of a signal is nonzero, 
 %                     and then switches on-and-off during the periodic portion,
 %                     set window = [0, 3]. 
+%
+%  See also DisturbanceTimeWindow.DisturbanceTimeWindow
 
 %%
 %  Copyright (c) 2021 Massachusetts Institute of Technology 
@@ -42,8 +44,8 @@ methods
     %     ---------
     %       Input:
     %          name : char array :: unique ID of disturbance signal (ex. 'sensor_noise')
-    %          channel : array of naturals :: channels of signals pertaining to disturbance class
-    %          window : array of naturals :: time-steps wherein signal is non-zero (index starting from t0 = 0)
+    %          channel : cell array of naturals :: channels of signals pertaining to disturbance class
+    %          window : matrix array of naturals :: time-steps wherein signal is non-zero (index starting from t0 = 0)
     %                                        this window is assumed to repeat periodically according to the horizon_period.
     %                                        For example, if the signals are non-zero for all time, 
     %                                            and horizon_period = [0, 1], set window = 0;

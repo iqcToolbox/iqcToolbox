@@ -516,10 +516,10 @@ if isa(lft_in.delta.deltas{1}, 'DeltaDelayZ')
             ellipse = diag(ellipse_eigenvalues);
             objective_state = sum(ellipse_eigenvalues'*ellipse_eigenvalues);            
         else
-            state_amplification = sdpvar(1);
-            objective_state = state_amplification;
+            objective_state = sdpvar(1);
+            state_amplification = sqrt(objective_state);
             mat_shift = lmi_shift * eye(size(ellipse, 2));
-            ic = (p0_state <= state_amplification * ellipse - mat_shift):...
+            ic = (p0_state <= objective_state * ellipse - mat_shift):...
                                                 'Initial Condition LMI';        %#ok<BDSCA>
             kyp_constraints = kyp_constraints + ic; 
         end
