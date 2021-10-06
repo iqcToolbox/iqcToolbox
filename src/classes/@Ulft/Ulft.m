@@ -90,7 +90,6 @@ this_lft = normalizeLft(this_lft)
 this_lft = sampleDeltas(this_lft, deltas, values, varargin)
 [output, time, state] = simulate(lft, input, time, initial_state)
 
-
 % Overloading methods
 this_lft = uplus(this_lft)
 this_lft = plus(left_lft, right_lft)
