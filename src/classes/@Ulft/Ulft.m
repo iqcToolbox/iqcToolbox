@@ -29,6 +29,7 @@ classdef (InferiorClasses = {?ss}) Ulft
 %       lft = uminus(lft) :: Negative operator for an lft
 %       lft = uplus(lft) :: Positive operator for an lft
 %       lft = vertcat(lft1, lft2, lft3, ...) :: Vertically concatenate multiple lfts
+%       [output, time, state] = simulate(lft, input, time, initial_state)
 %
 %     properties:
 %       a : cell array of double matrices :: sequence of state/delta matrices
@@ -87,6 +88,8 @@ this_lft = removeDisturbance(this_lft, disturbance)
 this_lft = removePerformance(this_lft, performance)
 this_lft = normalizeLft(this_lft)
 this_lft = sampleDeltas(this_lft, deltas, values, varargin)
+[output, time, state] = simulate(lft, input, time, initial_state)
+
 
 % Overloading methods
 this_lft = uplus(this_lft)
