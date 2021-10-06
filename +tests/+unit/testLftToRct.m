@@ -27,7 +27,6 @@ end
 methods(Test)
     
 function testCorrectConversionWithUncertainties(testCase)
-    rng(1633561107)
 % Generate random LFTs and check that they convert correctly
 for i = 1:10
     if mod(i, 2)
