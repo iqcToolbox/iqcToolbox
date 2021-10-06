@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - master
-      - docs-001-create_getting_started
   workflow_dispatch:
 jobs:
   deploy:
