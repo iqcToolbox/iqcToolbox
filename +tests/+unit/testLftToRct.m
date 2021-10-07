@@ -100,7 +100,8 @@ for i = 1:10
     uss_sample(1:2) = [];
     rct_sample = usubs(uss_r, uss_sample{:});
     sys_diff = norm(lft_sample - rct_sample, 'inf');
-    verifyLessThan(testCase, sys_diff, 1e-4)
+    tolerance = 1e-4 * norm(rct_sample, 'inf');
+    verifyLessThan(testCase, sys_diff, tolerance)
 end
 end
 
