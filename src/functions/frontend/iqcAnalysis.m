@@ -217,6 +217,16 @@ settings = sdpsettings(options.yalmip_settings);
 yalmip_report = optimize(constraints, objective, settings);
 
 %% Check correctness, gather data
+% Ignore ghost variable constraint if it exists and is "close enough" to equality
+try 
+    ghost_close = check(constraints('Ghost variable == 1')) > -1e-7;
+    if ghost_close
+        % Eliminate inaccuracy of near equality satisfaction from constraints
+        constraints('Ghost variable == 1') = [];
+    end
+catch                                                                           %#ok<CTCH>
+end
+
 primal_residual = check(constraints);
 
 % Check if the system_kyp constraints are truly negative definite
@@ -399,6 +409,21 @@ for i = 1:total_time
     mat_shift = lmi_shift * eye(size(lmi_mat{i}, 2));
     kyp_constraints = kyp_constraints ...
                       + ((lmi_mat{i} <= -mat_shift):['KYP LMI, ' num2str(i)]);  %#ok<BDSCA>
+    else
+    % Make a ghost variable and a constraint that lmi eigs are negative.  This is done
+    % in order to parse problems w/o decision vars as yalmip optimization problems
+        if i == 1
+            ghost = sdpvar(1);
+            kyp_constraints = kyp_constraints + ...
+                              (ghost == 1):['Ghost variable == 1'];
+        end
+    lmi_eig = eig(lmi_mat{i});
+    if all(lmi_eig == 0, 'all')
+        lmi_eig = lmi_eig + 1e-8;
+        lmi_shift = lmi_shift - 1e-8;
+    end
+    kyp_constraints = kyp_constraints ...
+        + ((ghost * lmi_eig <= 0*lmi_eig - lmi_shift):['KYP LMI, ' num2str(i)]);%#ok<BDSCA>
     end
 end
 % Set constraints for initial conditions
@@ -435,7 +460,6 @@ else
           ' discrete-time system'])
 end
 objective = mult.objective + options.scale_state_obj * objective_state;  
-
 kyp_variables = horzcat(p, {p0_state});
 end
 

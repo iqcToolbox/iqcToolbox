@@ -411,6 +411,62 @@ function testDeltaBoundedSampleAndValidate(testCase)
                 'DeltaBounded:validateSample') 
 end
 
+function testDeltaPassiveSampleAndValidate(testCase)
+    % Memoryless instance
+    timestep = [];    
+    horizon_period = [randi([0, 10]), randi([1, 10])];
+    dim_outin = randi([1, 5], 1, sum(horizon_period));
+    del = DeltaPassive('del', dim_outin, horizon_period);
+    samp = sample(del, timestep);
+    validateSample(del, samp);
+    verifyError(testCase,...
+                @() validateSample(del, -samp),...
+                'DeltaPassive:validateSample')
+    
+    % Discrete-time LTV
+    timestep = -1;    
+    horizon_period = [randi([0, 10]), randi([1, 10])];
+    dim_outin = randi([1, 5]);
+    del = DeltaPassive('del', dim_outin, horizon_period);
+    samp = sample(del, timestep);
+    validateSample(del, samp);
+    verifyError(testCase,...
+                @() validateSample(del, -samp),...
+                'DeltaPassive:validateSample')
+    
+    % Continuous-time
+    timestep = 0;
+    dim_outin = randi([1, 5]);
+    del = DeltaPassive('del', dim_outin);
+    samp = sample(del, timestep);
+    validateSample(del, samp);
+    verifyError(testCase,...
+                @() validateSample(del, -samp),...
+                'DeltaPassive:validateSample')
+    horizon_period = [2, 1];
+    del = DeltaPassive('del', dim_outin, horizon_period);
+    verifyError(testCase, @() sample(del, timestep), 'DeltaPassive:sample')
+    
+    % Check that validateSample rejects non-square samples
+    dim_outin = 2;
+    del = DeltaPassive('del', dim_outin);
+    samp = toLft(drss(randi([1, 5]), dim_outin, dim_outin + 1));
+    verifyError(testCase,...
+                @() validateSample(del, samp),...
+                'DeltaPassive:validateSample')
+
+    horizon_period = [1, 2];
+    del = DeltaPassive('del', dim_outin, horizon_period);
+    samp = {eye(dim_outin), eye(dim_outin), eye(dim_outin, dim_outin + 1)};
+    samp = toLft(samp, horizon_period);
+    verifyError(testCase,...
+                @() validateSample(del, samp),...
+                'DeltaPassive:validateSample')
+            del = DeltaBounded('d').matchHorizonPeriod([1, 1]);
+    timestep = 0;
+    verifyError(testCase, @() del.sample(timestep), 'DeltaBounded:sample')
+end
+
 function testDeltaSampleAndValidate(testCase)
     del = DeltaSltvRateBnd('d');
     [~, ~, ~, del] = recastMatricesAndDelta(del);
