@@ -78,14 +78,13 @@ mults_dis  = input_parser.Results.multipliers_disturbance;
 mults_perf = input_parser.Results.multipliers_performance;
 options = input_parser.Results.analysis_options;
 
-hasState = @(lft) isa(lft.delta.deltas{1}, 'DeltaIntegrator')...
-                    || isa(lft.delta.deltas{1}, 'DeltaDelayZ');
-assert(hasState(lft_in), 'iqcAnalyis:iqcAnalysis', 'LFT must have a state')
-is_discrete = isa(lft_in.delta.deltas{1}, 'DeltaDelayZ');
+is_discrete = ~isempty(lft_in.timestep) && any(lft_in.timestep);
 
 %% Check nominal stability
-
-if lft_in.uncertain
+if lft_in.uncertain && ~isempty(lft_in.timestep)
+    % We normalize here to ensure nominal analysis is in the appropriate range
+    % Normalization is not forced on the intended analysis of the system because the user-provided
+    % Multipliers pertain to the Deltas of the given lft, and not the normalized ones
     lft_normalized = normalizeLft(lft_in);
     nominal_system = removeUncertainty(lft_normalized,...
                                        lft_normalized.delta.names(2:end));
@@ -93,7 +92,7 @@ if lft_in.uncertain
                          'solver', options.yalmip_settings.solver,...
                          'lmi_shift', options.lmi_shift);
     [res, valid_nominal, yr, sys] = iqcAnalysis(nominal_system,...
-                                        'analysis_options', op);
+                                                'analysis_options', op);
     if ~valid_nominal
         result = res;
         valid = valid_nominal;
@@ -106,7 +105,6 @@ if lft_in.uncertain
 end
 
 %% Modify LFT for pertinent Delta
-
 lft_analyzed = modifyLft(lft_in);
 
 %% Define joint Delta/Disturbance multiplier
@@ -210,7 +208,6 @@ mult_perf = MultiplierPerformanceCombined(mults_perf);
 dim_out = size(lft_analyzed, 1);
 mult = combineAllMultipliers(mult_del, mult_dis, mult_perf, dim_out);
 %% Formulate KYP lmis
-
 [objective, kyp_constraints, state_amplification, ellipse, kyp_variables] = ...
                                     kypLmi(lft_analyzed, mult, options);
 
@@ -274,124 +271,6 @@ result.debug.constraints       = constraints;
 result.debug.yalmip_report     = yalmip_report;
 end
 
-function mult = combineAllMultipliers(mult_del, mult_dis, mult_perf, dim_out)
-%% COMBINEALLMULTIPLIERS function to create a single, performance-augmented
-%  multiplier composed of all uncertainty and signal multipliers.
-%  Variables:
-%     mult : MultiplierDeltaCombined :: combined, performance-augmented
-%                                       multiplier
-%     performance :  :: the performance level to be measured
-%                   
-validateattributes(mult_del,...
-                   'MultiplierDeltaCombined',...
-                   {'nonempty'},...
-                   mfilename)
-validateattributes(mult_dis,...
-                   'MultiplierDisturbanceCombined',...
-                   {'nonempty'},...
-                   mfilename)
-validateattributes(mult_perf,...
-                   'MultiplierPerformanceCombined',...
-                   {'nonempty'},...
-                   mfilename)
-validateattributes(dim_out, 'numeric', {'integer', 'positive'}, mfilename)
-
-% Create combined filter, create combined quad
-a_del   = mult_del.filter.a;
-b1_del  = mult_del.filter.b1;
-b2_del  = mult_del.filter.b2;
-c1_del  = mult_del.filter.c1;
-c2_del  = mult_del.filter.c2;
-d11_del = mult_del.filter.d11;
-d12_del = mult_del.filter.d12;
-d21_del = mult_del.filter.d21;
-d22_del = mult_del.filter.d22;
-
-a_perf   = mult_perf.filter.a;
-b1_perf  = mult_perf.filter.b1;
-b2_perf  = mult_perf.filter.b2;
-c1_perf  = mult_perf.filter.c1;
-c2_perf  = mult_perf.filter.c2;
-d11_perf = mult_perf.filter.d11;
-d12_perf = mult_perf.filter.d12;
-d21_perf = mult_perf.filter.d21;
-d22_perf = mult_perf.filter.d22;
-
-a_dis = mult_dis.filter.a;
-b_dis = mult_dis.filter.b;
-c_dis = mult_dis.filter.c;
-d_dis = mult_dis.filter.d;
-
-q11_del = mult_del.quad.q11;
-q12_del = mult_del.quad.q12;
-q21_del = mult_del.quad.q21;
-q22_del = mult_del.quad.q22;
-
-q11_perf = mult_perf.quad.q11;
-q12_perf = mult_perf.quad.q12;
-q21_perf = mult_perf.quad.q21;
-q22_perf = mult_perf.quad.q22;
-
-q   = mult_dis.quad.q;
-
-total_time = length(a_del);
-a   = cell(1, total_time);
-b1  = cell(1, total_time);
-b2  = cell(1, total_time);
-c1  = cell(1, total_time);
-c2  = cell(1, total_time);
-d11 = cell(1, total_time);
-d12 = cell(1, total_time);
-d21 = cell(1, total_time);
-d22 = cell(1, total_time);
-q11 = cell(1, total_time);
-q12 = cell(1, total_time);
-q21 = cell(1, total_time);
-q22 = cell(1, total_time);
-for i = 1:total_time
-    dim_out_dis = size(c_dis{i}, 1);
-    
-    % Constructing filter matrices for combined, augmented filter
-    a{i}   = blkdiag(a_del{i}, a_perf{i}, a_dis{i});
-    b1{i}  = blkdiag(b1_del{i}, b1_perf{i});
-    b2{i}  = blkdiag(b2_del{i}, [b2_perf{i}; b_dis{i}]);
-    c1{i}  = blkdiag(c1_del{i}, c1_perf{i});
-    c2{i}  = blkdiag(c2_del{i}, c2_perf{i}, c_dis{i});
-    d11{i} = blkdiag(d11_del{i}, d11_perf{i});
-    d12{i} = blkdiag(d12_del{i}, d12_perf{i});
-    d21{i} = blkdiag(d21_del{i}, [d21_perf{i}; zeros(dim_out_dis, dim_out(i))]);
-    d22{i} = blkdiag(d22_del{i}, [d22_perf{i}; d_dis{i}]);
-    
-    % Constructing combined, performance-augmented quad
-    q11{i} = blkdiag(q11_del{i}, q11_perf{i});
-    q12{i} = blkdiag(q12_del{i}, [q12_perf{i}, zeros(dim_out(i), dim_out_dis)]);
-    q21{i} = blkdiag(q21_del{i}, [q21_perf{i}; zeros(dim_out_dis, dim_out(i))]);
-    q22{i} = blkdiag(q22_del{i}, q22_perf{i}, q{i});
-end
-filter.a   = a;
-filter.b1  = b1;
-filter.b2  = b2;
-filter.c1  = c1;
-filter.c2  = c2;
-filter.d11 = d11;
-filter.d12 = d12;
-filter.d21 = d21;
-filter.d22 = d22;
-
-quad.q11 = q11;
-quad.q12 = q12;
-quad.q21 = q21;
-quad.q22 = q22;
-
-mult               = MultiplierDeltaCombined(MultiplierDeltaDefault());
-mult.filter        = filter;
-mult.quad          = quad;
-mult.name          = [mult_del.name, mult_dis.name];
-mult.decision_vars = [mult_del.decision_vars, mult_dis.decision_vars];
-mult.constraints   = [mult_del.constraints, mult_dis.constraints];
-mult.objective     = mult_perf.objective;
-end
-
 function [objective,...
           kyp_constraints,...
           state_amplification,...
@@ -401,49 +280,60 @@ function [objective,...
 %  the Kalman-yakubovich-popov lemma. 
 %  Variables:
 %     lft_in : Ulft object
-%     mult : MultiplierDeltaCombined object
+%     mult : MultiplierPerformanceCombined object
 
 total_time = sum(lft_in.horizon_period);
 
 % Formulate state-space matrices for LMI
-a_mult   = mult.filter.a;
-b1_mult  = mult.filter.b1;
-b2_mult  = mult.filter.b2;
-c1_mult  = mult.filter.c1;
-c2_mult  = mult.filter.c2;
-d11_mult = mult.filter.d11;
-d12_mult = mult.filter.d12;
-d21_mult = mult.filter.d21;
-d22_mult = mult.filter.d22;
-
-state_in = lft_in.delta.dim_outs(1,:);
-state_out = lft_in.delta.dim_ins(1,:);
-
-a = cell(1, total_time);
-b = cell(1, total_time);
-c = cell(1, total_time);
-d = cell(1, total_time);
+if isempty(lft_in.timestep)
+    state_in = zeros(1, total_time);
+    state_out = state_in;
+else
+    state_in = lft_in.delta.dim_outs(1,:);
+    state_out = lft_in.delta.dim_ins(1,:);
+end
+a_lft = cell(1, total_time);
+b_lft = cell(1, total_time);
+c_lft = cell(1, total_time);
+d_lft = cell(1, total_time);
 for i = 1:total_time
-    % Create H = mult * [lft ; eye] system matrices
+    % Create system matrices for lft with only the state operator in the Delta block
     abcd = [lft_in.a{i}, lft_in.b{i};
             lft_in.c{i}, lft_in.d{i}];
-    a_lft = abcd(1:state_out(i), 1:state_in(i));
-    b_lft = abcd(1:state_out(i), state_in(i)+1:end);
-    c_lft = abcd(state_out(i)+1:end, 1:state_in(i));
-    d_lft = abcd(state_out(i)+1:end, state_in(i)+1:end);
-
-    a{i} = [a_lft,               zeros(size(a_lft, 1), size(a_mult{i}, 2));
-            b1_mult{i} * c_lft,  a_mult{i}];
-    b{i} = [b_lft;
-            b1_mult{i} * d_lft + b2_mult{i}];
-    c{i} = [[d11_mult{i}; d21_mult{i}] * c_lft, [c1_mult{i}; c2_mult{i}]];
-    d{i} = [d11_mult{i}; d21_mult{i}] * d_lft + [d12_mult{i}; d22_mult{i}];
+    a_lft{i} = abcd(1:state_out(i), 1:state_in(i));
+    b_lft{i} = abcd(1:state_out(i), state_in(i)+1:end);
+    c_lft{i} = abcd(state_out(i)+1:end, 1:state_in(i));
+    d_lft{i} = abcd(state_out(i)+1:end, state_in(i)+1:end);
 end
+if ~isempty(lft_in.timestep)
+    delta_state = SequenceDelta(lft_in.delta.deltas{1});
+else
+    delta_state = SequenceDelta();
+end
+lft_in_state = Ulft(a_lft, b_lft, c_lft, d_lft, delta_state,...
+                    'horizon_period', lft_in.horizon_period);
+dim_in = num2cell(size(lft_in_state, 2));
+
+% Generate system: filter_lft_eye = mult.filter * [lft ; eye]
+identity_cell = cellfun(@(dim) eye(dim), dim_in, 'UniformOutput', false);
+identity_lft = toLft(identity_cell, lft_in.horizon_period);
+filt_lft_eye = mult.filter_lft * [lft_in_state; identity_lft];
+
+% Reset state_in dimensions to pertain to filt_lft_eye, rather than lft_in
+if ~isempty(filt_lft_eye.timestep)
+    state_in = filt_lft_eye.delta.dim_outs(1,:);
+else
+    state_in = zeros(1, total_time);
+end
+% Reset abcd matrices to pertain to filt_lft_eye
+abcd = cellfun(@(a, b, c, d) [a, b; c, d],...
+              filt_lft_eye.a, filt_lft_eye.b, filt_lft_eye.c, filt_lft_eye.d,...
+              'UniformOutput', false);
 
 % Initialize lyapunov matrices
 p = cell(1, total_time);
 for i = 1:total_time
-    p{i} = sdpvar(size(a{i}, 2));
+    p{i} = sdpvar(state_in(i));
 end
 if ~isempty(options.p0)
     p{1} = options.p0;
@@ -452,13 +342,7 @@ lmi_shift         = options.lmi_shift;
 kyp_constraints   = [];
 
 % Force P to be positive definite for nominal systems
-hasState = @(lft) isa(lft.delta.deltas{1}, 'DeltaIntegrator')...
-                    || isa(lft.delta.deltas{1}, 'DeltaDelayZ');
-hasUncertainties = @(lft) length(lft.delta.names) > 1;
-if ~hasUncertainties(lft_in)
-    assert(hasState(lft_in),...
-           'iqcAnalysis:kypLmi',...
-           'The only allowable Delta is DeltaDelayZ or DeltaIntegrator')
+if ~lft_in.uncertain %&& ~isempty(lft_in.timestep)
     for i = 1:total_time
     mat_shift = lmi_shift * eye(size(p{i}, 2));
     if ~isempty(p{i})
@@ -468,99 +352,87 @@ if ~hasUncertainties(lft_in)
     end
 end
 
-if isa(lft_in.delta.deltas{1}, 'DeltaDelayZ')
+lmi_mat = cell(1, total_time);
+if isempty(filt_lft_eye.timestep)
+% LMIs for memoryless uncertain system
+    for i = 1:total_time
+        quad_now = [mult.quad.q11{i}, mult.quad.q12{i}; 
+                    mult.quad.q21{i}, mult.quad.q22{i}];
+        % Note that matrix dimensions conform because a, b, and c are empty
+        lmi_mat{i} = abcd{i}' * quad_now * abcd{i};
+    end
+elseif any(filt_lft_eye.timestep)
 % Discrete-time KYP LMIs
-
     % Initialize eventually periodic time indices
     time_indices = 1 : total_time + 1;
-    time_indices(end) = time_indices(lft_in.horizon_period(1) + 1);
+    time_indices(end) = time_indices(filt_lft_eye.horizon_period(1) + 1);
         
     for i = 1:total_time
-        abcd = [a{i}, b{i};
-                c{i}, d{i}];
         p_now = p{time_indices(i)};
         quad_now = [mult.quad.q11{i}, mult.quad.q12{i}; 
                     mult.quad.q21{i}, mult.quad.q22{i}];
         p_next = p{time_indices(i + 1)};
-        lmi_mat = abcd' * blkdiag(p_next, quad_now) * abcd ...
-                                    - blkdiag(p_now, zeros(size(d{i}, 2)));
-        
-        % Correct if floating operations make asymmetric
-        if ~issymmetric(lmi_mat)
-            lmi_mat = (lmi_mat + lmi_mat')/2;
-        end
-        if isa(lmi_mat, 'sdpvar')
-        mat_shift = lmi_shift * eye(size(lmi_mat, 2));
-        kyp_constraints = kyp_constraints ...
-                          + ((lmi_mat <= -mat_shift):['KYP LMI, ' num2str(i)]); %#ok<BDSCA>
-        end
+        lmi_mat{i} = [eye(state_in(i), size(abcd{i}, 2)); abcd{i}]' * ...
+                     blkdiag(-p_now, p_next, quad_now) * ...
+                     [eye(state_in(i), size(abcd{i}, 2)); abcd{i}];
     end
-    
-    if any(isnan(options.init_cond_ellipse), 'all')
-    % Initial condition at zero
-        ellipse = nan;
-        state_amplification = nan;
-        objective_state = 0;
-        p0_state = p{1};
-    else
-    % Handle uncertain initial conditions    
-        ellipse = options.init_cond_ellipse;
-        states = options.init_cond_states;
-        states = [states, false(1, size(a_mult{1}, 1))]; % May need to switch this
-        p0_state = p{1}(states,states);
-        if any(isinf(ellipse), 'all')
-            ellipse = sdpvar(size(ellipse, 1)); 
-            state_amplification = 1;
-            ellipse_eigenvalues = sdpvar(size(ellipse,1),1);
-            kyp_constraints = kyp_constraints + (ellipse_eigenvalues >= 0);
-            ellipse = diag(ellipse_eigenvalues);
-            objective_state = sum(ellipse_eigenvalues'*ellipse_eigenvalues);            
-        else
-            objective_state = sdpvar(1);
-            state_amplification = sqrt(objective_state);
-            mat_shift = lmi_shift * eye(size(ellipse, 2));
-            ic = (p0_state <= objective_state * ellipse - mat_shift):...
-                                                'Initial Condition LMI';        %#ok<BDSCA>
-            kyp_constraints = kyp_constraints + ic; 
-        end
-    end
-elseif isa(lft_in.delta.deltas{1}, 'DeltaIntegrator')
+elseif ~(filt_lft_eye.timestep)
 % Continuous-time KYP LMIs
-    assert(isequal(lft_in.horizon_period, [0, 1]),...
+    assert(isequal(filt_lft_eye.horizon_period, [0, 1]),...
            'iqcAnalysis:kypLmi',...
            'Can only conduct IQC analysis on time-invariant continuous-time systems')
-       
-    ab_mat   = [eye(size(a{1}, 1)), zeros(size(b{1}));
-                a{1},               b{1}];
-    cd_mat   = [c{1},               d{1}];
     p_mat    = [zeros(size(p{1})),  p{1};
                 p{1},               zeros(size(p{1}))];
     quad_mat = [mult.quad.q11{1}, mult.quad.q12{1};
                 mult.quad.q21{1}, mult.quad.q22{1}];
-    lmi_mat = ab_mat' * p_mat * ab_mat + cd_mat' * quad_mat * cd_mat;
+    lmi_mat{i} = [eye(state_in(1), size(abcd{1}, 2)); abcd{1}]' * ...
+                 blkdiag(p_mat, quad_mat) * ...
+                 [eye(state_in(1), size(abcd{1}, 2)); abcd{1}];
+end
+for i = 1:total_time
+% Set negative-definiteness constraints on lmi_mat
     % Correct if floating operations make asymmetric
-    if ~issymmetric(lmi_mat)
-        lmi_mat = (lmi_mat + lmi_mat')/2;
+    if ~issymmetric(lmi_mat{i})
+        lmi_mat{i} = (lmi_mat{i} + lmi_mat{i}')/2;
     end
-    if isa(lmi_mat, 'sdpvar')
-    mat_shift = lmi_shift * eye(size(lmi_mat, 2));
+    if isa(lmi_mat{i}, 'sdpvar')
+    mat_shift = lmi_shift * eye(size(lmi_mat{i}, 2));
     kyp_constraints = kyp_constraints ...
-                      + ((lmi_mat <= -mat_shift):['KYP LMI, ' num2str(i)]);     %#ok<BDSCA>      
+                      + ((lmi_mat{i} <= -mat_shift):['KYP LMI, ' num2str(i)]);  %#ok<BDSCA>
     end
-    
-    if any(isnan(options.init_cond_ellipse), 'all')
+end
+% Set constraints for initial conditions
+if any(isnan(options.init_cond_ellipse), 'all')
     % Initial condition at zero
-        ellipse = nan;
-        state_amplification = nan;
-        objective_state = 0;
-        p0_state = p{1};
+    ellipse = nan;
+    state_amplification = nan;
+    objective_state = 0;
+    p0_state = p{1};
+elseif ~isempty(filt_lft_eye.timestep) && any(filt_lft_eye.timestep)
+    % Handle uncertain initial conditions for discrete-time systems
+    ellipse = options.init_cond_ellipse;
+    states = options.init_cond_states;
+    states = [false(1, size(mult.filter.a{1}, 1)), states];
+    p0_state = p{1}(states,states);
+    if any(isinf(ellipse), 'all')
+        ellipse = sdpvar(size(ellipse, 1)); 
+        state_amplification = 1;
+        ellipse_eigenvalues = sdpvar(size(ellipse,1),1);
+        kyp_constraints = kyp_constraints + (ellipse_eigenvalues >= 0);
+        ellipse = diag(ellipse_eigenvalues);
+        objective_state = sum(ellipse_eigenvalues'*ellipse_eigenvalues);            
     else
-        error('iqcAnalysis:kypLmi',...
-              ['Uncertain initial conditions can only be incorporated for',...
-               ' discrete-time system'])
+        objective_state = sdpvar(1);
+        state_amplification = sqrt(objective_state);
+        mat_shift = lmi_shift * eye(size(ellipse, 2));
+        ic = (p0_state <= objective_state * ellipse - mat_shift):...
+                                            'Initial Condition LMI';            %#ok<BDSCA>
+        kyp_constraints = kyp_constraints + ic; 
     end
 else
-    error('iqcAnalysis:kypLmi', 'Analyzed LFT must have a state')
+    error('iqcAnalysis:kypLmi',...
+          ['Uncertain initial conditions can only be incorporated for',...
+          ' discrete-time system'])
 end
 objective = mult.objective + options.scale_state_obj * objective_state;  
 
@@ -657,9 +529,9 @@ if new_lft
     c = cellfun(@(c_block) cell2mat(c_block), c_block, 'UniformOutput', false);
     delta = SequenceDelta(delta.deltas);
     lft_analyze = Ulft(a, b, c, lft_in.d, delta,...
-                      'horizon_period', lft_in.horizon_period,...
-                      'disturbance', lft_in.disturbance,...
-                      'performance', lft_in.performance);
+                       'horizon_period', lft_in.horizon_period,...
+                       'disturbance', lft_in.disturbance,...
+                       'performance', lft_in.performance);
 else
     lft_analyze = lft_in;
 end

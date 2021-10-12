@@ -40,7 +40,6 @@ properties
     dim_in double
     region_type char
     region_data cell
-    discrete logical
     basis_length double
     basis_poles double
     basis_function tf

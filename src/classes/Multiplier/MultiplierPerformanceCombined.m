@@ -101,6 +101,13 @@ function this_mult = MultiplierPerformanceCombined(mults_perf)
     decision_vars = horzcat(mults_perf.decision_vars);
     constraints = horzcat(mults_perf.constraints);
     horizon_period = mults_perf(end).horizon_period;
+    discrete = horzcat(mults_perf.discrete);
+    if ~isempty(discrete)
+        assert(all(discrete(1) == discrete),...
+               'MultiplierPerformanceCombined:MultiplierPerformanceCombined',...
+               'Cannot combine Multipliers that are discrete and continuous')
+        discrete = discrete(1);
+    end
 
     this_mult.name           = name;
     this_mult.filter         = filter;
@@ -109,6 +116,7 @@ function this_mult = MultiplierPerformanceCombined(mults_perf)
     this_mult.quad           = quad;
     this_mult.horizon_period = horizon_period;
     this_mult.objective      = objective;
+    this_mult.discrete       = discrete;
 end
 end
 end

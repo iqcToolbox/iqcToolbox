@@ -5,19 +5,12 @@ classdef MultiplierDeltaCombined < MultiplierDelta
 %    extended methods:
 %       MultiplierDeltaCombined(mults_del) :: Constructor for combining deltas
 %
-%    extended properties:
-%       objective : double or sdpvar :: objective 
-%
 %  See also MultiplierDeltaCombined.MultiplierDeltaCombined
 
 %%
 %  Copyright (c) 2021 Massachusetts Institute of Technology 
 %  SPDX-License-Identifier: GPL-2.0
 %%
-
-properties
-    objective
-end
 
 methods
 function this_mult = MultiplierDeltaCombined(mults_del)
@@ -100,6 +93,13 @@ function this_mult = MultiplierDeltaCombined(mults_del)
     decision_vars = horzcat(mults_del.decision_vars);
     constraints = horzcat(mults_del.constraints);
     horizon_period = mults_del(end).horizon_period;
+    discrete = horzcat(mults_del.discrete);
+    if ~isempty(discrete)
+        assert(all(discrete(1) == discrete),...
+               'MultiplierDeltaCombined:MultiplierDeltaCombined',...
+               'Cannot combine Multipliers that are discrete and continuous')
+        discrete = discrete(1);
+    end
 
     this_mult.name           = name;
     this_mult.filter         = filter;
@@ -107,6 +107,7 @@ function this_mult = MultiplierDeltaCombined(mults_del)
     this_mult.constraints    = constraints;
     this_mult.quad           = quad;
     this_mult.horizon_period = horizon_period;
+    this_mult.discrete       = discrete;
 end
 end
 end

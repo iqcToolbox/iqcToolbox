@@ -30,7 +30,6 @@ classdef MultiplierDlti < MultiplierDelta
 %%
 
 properties
-    discrete logical
     basis_length double
     basis_poles double
     basis_function tf
