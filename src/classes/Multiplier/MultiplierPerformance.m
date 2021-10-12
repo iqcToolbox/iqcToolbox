@@ -69,7 +69,7 @@ if all(cellfun(@isempty, a))
     del = SequenceDelta();
 else
     if this_mult.discrete
-        del = DeltaDelayZ(size(a{1}, 2));
+        del = DeltaDelayZ(cellfun(@(a) size(a, 2), filt.a));
     else
         del = DeltaIntegrator(size(a{1}, 2));
     end
