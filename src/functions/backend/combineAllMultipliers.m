@@ -14,6 +14,14 @@ function mult = combineAllMultipliers(mult_del, mult_dis, mult_perf, dim_out)
 %    Output:
 %      mult : MultiplierDeltaCombined :: Representation of combined multiplier. The fact that it is a MultiplierDelta object
 %                                        has no intrinsic meaning, it is simply an available class 
+%
+%  See also iqcAnalysis, MultiplierDeltaCombined, MultiplierDisturbanceCombined, MultiplierPerformanceCombined
+
+%%
+%  Copyright (c) 2021 Massachusetts Institute of Technology 
+%  SPDX-License-Identifier: GPL-2.0
+%%
+
 validateattributes(mult_del,...
                    'MultiplierDeltaCombined',...
                    {'nonempty'},...
