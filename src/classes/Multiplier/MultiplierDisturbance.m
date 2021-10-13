@@ -58,9 +58,13 @@ if all(cellfun(@isempty, filt.a))
     del = SequenceDelta();
 else
     if this_mult.discrete
-        del = DeltaDelayZ(cellfun(@(a) size(a, 2), filt.a));
+        % timestep may be wrong, will need to correct this to concatenate
+        timestep = -1; 
+        del = DeltaDelayZ(cellfun(@(a) size(a, 2), filt.a),...
+                          timestep,...
+                          this_mult.horizon_period);
     else
-        del = DeltaIntegrator(size(a{1}, 2));
+        del = DeltaIntegrator(size(filt.a{1}, 2));
     end
 end
 filter_lft = Ulft(filt.a, filt.b, filt.c, filt.d, del,...
