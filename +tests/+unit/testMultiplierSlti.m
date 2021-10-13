@@ -546,6 +546,18 @@ function testDeltaWithNonTrivialHorizonPeriod(testCase)
     verifyEqual(testCase, mult.upper_bound, del.upper_bound)
     verifyEqual(testCase, mult.horizon_period, del.horizon_period)
 end
+
+function testFilterLft(testCase)
+    del = DeltaSlti('test');
+    mult = MultiplierSlti(del);
+    filter = mult.filter_lft;
+    verifyEqual(testCase, filter.a{1}, mult.filter.a{1});
+    verifyEqual(testCase, filter.b{1}, [mult.filter.b1{1}, mult.filter.b2{1}])
+    verifyEqual(testCase, filter.c{1}, [mult.filter.c1{1}; mult.filter.c2{1}])
+    verifyEqual(testCase, filter.d{1}, [mult.filter.d11{1}, mult.filter.d12{1};
+                                        mult.filter.d21{1}, mult.filter.d22{1}])
+    verifyEqual(testCase, filter.horizon_period, mult.horizon_period)
+end
 end
 end
 

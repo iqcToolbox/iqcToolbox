@@ -34,7 +34,12 @@ function testErrorFreeAnalysis(testCase)
         end
         lft = Ulft.random('num_deltas', length(req_deltas),...
                           'req_deltas', req_deltas);
-        iqcAnalysis(lft, 'analysis_options', options);
+        [dim_out, dim_in] = size(lft);
+        perf = lft.performance.performances{1};
+        mult_perf = MultiplierL2Induced(perf, dim_out, dim_in);
+        iqcAnalysis(lft,...
+                    'analysis_options', options,...
+                    'multipliers_performance', mult_perf);
     end
     no_error = true;
     verifyTrue(testCase, no_error)
