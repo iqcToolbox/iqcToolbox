@@ -168,6 +168,16 @@ function testDisplayDisturbance(testCase)
     dis = DisturbanceTimeWindow('test', {1,2,3,4,5,6,7}, [0:6], [0, 7])
 end
 
+function testFilterLftDisturbance(testCase)
+    chan = {[1]};
+    window = 1;
+    horizon_period = [0, 2];
+    dis = DisturbanceTimeWindow('test', chan, window, horizon_period);
+    mult = MultiplierTimeWindow(dis, [2, 2]);
+    filter = mult.filter_lft;
+    verifyEqual(testCase, filter.d, {eye(2), zeros(2)})
+end
+
 end
 end
 

@@ -68,6 +68,13 @@ function this_mult = MultiplierDisturbanceCombined(mults_dis)
     decision_vars = horzcat(mults_dis.decision_vars);
     constraints = horzcat(mults_dis.constraints);
     horizon_period = mults_dis(end).horizon_period;
+    discrete = horzcat(mults_dis.discrete);
+    if ~isempty(discrete)
+        assert(all(discrete(1) == discrete),...
+               'MultiplierDisturbanceCombined:MultiplierDisturbanceCombined',...
+               'Cannot combine Multipliers that are discrete and continuous')
+        discrete = discrete(1);
+    end
 
     this_mult.name           = name;
     this_mult.filter         = filter;
@@ -75,6 +82,7 @@ function this_mult = MultiplierDisturbanceCombined(mults_dis)
     this_mult.constraints    = constraints;
     this_mult.quad           = quad;
     this_mult.horizon_period = horizon_period;
+    this_mult.discrete       = discrete;
 end
 end
 end
