@@ -415,7 +415,7 @@ for i = 1:total_time
         if i == 1
             ghost = sdpvar(1);
             kyp_constraints = kyp_constraints + ...
-                              (ghost == 1):['Ghost variable == 1'];
+                              (ghost == 1):'Ghost variable == 1';               %#ok<BDSCA>
         end
     lmi_eig = eig(lmi_mat{i});
     if all(lmi_eig == 0, 'all')

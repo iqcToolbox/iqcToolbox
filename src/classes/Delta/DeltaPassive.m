@@ -1,7 +1,6 @@
 classdef DeltaPassive < Delta
-%% DELTABOUNDED class for uncertainties with a known l2-induced norm upper 
-%  bound (may be nonlinear, dynamic, and/or time-varying). Extends the base 
-%  class Delta.
+%% DELTAPASSIVE class for uncertainties which are passive (may be dynamic and/or time-varying).
+%  Extends the base class Delta.
 %
 %   extended methods:
 %     DeltaPassive(name, dim_outin, horizon_period) :: Constructor
@@ -21,7 +20,7 @@ classdef DeltaPassive < Delta
 
 methods
     function this_delta = DeltaPassive(name, dim_outin, horizon_period)
-    %% DELTABOUNDED constructor
+    %% DELTAPASSIVE constructor
     %
     %  d = DeltaPassive(name, dim_outin, horizon_period)
     %  d = DeltaPassive(name, dim_outin) assumes horizon_period == [0, 1]
