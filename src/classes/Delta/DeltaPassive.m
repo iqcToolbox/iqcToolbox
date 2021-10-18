@@ -208,14 +208,14 @@ methods
         if isempty(value.timestep)
             dim_in = size(value, 2);
             total_time = sum(value.horizon_period);
-            eigs = [];
+            min_eig = Inf;
             for i = 1:total_time
                 d_eye = [value.d{i}; eye(dim_in(i))];
                 mult = [zeros(dim_in(i)), eye(dim_in(i));
                         eye(dim_in(i)),   zeros(dim_in(i))];
-                eigs = [eigs; eig(d_eye' * mult * d_eye)];
+                min_eig = min([min_eig; eig(d_eye' * mult * d_eye)]);
             end
-            valid = min(eigs) >= 0;
+            valid = min_eig >= 0;
         else
             value = value.addPerformance({PerformancePassive('passive')});
             options = AnalysisOptions('lmi_shift', 0, 'verbose', false);

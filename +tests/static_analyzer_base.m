@@ -1,4 +1,4 @@
-function [info, files, msg] = static_analyzer_base()
+function [info, files] = static_analyzer_base()
 %% STATIC_ANALYZER_BASE for analyzing all source code
 %
 %  [info, file] =  tests.static_analyzer_base
@@ -28,7 +28,6 @@ src_files = cellfun(@(dir, name) fullfile(dir, name),...
 
 [info, files] = checkcode(src_files,...
                           ['-config=', fullfile(this_pth, 'chkcode_rules.txt')]);
-msg = checkcode(src_files,...
-                          ['-config=', fullfile(this_pth, 'chkcode_rules.txt')], '-string');
+
 %%  CHANGELOG
 % Sep. 28, 2021 (v0.6.0): Added after v0.5.0 - Micah Fry (micah.fry@ll.mit.edu)

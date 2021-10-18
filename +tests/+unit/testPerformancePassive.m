@@ -77,6 +77,4 @@ end
 end
 
 %%  CHANGELOG
-% Sep. 28, 2021 (v0.6.0)
-% Aug. 26, 2021 (v.0.5.0): Initial release - Micah Fry (micah.fry@ll.mit.edu)    
-
+% Oct. 18, 2021: Added after v0.6.0 - Micah Fry (micah.fry@ll.mit.edu)

@@ -65,7 +65,7 @@ for i = 1:total_time
     filter.d22{i} = eye(delta.dim_in(i));
 
     % Define quad
-    quad.q12{i} = eye(delta.dim_out(i));
+    quad.q12{i} = decision_var * eye(delta.dim_out(i));
     quad.q21{i} = quad.q12{i}';
     quad.q11{i} = zeros(delta.dim_out(i), delta.dim_in(i));
     quad.q22{i} = zeros(delta.dim_in(i), delta.dim_out(i));    
