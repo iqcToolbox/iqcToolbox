@@ -34,7 +34,7 @@ methods (Test)
     function testDiscreteTimePassive(testCase)
         g = ss(tf(1/(tf('z') + .5))) + 3;
         lft = toLft(g);
-        lft = addPerformance(lft, {PerformancePassive('test')});
+        lft = addPerformance(lft, {PerformancePassive('test', {1}, {1})});
         options = AnalysisOptions('lmi_shift', 1e-7, 'verbose', false);
         result = iqcAnalysis(lft, 'analysis_options', options);
         verifyTrue(testCase, result.valid)
@@ -49,33 +49,25 @@ methods (Test)
 % strict input passivity.  The following systems are zero for some omega \in [-\infty, \infty]
 % and they should pass the following tests (checking only passivity, not SIP),
 % except double arithmetic in optimization leads to slight violation of constraints
-%     function testContinuousTimePassive2(testCase)
-%         g = ss(tf(1/(tf('s') + .5)));
-%         lft = toLft(g);
-%         lft = addPerformance(lft, {PerformancePassive('test')});
-%         options = AnalysisOptions('lmi_shift', 0, 'verbose', false, 'solver', 'sdpt3');
-%         result = iqcAnalysis(lft, 'analysis_options', options);
-%         verifyTrue(testCase, result.valid)
-%         verifyEqual(testCase, result.performance, 0)
-%         
-%         lft = -lft;
-%         result = iqcAnalysis(lft, 'analysis_options', options);
-%         verifyFalse(testCase, result.valid)
-%     end
-%     
-%     function testDiscreteTimePassive(testCase)
-%         g = ss(tf(1/(tf('z') + .5))) + 2;
-%         lft = toLft(g);
-%         lft = addPerformance(lft, {PerformancePassive('test')});
-%         options = AnalysisOptions('lmi_shift', 0, 'verbose', false);
-%         result = iqcAnalysis(lft, 'analysis_options', options);
-%         verifyTrue(testCase, result.valid)
-%         verifyEqual(testCase, result.performance, 0)
-%         
-%         lft = -lft;
-%         result = iqcAnalysis(lft, 'analysis_options', options);
-%         verifyFalse(testCase, result.valid)
-%     end
+    function testContinuousTimePassiveZero(testCase)
+        g = ss(tf(1/(tf('s') + .5)));
+        lft = toLft(g);
+        lft = addPerformance(lft, {PerformancePassive('test')});
+        options = AnalysisOptions('lmi_shift', 0, 'verbose', false, 'solver', 'sdpt3');
+        result = iqcAnalysis(lft, 'analysis_options', options);
+        valid = check(result.debug.constraints('KYP LMI, 1')) > -1e-10;
+        verifyTrue(testCase, valid)
+    end
+    
+    function testDiscreteTimePassiveZero(testCase)
+        g = ss(tf(1/(tf('z') + .5))) + 2;
+        lft = toLft(g);
+        lft = addPerformance(lft, {PerformancePassive('test')});
+        options = AnalysisOptions('lmi_shift', 0, 'verbose', false);
+        result = iqcAnalysis(lft, 'analysis_options', options);
+        valid = check(result.debug.constraints('KYP LMI, 1')) > -1e-10;
+        verifyTrue(testCase, valid)
+    end
 end
 end
 

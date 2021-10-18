@@ -32,12 +32,13 @@ function testDefault(testCase)
                                                         2,...
                                                         'box',...
                                                         {[-1, 1; -1, 1]}));
+    passive = toLft(DeltaPassive('passive'));
     lft_discrete = z + dlti + slti + sltv + sltv_box + sltv_ell + ...
                        sltv_polytope + sltv_rb
-    lft_discrete_2 = sltv_rbi_ell + sltv_rbi_pol + sltv_rbi_box
+    lft_discrete_2 = sltv_rbi_ell + sltv_rbi_pol + sltv_rbi_box + passive
     
     integrator = toLft(DeltaIntegrator());
-    lft_continuous = integrator + sltv + sltv_box + sltv_rb
+    lft_continuous = integrator + sltv + sltv_box + sltv_rb + passive
 end
 
 end

@@ -53,6 +53,12 @@ function this_perf = PerformancePassive(name, chan_out, chan_in, horizon_period)
                 ['Must provide 1, 3, or 4 arguments to construct',...
                  'PerformancePassive objects'])
     end
+    dim_out = cellfun(@length, chan_out);
+    dim_in  = cellfun(@length, chan_in);
+    assert(all(dim_out == dim_in),...
+           'PerformancePassive:PerformancePassive',...
+           'Passive Performance must have equal lengths of channels')
+    
     % Calling Performance constructor
     this_perf@Performance(name, chan_out, chan_in, horizon_period);
     this_perf = matchHorizonPeriod(this_perf);
