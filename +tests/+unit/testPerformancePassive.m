@@ -63,109 +63,16 @@ function testFullConstructorAndDisplay(testCase)
     verifyEqual(testCase, perf.horizon_period, horizon_period)
 end
 
-function testFullConstructorDifferentHorizonPeriod(testCase)
-    name = 'test';
-    channel = {[1:5]'};
-    horizon_period = [2, 4];
-    total_time = sum(horizon_period);
-    window = (1:total_time) - 1;
-    dis = DisturbanceTimeWindow(name, channel, window, horizon_period);
-    verifyEqual(testCase, dis.name, name)
-    verifyEqual(testCase,...
-                dis.chan_in,...
-                repmat(channel, 1, total_time))
-    verifyEqual(testCase,...
-                dis.window,...
-                window)
-    verifyEqual(testCase, dis.horizon_period, horizon_period)
-end
-
-function testOneArgConstructor(testCase)
-    name = 'test';
-    dis = DisturbanceTimeWindow(name);
-    verifyEqual(testCase, dis.name, name)
-    verifyEqual(testCase, dis.chan_in, {[]})
-    verifyEqual(testCase, dis.window, 0)
-    verifyEqual(testCase, dis.horizon_period, [0, 1])
-end
-
-function testMatchHorizonPeriod(testCase)
-   name = 'test';
-   chan = {[1; 4; 10]};
-   win = [0, 2, 4];
-   horizon_period = [1, 4];
-   total_time = sum(horizon_period);
-   dis = DisturbanceTimeWindow(name, chan, win, horizon_period);
-   
-   assertEqual(testCase, dis.horizon_period, horizon_period);
-   assertEqual(testCase, dis.chan_in, repmat(chan, 1, total_time));
-   assertEqual(testCase, dis.window, win);
-   
-   % Checking horizon_period and making sure it fits for all properties
-   dis2 = dis;
-   horizon_period2 = [5, 8];
-   total_time2 = sum(horizon_period2);
-   win2 = [0, 2, 4, 6:2:13];
-   
-   dis = matchHorizonPeriod(dis, horizon_period2);
-   verifyEqual(testCase, dis.horizon_period, horizon_period2)
-   verifyEqual(testCase, dis.chan_in, repmat(chan, 1, total_time2))
-   verifyEqual(testCase, dis.window, win2)
-end
-
-function testFailedName(testCase)
-    verifyError(testCase, @() DisturbanceTimeWindow(), ?MException)
-    verifyError(testCase, @() DisturbanceTimeWindow(1), ?MException)
-end
-
-function testFailedNumberOfArguments(testCase)
-    verifyError(testCase, @() DisturbanceTimeWindow('test', {1}), ?MException)
-    verifyError(testCase, @() DisturbanceTimeWindow('test', {1}, 0), ?MException)
-end
-
-function testFailedChannels(testCase)
-    name = 'test';
-    hp = [0, 1];
-    win = 0;
-    verifyError(testCase, @() DisturbanceTimeWindow(name, 1, win, hp), ?MException)
-    verifyError(testCase, @() DisturbanceTimeWindow(name, {1.1}, win, hp), ?MException)
-    verifyError(testCase, @() DisturbanceTimeWindow(name, {-1}, win, hp), ?MException)
-    verifyError(testCase, @() DisturbanceTimeWindow(name, {0}, win, hp), ?MException)
-    verifyError(testCase, @() DisturbanceTimeWindow(name, {[1, 2]}, win, hp), ?MException)
-end
-
-function testFailedWindow(testCase)
-    name = 'test';
-    hp = [0, 1];
-    chan = {1};
-    verifyError(testCase, @() DisturbanceTimeWindow(name, chan, -1, hp), ?MException)
-    verifyError(testCase, @() DisturbanceTimeWindow(name, chan, 1.1, hp), ?MException)
-    verifyError(testCase, @() DisturbanceTimeWindow(name, chan, [0, 1, 2], hp), ?MException)
-    verifyError(testCase, @() DisturbanceTimeWindow(name, chan, [0, 0], hp), ?MException)
-end
-
-function testFailedRate(testCase)
-    hp = [2, 2];
-    total_time = sum(hp);
-    lr = -1.2 * ones(1,total_time);
-    ur = linspace(4, 5, total_time);
-    lr(total_time) = ur(total_time) + 1;
-
+function testPerformanceToMultiplier(testCase)
+    perf = PerformancePassive('test');
     verifyError(testCase,...
-                @() DisturbanceTimeWindow('test', 1, -1, 1, lr, ur, hp),...
-                ?MException)
-
-    lr(total_time) = -inf;
+                @() performanceToMultiplier(perf),...
+                'PerformancePassive:performanceToMultiplier')
     verifyError(testCase,...
-                @() DisturbanceTimeWindow('test', 1, -1, 1, lr, ur, hp),...
-                ?MException)
-
-    lr(total_time) = ur(total_time) - 1;
-    ur(1) = nan;
-    verifyError(testCase,...
-                @() DisturbanceTimeWindow('test', 1, -1, 1, lr, ur, hp),...
-                ?MException)
+                @() performanceToMultiplier(perf, 'dim_out_lft', 1),...
+                'PerformancePassive:performanceToMultiplier')
 end
+
 end
 end
 
