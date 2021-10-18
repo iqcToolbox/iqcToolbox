@@ -19,9 +19,10 @@ methods (Test)
         upper_lft = toLft(DeltaPassive('del_up'));
         lft = interconnect(upper_lft, lower_lft);
         lft = lft.addPerformance({PerformancePassive('pass')});
-        options = AnalysisOptions('lmi_shift', 0, 'verbose', false);
+        options = AnalysisOptions('lmi_shift', 0, 'verbose', true);
         result = iqcAnalysis(lft, 'analysis_options', options);
-        verifyTrue(testCase, result.valid)
+        valid = check(result.debug.constraints('KYP LMI, 1')) > -1e-10;
+        verifyTrue(testCase, valid)
     end
     
     function testContinuousTimeStable(testCase)

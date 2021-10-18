@@ -219,7 +219,7 @@ yalmip_report = optimize(constraints, objective, settings);
 %% Check correctness, gather data
 % Ignore ghost variable constraint if it exists and is "close enough" to equality
 try 
-    ghost_close = check(constraints('Ghost variable == 1')) > -1e-7;
+    ghost_close = check(constraints('Ghost variable == 1')) > -2e-7;
     if ghost_close
         % Eliminate inaccuracy of near equality satisfaction from constraints
         constraints('Ghost variable == 1') = [];

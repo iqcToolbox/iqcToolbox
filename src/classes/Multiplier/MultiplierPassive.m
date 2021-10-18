@@ -49,7 +49,7 @@ quad.q12     = cell(1, total_time);
 quad.q21     = cell(1, total_time);
 quad.q22     = cell(1, total_time);
 decision_var = sdpvar(1);
-constraint   = (decision_var >= 0):['Passive Multiplier, ',...
+constraints  = (decision_var >= 0):['Passive Multiplier, ',...
                                     this_mult.name,...
                                     ' #1, p >= 0'];                             %#ok<BDSCA>
 for i = 1:total_time
@@ -70,9 +70,9 @@ for i = 1:total_time
     quad.q11{i} = zeros(delta.dim_out(i), delta.dim_in(i));
     quad.q22{i} = zeros(delta.dim_in(i), delta.dim_out(i));    
 end       
-this_mult.filter     = filter;
-this_mult.quad       = quad;
-this_mult.constraint = constraint;
+this_mult.filter      = filter;
+this_mult.quad        = quad;
+this_mult.constraints = constraints;
 end    
 end
 
