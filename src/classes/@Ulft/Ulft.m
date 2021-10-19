@@ -135,9 +135,9 @@ function this_lft = Ulft(a, b, c, d, delta, varargin)
 input_parser = inputParser;
 
 % a, b, c, d matrices
-isDoubleMatrix = @(m) isnumeric(m) && ismatrix(m);
-isCellOfMatrices = @(m) iscell(m) && all(cellfun(isDoubleMatrix,m));
-validABCD = @(m) isDoubleMatrix(m) || isCellOfMatrices(m);
+isMatrix = @(m) isnumeric(m) && ismatrix(m);
+isCellOfMatrices = @(m) iscell(m) && all(cellfun(isMatrix, m)) && size(m, 1)==1;
+validABCD = @(m) isMatrix(m) || isCellOfMatrices(m);
 addRequired(input_parser, 'a', validABCD);
 addRequired(input_parser, 'b', validABCD);
 addRequired(input_parser, 'c', validABCD);

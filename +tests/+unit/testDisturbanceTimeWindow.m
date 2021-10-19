@@ -130,28 +130,6 @@ function testFailedWindow(testCase)
     verifyError(testCase, @() DisturbanceTimeWindow(name, chan, [0, 1, 2], hp), ?MException)
     verifyError(testCase, @() DisturbanceTimeWindow(name, chan, [0, 0], hp), ?MException)
 end
-function testFailedRate(testCase)
-    hp = [2, 2];
-    total_time = sum(hp);
-    lr = -1.2 * ones(1,total_time);
-    ur = linspace(4, 5, total_time);
-    lr(total_time) = ur(total_time) + 1;
-
-    verifyError(testCase,...
-                @() DisturbanceTimeWindow('test', 1, -1, 1, lr, ur, hp),...
-                ?MException)
-
-    lr(total_time) = -inf;
-    verifyError(testCase,...
-                @() DisturbanceTimeWindow('test', 1, -1, 1, lr, ur, hp),...
-                ?MException)
-
-    lr(total_time) = ur(total_time) - 1;
-    ur(1) = nan;
-    verifyError(testCase,...
-                @() DisturbanceTimeWindow('test', 1, -1, 1, lr, ur, hp),...
-                ?MException)
-end
 
 function testDisturbanceToMultiplier(testCase)
     dis = DisturbanceTimeWindow('test');
