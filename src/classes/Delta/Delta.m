@@ -230,44 +230,54 @@ end
 methods (Sealed)
 %% These methods are to allow the addition/multiplication/etc. of Delta objects 
 %  with Ulft objects.
-    function out = plus(varargin)
+    function lft_out = plus(varargin)
         del_ind =  find(cellfun(@(a) isa(a, 'Delta'), varargin), 1, 'first');
         varargin{del_ind} = toLft(varargin{del_ind});
-        out = plus(varargin{:});
+        lft_out = plus(varargin{:});
     end
 
-    function out = mtimes(varargin)
+    function lft_out = mtimes(varargin)
         del_ind =  find(cellfun(@(a) isa(a, 'Delta'), varargin), 1, 'first');
         varargin{del_ind} = toLft(varargin{del_ind});
-        out = mtimes(varargin{:});
+        lft_out = mtimes(varargin{:});
     end
     
-    function out = minus(varargin)
+    function lft_out = minus(varargin)
         del_ind =  find(cellfun(@(a) isa(a, 'Delta'), varargin), 1, 'first');
         varargin{del_ind} = toLft(varargin{del_ind});
-        out = minus(varargin{:});
+        lft_out = minus(varargin{:});
     end
     
-    function out = vertcat(varargin)
+    function lft_out = vertcat(varargin)
         del_ind =  find(cellfun(@(a) isa(a, 'Delta'), varargin), 1, 'first');
         varargin{del_ind} = toLft(varargin{del_ind});
-        out = vertcat(varargin{:});
+        lft_out = vertcat(varargin{:});
     end
     
-    function out = horzcat(varargin)
+    function lft_out = horzcat(varargin)
         del_ind =  find(cellfun(@(a) isa(a, 'Delta'), varargin), 1, 'first');
         varargin{del_ind} = toLft(varargin{del_ind});
-        out = horzcat(varargin{:});
+        lft_out = horzcat(varargin{:});
     end
     
-    function out = blkdiag(varargin)
+    function lft_out = blkdiag(varargin)
         del_ind =  find(cellfun(@(a) isa(a, 'Delta'), varargin), 1, 'first');
         varargin{del_ind} = toLft(varargin{del_ind});
-        out = blkdiag(varargin{:});
+        lft_out = blkdiag(varargin{:});
+    end
+
+    function lft_out = uminus(this_delta)
+        lft_out = uminus(toLft(this_delta));
+    end
+
+    function lft_out = uplus(this_delta)
+        lft_out = uplus(toLft(this_delta));
+    end
+
+    function lft_out = mpower(this_delta, exponent)
+        lft_out = mpower(toLft(this_delta), exponent);
     end
 end
-
-
 end
 
 %%  CHANGELOG
