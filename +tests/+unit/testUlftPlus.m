@@ -149,6 +149,10 @@ function testPlusNonLft(testCase)
                     Ulft.random('dim_in', 1, 'dim_out', 1, 'req_deltas', {'DeltaIntegrator'}) + rss(3),...
                     'Ulft');
     end
+    % Only Delta
+    del = DeltaSlti('d');
+    verifyClass(testCase, del^2 - (+del) + (-del), 'Ulft')
+    verifyClass(testCase, del + del, 'Ulft')
 end
 
 function testPlusWithErrors(testCase)
