@@ -119,6 +119,21 @@ function testZeroDimensionZ(testCase)
     true_gain = 1;
     verifyLessThan(testCase, abs(true_gain - result.performance), 1e-2)
 end
+
+function testCorrectObjectiveScaling(testCase)
+    % This test would have failed prior to the fix for hotfix-008
+    lft = toLft(DeltaDelayZ());
+    options = AnalysisOptions('verbose', false, 'lmi_shift', 1e-6);
+    result = iqcAnalysis(lft, 'analysis_options', options);
+    objective_scale = 1e3;
+    mult_perf = MultiplierL2Induced(lft.performance.performances{1}, 1, 1,...
+                                    'objective_scaling', objective_scale);
+    result2 = iqcAnalysis(lft,...
+                          'multipliers_performance', mult_perf,...
+                          'analysis_options', options);
+    diff_performance = abs(result.performance - result2.performance);
+    verifyLessThan(testCase, diff_performance, 1e-3)
+end
 end
 end
 
