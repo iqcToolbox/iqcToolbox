@@ -263,7 +263,7 @@ primal_satisfied = (failed_yalmip == system_kyp_failed_yalmip)...
 valid = all(~isnan(primal_residual), 'all') && ...
         (all(primal_residual >= 0) || primal_satisfied);        
 if valid
-    performance = sqrt(double(mult.objective));
+    performance = sqrt(cellfun(@double, {mults_perf.objective}));
 else
     performance = inf;
 end
