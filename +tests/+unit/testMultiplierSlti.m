@@ -567,6 +567,7 @@ function testTimeVaryingMultiplier(testCase)
     mult = MultiplierSlti(del); % This command would have failed in construction
 end
 end
+end
 
 %%  CHANGELOG
 % Sep. 28, 2021 (v0.6.0)
