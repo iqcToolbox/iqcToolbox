@@ -450,6 +450,15 @@ function testRecastMatricesAndDelta(testCase)
     verifyEmpty(testCase, newDelta)
 end
 
+function testTimeVaryingMultiplier(testCase)
+    % This test would have failed before addressing the fix for hotfix-007
+    del = DeltaSltvRateBndImpl('test');
+    horizon_period = [2, 5];
+    del = del.matchHorizonPeriod(horizon_period);
+    mult = MultiplierSltvRateBndImpl(del);
+    verifyEqual(testCase, mult.horizon_period, horizon_period)
+end
+
 end
 end
 
