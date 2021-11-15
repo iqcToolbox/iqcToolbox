@@ -558,6 +558,14 @@ function testFilterLft(testCase)
                                         mult.filter.d21{1}, mult.filter.d22{1}])
     verifyEqual(testCase, filter.horizon_period, mult.horizon_period)
 end
+
+function testTimeVaryingMultiplier(testCase)
+    % This test would have failed before addressing the fix for hotfix-007
+    del = DeltaSlti('test');
+    horizon_period = [2, 5];
+    del = del.matchHorizonPeriod(horizon_period);
+    mult = MultiplierSlti(del);
+    verifyEqual(testCase, mult.horizon_period, horizon_period)
 end
 end
 
