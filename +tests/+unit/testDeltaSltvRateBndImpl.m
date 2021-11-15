@@ -455,8 +455,7 @@ function testTimeVaryingMultiplier(testCase)
     del = DeltaSltvRateBndImpl('test');
     horizon_period = [2, 5];
     del = del.matchHorizonPeriod(horizon_period);
-    mult = MultiplierSltvRateBndImpl(del);
-    verifyEqual(testCase, mult.horizon_period, horizon_period)
+    mult = MultiplierSltvRateBndImpl(del);  % This command would have failed in construction
 end
 
 end

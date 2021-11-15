@@ -444,8 +444,7 @@ function testTimeVaryingMultiplier(testCase)
     del = DeltaDlti('test');
     horizon_period = [2, 5];
     del = del.matchHorizonPeriod(horizon_period);
-    mult = MultiplierDlti(del);
-    verifyEqual(testCase, mult.horizon_period, horizon_period)
+    mult = MultiplierDlti(del);  % This command would have failed in construction
 end
 end
 end
