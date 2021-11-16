@@ -438,6 +438,14 @@ function testConstraintParameters(testCase)
     mult = MultiplierDlti(del, 'constraint_q11_kyp', constraint_q11_kyp);
     verifyEqual(testCase, mult.constraint_q11_kyp, constraint_q11_kyp);
 end
+
+function testTimeVaryingMultiplier(testCase)
+    % This test would have failed before addressing the fix for hotfix-007
+    del = DeltaDlti('test');
+    horizon_period = [2, 5];
+    del = del.matchHorizonPeriod(horizon_period);
+    mult = MultiplierDlti(del);  % This command would have failed in construction
+end
 end
 end
 
