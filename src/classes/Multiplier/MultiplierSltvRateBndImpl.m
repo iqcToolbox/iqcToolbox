@@ -257,9 +257,9 @@ function this_mult = set.basis_realization(this_mult, basis_realization)
         assert(all(this_mult.dim_in == this_mult.dim_in(1)),...
                'MultiplierSltvRateBndImpl:set:basis_realization',...
                ['Cannot make time-invariant basis function if multiplier',...
-                ' has time-varying dimensions']);
+                ' has time-varying dimensions']);                               %#ok<MCSUP>
         basis    = basis_realization;
-        dim_in   = this_mult.dim_in(1);
+        dim_in   = this_mult.dim_in(1);                                         %#ok<MCSUP>
         if this_mult.discrete
             a_tilde = basis.a;
             b_tilde = basis.b;
