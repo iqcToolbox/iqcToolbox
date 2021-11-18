@@ -41,10 +41,10 @@ b = lft_in.b(1, ind_reach);
 c = lft_in.c(1, ind_reach);
 d = lft_in.d(1, ind_reach);
 for i = 1:total_time
-    if i < horizon_period(1)
+    if i < final_time + 1
         c{i} = zeros(size(c{i}));
         d{i} = zeros(size(d{i}));
-    elseif i == horizon_period(1)
+    elseif i == final_time + 1
         a{i} = zeros(size(a{i}));
         b{i} = zeros(size(b{i}));
     else

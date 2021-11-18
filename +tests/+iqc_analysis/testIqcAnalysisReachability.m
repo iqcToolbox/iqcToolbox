@@ -70,6 +70,127 @@ function testReachabilityDelayDynamics(testCase)
     assertTrue(testCase, valid)
     verifyLessThan(testCase, abs(result.performance - gain^3), 1e-2)
 end
+
+function testReachabilityNonTrivialPeriod(testCase)
+    % This test would have failed previous to hotfix-009
+    for j = 1:100
+    timestep = rand + 1e-8; % Creata specific timestep (be sure it is not -1)
+    period = randi([2, 10]); % Have greater-than-one period
+    horizon_period = [randi([0, 10]), period];
+    dim_state = randi([1, 3]);
+    del = DeltaDelayZ(dim_state, timestep, horizon_period);
+    lft = Ulft.random('num_deltas', 1, 'req_deltas', {del});
+    final_time = horizon_period(1) + randi([1, 10]); % A final_time greater than the horizon
+    lft_reach = generateReachabilityLft(lft, final_time);
+    options = AnalysisOptions('verbose', false, 'lmi_shift', 1e-5);
+    [result, valid] = iqcAnalysis(lft_reach, 'analysis_options', options);
+    assertTrue(testCase, valid)
+    
+    % Create an equivalent reachability LFT
+    hp_equiv = [final_time + 1, 1];
+    hp_common = commonHorizonPeriod([hp_equiv; horizon_period]);
+    ind = makeNewIndices(horizon_period, hp_common);
+    total_time = sum(hp_equiv);
+    ind = ind(1:total_time); % Truncate new indices to hp_equiv
+    a = lft.a(1, ind);
+    b = lft.b(1, ind);
+    c = lft.c(1, ind);
+    d = lft.d(1, ind);
+    for i = 1:total_time
+        if i < hp_equiv(1)
+            c{i} = zeros(size(c{i}));
+            d{i} = zeros(size(d{i}));
+        elseif i == hp_equiv(1)
+            a{i} = zeros(size(a{i}));
+            b{i} = zeros(size(b{i}));
+        else
+            a{i} = zeros(size(a{i}));
+            b{i} = zeros(size(b{i}));
+            c{i} = zeros(size(c{i}));
+            d{i} = zeros(size(d{i}));
+        end
+    end
+    del_equiv = DeltaDelayZ(dim_state, timestep, hp_equiv);
+    lft_equiv = Ulft(a, b, c, d, del_equiv, 'horizon_period', hp_equiv);
+    result_equiv = iqcAnalysis(lft_equiv, 'analysis_options', options);
+    assertTrue(testCase, result_equiv.valid)
+    perf_error = abs((result.performance - result_equiv.performance)/...
+                     result_equiv.performance);
+    verifyLessThan(testCase, perf_error, 1e-4)  
+    if perf_error > 1e-4
+        verify_fail = verify_fail + 1
+        end
+    if ~result_equiv.valid
+        second_assert = second_assert + 1
+    end
+    if ~valid
+        first_assert = first_assert + 1
+    end
+    end
+end
+    
+function testReachabilityNonTrivialPeriodShortHorizon(testCase)
+    % This test would have failed previous to hotfix-009
+    % While the previous tested final times somewhere beyond the horizon of hp,
+    % this test is when the final time is less than the horizon of hp
+    % (effectively truncating the system dynamics)
+    first_assert = 0; second_assert = 0; verify_fail = 0;
+    for j = 1:100
+    timestep = -1;
+    period = randi([2, 10]); % Have greater-than-one (non-trivial) period
+    horizon_period = [randi([4, 10]), period]; % Have a non-zero (non-trivial) horizon
+    dim_state = randi([1, 3]);
+    del = DeltaDelayZ(dim_state, timestep, horizon_period);
+    lft = Ulft.random('num_deltas', 1, 'req_deltas', {del});
+    final_time = randi([0, horizon_period(1) - 2]); % Have a final timestep before the end of the horizon
+    lft_reach = generateReachabilityLft(lft, final_time);
+    options = AnalysisOptions('verbose', false, 'lmi_shift', 1e-5);
+    [result, valid] = iqcAnalysis(lft_reach, 'analysis_options', options);
+    if ~valid
+        first_assert = first_assert + 1
+    end
+    assertTrue(testCase, valid)
+    
+    % Create an equivalent reachability LFT
+    hp_equiv = [final_time + 1, 1];
+    hp_common = commonHorizonPeriod([hp_equiv; horizon_period]);
+    ind = makeNewIndices(horizon_period, hp_common);
+    total_time = sum(hp_equiv);
+    ind = ind(1:total_time); % Truncate new indices to hp_equiv
+    a = lft.a(1, ind);
+    b = lft.b(1, ind);
+    c = lft.c(1, ind);
+    d = lft.d(1, ind);
+    for i = 1:total_time
+        if i < hp_equiv(1)
+            c{i} = zeros(size(c{i}));
+            d{i} = zeros(size(d{i}));
+        elseif i == hp_equiv(1)
+            a{i} = zeros(size(a{i}));
+            b{i} = zeros(size(b{i}));
+        else
+            a{i} = zeros(size(a{i}));
+            b{i} = zeros(size(b{i}));
+            c{i} = zeros(size(c{i}));
+            d{i} = zeros(size(d{i}));
+        end
+    end
+    del_equiv = DeltaDelayZ(dim_state, timestep, hp_equiv);
+    lft_equiv = Ulft(a, b, c, d, del_equiv, 'horizon_period', hp_equiv);
+    result_equiv = iqcAnalysis(lft_equiv, 'analysis_options', options);
+    assertTrue(testCase, result_equiv.valid)
+    if ~result_equiv.valid
+        second_assert = second_assert + 1
+    end
+    perf_error = abs((result.performance - result_equiv.performance)/...
+                     result_equiv.performance);
+    verifyLessThan(testCase, perf_error, 1e-4)
+    if perf_error > 1e-4
+        verify_fail = verify_fail + 1
+    end
+    end
+end
+    
 end
 end
 
