@@ -317,6 +317,9 @@ for i = 1:total_time
 end
 if ~isempty(lft_in.timestep)
     delta_state = SequenceDelta(lft_in.delta.deltas{1});
+    if lft_in.timestep(1) % Discrete-time system
+        delta_state.deltas{1}.timestep = -1 * ones(1, total_time);
+    end 
 else
     delta_state = SequenceDelta();
 end

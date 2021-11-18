@@ -22,11 +22,12 @@ function lft_out = generateReachabilityLft(lft_in, final_time)
 %%
 
 validateattributes(lft_in, 'Ulft', {'nonempty'})
-validateattributes(final_time, 'numeric', {'nonnegatvie', 'nonempty'})
+validateattributes(final_time, 'numeric', {'nonnegative', 'nonempty'})
 
 % Find the right horizon_period
+common_hp = commonHorizonPeriod([lft_in.horizon_period; [final_time + 1, 1]]);
 [ind_reach, horizon_period] = makeNewIndices(lft_in.horizon_period,...
-                                             [final_time + 1, 1]);
+                                             common_hp);
 
 % Match horizon_period of delta, disturbance, and performance                                     
 new_delta = matchHorizonPeriod(lft_in.delta, horizon_period);
@@ -40,10 +41,10 @@ b = lft_in.b(1, ind_reach);
 c = lft_in.c(1, ind_reach);
 d = lft_in.d(1, ind_reach);
 for i = 1:total_time
-    if i < horizon_period(1)
+    if i < final_time + 1
         c{i} = zeros(size(c{i}));
         d{i} = zeros(size(d{i}));
-    elseif i == horizon_period(1)
+    elseif i == final_time + 1
         a{i} = zeros(size(a{i}));
         b{i} = zeros(size(b{i}));
     else
