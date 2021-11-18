@@ -73,7 +73,6 @@ end
 
 function testReachabilityNonTrivialPeriod(testCase)
     % This test would have failed previous to hotfix-009
-    for j = 1:100
     timestep = rand + 1e-8; % Creata specific timestep (be sure it is not -1)
     period = randi([2, 10]); % Have greater-than-one period
     horizon_period = [randi([0, 10]), period];
@@ -117,16 +116,6 @@ function testReachabilityNonTrivialPeriod(testCase)
     perf_error = abs((result.performance - result_equiv.performance)/...
                      result_equiv.performance);
     verifyLessThan(testCase, perf_error, 1e-4)  
-    if perf_error > 1e-4
-        verify_fail = verify_fail + 1
-        end
-    if ~result_equiv.valid
-        second_assert = second_assert + 1
-    end
-    if ~valid
-        first_assert = first_assert + 1
-    end
-    end
 end
     
 function testReachabilityNonTrivialPeriodShortHorizon(testCase)
@@ -134,8 +123,6 @@ function testReachabilityNonTrivialPeriodShortHorizon(testCase)
     % While the previous tested final times somewhere beyond the horizon of hp,
     % this test is when the final time is less than the horizon of hp
     % (effectively truncating the system dynamics)
-    first_assert = 0; second_assert = 0; verify_fail = 0;
-    for j = 1:100
     timestep = -1;
     period = randi([2, 10]); % Have greater-than-one (non-trivial) period
     horizon_period = [randi([4, 10]), period]; % Have a non-zero (non-trivial) horizon
@@ -146,9 +133,6 @@ function testReachabilityNonTrivialPeriodShortHorizon(testCase)
     lft_reach = generateReachabilityLft(lft, final_time);
     options = AnalysisOptions('verbose', false, 'lmi_shift', 1e-5);
     [result, valid] = iqcAnalysis(lft_reach, 'analysis_options', options);
-    if ~valid
-        first_assert = first_assert + 1
-    end
     assertTrue(testCase, valid)
     
     % Create an equivalent reachability LFT
@@ -179,18 +163,10 @@ function testReachabilityNonTrivialPeriodShortHorizon(testCase)
     lft_equiv = Ulft(a, b, c, d, del_equiv, 'horizon_period', hp_equiv);
     result_equiv = iqcAnalysis(lft_equiv, 'analysis_options', options);
     assertTrue(testCase, result_equiv.valid)
-    if ~result_equiv.valid
-        second_assert = second_assert + 1
-    end
     perf_error = abs((result.performance - result_equiv.performance)/...
                      result_equiv.performance);
     verifyLessThan(testCase, perf_error, 1e-4)
-    if perf_error > 1e-4
-        verify_fail = verify_fail + 1
-    end
-    end
 end
-    
 end
 end
 
