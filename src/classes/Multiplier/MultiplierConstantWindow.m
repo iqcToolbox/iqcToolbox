@@ -53,7 +53,7 @@ input_parser = inputParser;
 addRequired(input_parser,...
             'disturbance',...
             @(dis) validateattributes(dis,...
-                                      'DisturbanceTimeWindow',...
+                                      'DisturbanceConstantWindow',...
                                       {'nonempty'},...
                                       mfilename));
 addRequired(input_parser,...
@@ -71,12 +71,20 @@ parse(input_parser, disturbance, dim_in_lft, varargin{:})
 disturbance       = input_parser.Results.disturbance;
 quad_time_varying = input_parser.Results.quad_time_varying;
 
+assert(sum(disturbance.horizon_period) == length(dim_in_lft),...
+       'MultiplierConstantWindow:MultiplierConstantWindow',...
+       'dim_in_lft must have the same length as total_time of the disturbance')
 consistent_dims = cellfun(@(chan, dim) maxEmpty(chan) <= dim,...
                           disturbance.chan_in,...
                           num2cell(dim_in_lft));
 assert(all(consistent_dims),...
        'MultiplierConstantWindow:MultiplierConstantWindow',...
        'Disturbance channels exceeds the input dimensions of lft')
+assert(all(dim_in_lft(1) == dim_in_lft),...
+       'MultiplierConstantWindow:MultiplierConstantWindow',...
+       ['LFT input dimensions must be constant to use',...
+        'DisturbanceConstantWindow in IQC analysis'])
+
    
 % Define multiplier
 this_mult.name              = disturbance.name;
@@ -87,16 +95,18 @@ this_mult.window            = disturbance.window;
 this_mult.quad_time_varying = quad_time_varying;
 this_mult.discrete          = true;
 
+% This was from first commit
 % Define filter
 total_time = sum(this_mult.horizon_period);
 chan_in    = this_mult.chan_in{1};
 if isempty(chan_in)
-    dim_state = dim_in_lft(1);
+    dim_state = this_mult.dim_in(1);
     chan_select = eye(dim_state);
 else
     dim_state  = length(chan_in);
     cols = [eye(dim_state), zeros(dim_state, 1)];
-    chan_select = [cols(:, chan_in), zeros(dim_state, dim_in_lft - dim_state)];
+    chan_select = [cols(:, chan_in), zeros(dim_state,...
+                   this_mult.dim_in(1) - dim_state)];
 end
 chan_select = repmat({chan_select}, 1, total_time);
 chan_select = toLft(chan_select, this_mult.horizon_period);
@@ -107,6 +117,27 @@ filter.a = filter_lft.a;
 filter.b = filter_lft.b;
 filter.c = filter_lft.c;
 filter.d = filter_lft.d;
+
+% % Second commit
+% % Define filter
+% total_time = sum(this_mult.horizon_period);
+% chan_in    = this_mult.chan_in{1};
+% if isempty(chan_in)
+%     dim_state = dim_in_lft(1);
+%     chan_select = eye(dim_state);
+% else
+%     dim_state  = length(chan_in);
+%     cols = [eye(dim_state), zeros(dim_state, 1)];
+%     chan_select = [cols(:, chan_in), zeros(dim_state, dim_in_lft - dim_state)];
+% end
+% chan_select = repmat({chan_select}, 1, total_time);
+% chan_select = toLft(chan_select, this_mult.horizon_period);
+% delay      = DeltaDelayZ(this_mult.dim_in(1), -1, this_mult.horizon_period);
+% filter_lft = delay - eye(this_mult.dim_in(1));
+% filter.a = filter_lft.a;
+% filter.b = filter_lft.b;
+% filter.c = filter_lft.c;
+% filter.d = filter_lft.d;
 
 % % % Produces (for each timestep) a vector indicating which 
 % % % columns of the cols matrix should appear
@@ -132,8 +163,8 @@ filter.d = filter_lft.d;
 % % filter.d = filter_lft.d;
 
 % Define quad
-quad.q        = cell(1, total_time);
-ct = [];
+quad.q = cell(1, total_time);
+ct     = [];
 if this_mult.quad_time_varying
     decision_vars = cell(1, length(this_mult.window));
 else
@@ -142,12 +173,13 @@ end
 
 ind_dec_var = 1;
 for i = 1:total_time
-    if ~ismember(i, this_mult.window + 1) || i == this_mult.window(1) + 1
-    % If not part of window, or just the first timestep, set q to zero
+    if ~all(ismember([i, i - 1], this_mult.window + 1))
+%     if ~ismember(i, this_mult.window + 1) || i == this_mult.window(1) + 1
+    % If last timestep and this timestep are not part of window, set q to zero
         quad.q{i}   = zeros(dim_state);
     else
         % Create decision variables
-        if (i == this_mult.window(1) + 2) || this_mult.quad_time_varying
+        if ind_dec_var == 1 || this_mult.quad_time_varying
             p = sdpvar(1);
             ct = ct + ((p >= 0):['Constant Window Multiplier, ',...
                                  this_mult.name,...

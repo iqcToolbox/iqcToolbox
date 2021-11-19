@@ -5,7 +5,7 @@ classdef DisturbanceTimeWindow < Disturbance
 %   extended methods:
 %     DisturbanceTimeWindow(name, channel, window, horizon_period) :: Constructor
 %     disp(this_dis) :: Display method
-%     matchHorizonPeriod(this_perf, total_time) :: Matches disturbance properties to new horizon_period
+%     matchHorizonPeriod(this_perf, horizon_period) :: Matches disturbance properties to new horizon_period
 %     disturbanceToMultiplier(this_dis) :: Generate multiplier from disturbance
 %
 %   extended properties:
@@ -38,7 +38,7 @@ methods
     %% DISTURBANCETIMEWINDOW constructor
     %
     %     dis = DisturbanceTimeWindow(name, channel, window, horizon_period)
-    %     dis = DisturbanceTimeWindow(name) assumes channel == {1}, window == [1], and horizon_period == [0, 1].  This results in expressing the entire set of L2 signals
+    %     dis = DisturbanceTimeWindow(name) assumes channel == {[]}, window == [1], and horizon_period == [0, 1].  This results in expressing the entire set of L2 signals
     %     
     %     Variables:
     %     ---------
@@ -75,6 +75,7 @@ methods
                   ['Must provide 1 or 4 arguments to construct',...
                    'DisturbanceTimeWindow objects'])
     end
+    
     % Calling Disturbance constructor
     this_dis@Disturbance(name, chan_in, horizon_period);
     
@@ -85,7 +86,7 @@ methods
            'DisturbanceTimeWindow:DisturbanceTimeWindow',...
            ['The provided window is not consistent with the horizon_period',...
             '. Ensure all indices in the window would occur',...
-            ' within the initial horizon and first period specificed by',...
+            ' within the initial horizon and first period specified by',...
             ' horizon_period. Recall that time indices start at t0 = 0'])
     uniqueTimeIndices = @(w) length(w) == length(unique(w));
     assert(uniqueTimeIndices(window),...
@@ -111,13 +112,13 @@ methods
     
         disp@Disturbance(this_dis, 'Time-windowed')
         if length(this_dis.window) > 5
-            fprintf(['%16s with a total of %3d time-instants where the',...
+            fprintf(['%16s with a total of %3d time-instances where the',...
                      ' signal is non-zero. \n'],...
                     '',...
                     length(this_dis.window))
         else
             window = sprintf( '%2d, ', this_dis.window);
-            fprintf(['%16s which is non-zero during time-instants ',...
+            fprintf(['%16s which is non-zero during time-instances ',...
                      '[', window(1 : end - 2), '] \n'],...
                     '')
         end  
