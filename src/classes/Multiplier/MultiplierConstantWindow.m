@@ -118,50 +118,6 @@ filter.b = filter_lft.b;
 filter.c = filter_lft.c;
 filter.d = filter_lft.d;
 
-% % Second commit
-% % Define filter
-% total_time = sum(this_mult.horizon_period);
-% chan_in    = this_mult.chan_in{1};
-% if isempty(chan_in)
-%     dim_state = dim_in_lft(1);
-%     chan_select = eye(dim_state);
-% else
-%     dim_state  = length(chan_in);
-%     cols = [eye(dim_state), zeros(dim_state, 1)];
-%     chan_select = [cols(:, chan_in), zeros(dim_state, dim_in_lft - dim_state)];
-% end
-% chan_select = repmat({chan_select}, 1, total_time);
-% chan_select = toLft(chan_select, this_mult.horizon_period);
-% delay      = DeltaDelayZ(this_mult.dim_in(1), -1, this_mult.horizon_period);
-% filter_lft = delay - eye(this_mult.dim_in(1));
-% filter.a = filter_lft.a;
-% filter.b = filter_lft.b;
-% filter.c = filter_lft.c;
-% filter.d = filter_lft.d;
-
-% % % Produces (for each timestep) a vector indicating which 
-% % % columns of the cols matrix should appear
-% % channels = cell(1, total_time);
-% % for i = 1:total_time
-% %     chan_now = this_mult.chan_in{i};
-% %     if isempty(chan_now)
-% %         % Select all channels
-% %         channels{i} = [1:dim_state]';
-% %     else
-% %         % Select and sort channels depending on chan_in
-% %         channels{i} = cols(:, chan_now);
-% %         % Add zero columns for remaining 
-% %         channels{i}(end+1:dim_state) = dim_state + 1;
-% %         
-% % chan_select = cellfun(@(chan) cols(:, chan'), this_mult.chan_in,...
-% %                       'UniformOutput', false);
-% % chan_select = toLft(chan_select, this_mult.horizon_period);
-% % filter_lft = filter_lft * chan_select;
-% % filter.a = filter_lft.a;
-% % filter.b = filter_lft.b;
-% % filter.c = filter_lft.c;
-% % filter.d = filter_lft.d;
-
 % Define quad
 quad.q = cell(1, total_time);
 ct     = [];
@@ -173,8 +129,8 @@ end
 
 ind_dec_var = 1;
 for i = 1:total_time
-    if ~all(ismember([i, i - 1], this_mult.window + 1))
-%     if ~ismember(i, this_mult.window + 1) || i == this_mult.window(1) + 1
+    if ~all(ismember([i, i - 1], this_mult.window + 1)) || ...
+       (i == this_mult.horizon_period(1) && all(ismember([i, total_time], this_mult.window)))
     % If last timestep and this timestep are not part of window, set q to zero
         quad.q{i}   = zeros(dim_state);
     else
@@ -190,6 +146,16 @@ for i = 1:total_time
         end
         quad.q{i} = -p * eye(dim_state);
     end
+end
+if isequal(this_mult.window, 0:total_time)
+% A corner-case where the entire signal is specified constant (and therefore, 0)
+    p = sdpvar(1);
+    ct = ct + ((p >= 0):['Constant Window Multiplier, ',...
+                         this_mult.name,...
+                         ', p >= 0, #',...
+                         num2str(1)]);                                  %#ok<BDSCA>
+    decision_vars{ind_dec_var} = p;
+    quad.q{1} = -p * eye(dim_state);
 end
 this_mult.filter        = filter;
 this_mult.quad          = quad;

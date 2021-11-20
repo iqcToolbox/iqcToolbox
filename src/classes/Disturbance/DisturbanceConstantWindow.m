@@ -98,7 +98,7 @@ methods
                   'Must provide at least the name of the disturbance')
         case 1
             chan_in = {[]};
-            window = 0;
+            window = 0:1;
             horizon_period = [0, 1];
             override = false;
         case 4
@@ -120,7 +120,7 @@ methods
     
     % Checking inputs for specialized properties of DisturbanceConstantWindow
     total_time = sum(this_dis.horizon_period);
-    windowWithinHorizonPeriod = @(w) (max(w) + 1) <= total_time;
+    windowWithinHorizonPeriod = @(w) max(w) <= total_time;
     assert(windowWithinHorizonPeriod(window),...
            'DisturbanceConstantWindow:DisturbanceConstantWindow',...
            ['The provided window is not consistent with the horizon_period.',...
@@ -152,7 +152,8 @@ methods
             'This error may be overridden by setting override = true when',...
             ' constructing this disturbance'])
     end
-    this_dis.window = window;
+    this_dis.window   = window;
+    this_dis.override = override;
     
     this_dis = matchHorizonPeriod(this_dis);
     end
