@@ -129,11 +129,9 @@ end
 
 ind_dec_var = 1;
 for i = 1:total_time
-    if ~all(ismember([i, i - 1], this_mult.window + 1)) || ...
-       (i == this_mult.horizon_period(1) && all(ismember([i, total_time], this_mult.window)))
-    % If last timestep and this timestep are not part of window, set q to zero
-        quad.q{i}   = zeros(dim_state);
-    else
+    if ismember(i - 2, this_mult.window)
+    % If the index previous to i-1 (subtracted to compare with zero-indexed window)
+    % is within window, set q(i) = -p I
         % Create decision variables
         if ind_dec_var == 1 || this_mult.quad_time_varying
             p = sdpvar(1);
@@ -145,15 +143,17 @@ for i = 1:total_time
             ind_dec_var = ind_dec_var + 1;
         end
         quad.q{i} = -p * eye(dim_state);
+    else
+        quad.q{i} = zeros(dim_state);
     end
 end
-if isequal(this_mult.window, 0:total_time)
-% A corner-case where the entire signal is specified constant (and therefore, 0)
+if isequal(this_mult.window + 1, 1:total_time)
+% A corner-case where the entire signal is specified constant (and therefore 0)
     p = sdpvar(1);
     ct = ct + ((p >= 0):['Constant Window Multiplier, ',...
                          this_mult.name,...
                          ', p >= 0, #',...
-                         num2str(1)]);                                  %#ok<BDSCA>
+                         num2str(1)]);                                          %#ok<BDSCA>
     decision_vars{ind_dec_var} = p;
     quad.q{1} = -p * eye(dim_state);
 end

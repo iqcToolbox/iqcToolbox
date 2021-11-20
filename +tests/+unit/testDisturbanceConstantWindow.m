@@ -41,7 +41,7 @@ methods (Test)
 function testDisturbanceFullConstructor(testCase)
     name = 'd';
     chan_in = {2};
-    window = [0:3];
+    window = [0:2];
     horizon_period = [3, 1];
     override = true;
     d = DisturbanceConstantWindow(name,...
@@ -58,9 +58,9 @@ end
 
 function testFourArgConstructor(testCase)
     name = 'd';
-    chan_in = {2};
-    window = 2:3;
-    horizon_period = [2, 1];
+    chan_in = {[1;3]};
+    window = 2;
+    horizon_period = [2, 2];
     d = DisturbanceConstantWindow(name, chan_in, window, horizon_period);
     testCase.verifyEqual(d.name, 'd')
     testCase.verifyEqual(d.chan_in, repmat(chan_in, 1, sum(horizon_period)))
@@ -74,14 +74,14 @@ function testOneArgConstructor(testCase)
     d = DisturbanceConstantWindow(name);
     testCase.verifyEqual(d.name, 'd')
     testCase.verifyEqual(d.chan_in, {[]})
-    testCase.verifyEqual(d.window, 0:1)
+    testCase.verifyEqual(d.window, 0)
     testCase.verifyEqual(d.horizon_period, [0, 1])
     testCase.verifyEqual(d.override, false)
 end
 
 function testMixingNonperiodicAndPeriodicTimesteps(testCase)
     % Should throw an error without override (because window includes periodic and non-periodic portions)
-    window = [0:2];
+    window = [0:1];
     horizon_period = [2, 2];
     bad_d = @()DisturbanceConstantWindow('d', {[]}, window, horizon_period);
     testCase.verifyError(bad_d,...

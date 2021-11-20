@@ -23,7 +23,7 @@ function testReachabilityWithConstantSignal(testCase)
     lft = toLft(g);
     final_time = 5;
     lft_reach = generateReachabilityLft(lft, final_time);
-    window = 0:final_time;
+    window = 0 : final_time - 1;
     d = DisturbanceConstantWindow('dis',{[]}, window, lft_reach.horizon_period);
     lft_reach = lft_reach.addDisturbance({d});
     options = AnalysisOptions('verbose', true, 'lmi_shift', 1e-7);
@@ -38,8 +38,6 @@ function testReachabilityWithConstantSignal(testCase)
     testCase.verifyLessThan(abs(perf_diff)/perf_sim, 1e-3)
 end
 
-function test
-end
 end
 end
 
