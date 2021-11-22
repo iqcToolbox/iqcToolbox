@@ -1,29 +1,30 @@
 classdef DisturbanceConstantWindow < Disturbance
-%% DISTURBANCECONSTANTWINDOW class for the set of L2 signals that are non-zero
+%% DISTURBANCECONSTANTWINDOW class for the set of L2 signals that are constant
 % in a window of time-steps. This extends the base class Disturbance.
 %
 %   extended methods:
 %     DisturbanceConstantWindow(name, channel, window, horizon_period) :: Constructor
 %     disp(this_dis) :: Display method
 %     matchHorizonPeriod(this_perf, horizon_period) :: Matches disturbance properties to new horizon_period
-%     disturbanceToMultiplier(this_dis) :: Generate multiplier from disturbance
+%     disturbanceToMultiplier(this_dis, 'dim_in_lft', dim_in_lft) :: Generate multiplier from disturbance
 %
 %   extended properties:
-%     window : array of naturals :: set of contiguous time-steps in which signal is constant (index starting from t0 = 0)
+%     window : array of naturals :: time-instances in which the disturbance signal is constant from the time-instances immediately 
+%                                   preceding the given time-instances(index starting from t0 = 0)
 %                 this window is assumed to repeat periodically according to the horizon_period.
-%                 For example, if the signals are constant for all time, 
-%                     and horizon_period = [0, 1], set window = 0;
-%                     if horizon_period = [2, 3], set window = [0:4]. 
-%                 Instead, if horizon_period = [3, 2], (i.e., it is [3, 2]-eventually periodc) 
-%                     the initial timestep of a signal is nonzero, 
-%                     and then switches on-and-off during the periodic portion,
-%                     set window = [0, 3]. 
-%                 Instead, if horizon_period = [3, 2], (i.e., it is [3, 2]-eventually periodic) 
-%                     the first three timesteps (i.e., in the non-periodic portion) are constant
-%                     then set window = [0:2];
+%                 For example, if the signals are constant for all time, (i.e., d_1 = d_0, d_2 = d_1, etc.)
+%                    and horizon_period = [0, 1], set window = 1;
+%                 Instead, if horizon_period = [0, 2], (i.e., it is [0, 2]-eventually periodic)
+%                    and d_0 = d_1, d_2 = d_3, d_4 = d_5, etc. (the signal is constant within each period, but changes between periods)
+%                    set window = 1 (this specifies d_1 - d_0 = 0, and the constraint is extended every two steps because the system is [0, 2]-eventually periodic
 %                 Instead, if horizon_period = [3, 3],
-%                     and the first two timesteps of each period are constant,
-%                     then set window = [3:4];
+%                    the signal during the first three time instances (i.e. in the non-periodic portion) is constant
+%                    but then may change arbitrarily afterward,
+%                    set window = 1:2 (this specifices d_1 = d_0, and d_2 = d_1) 
+%                 Instead, if horizon_period = [3, 3], 
+%                   the signal during the first three time instances (i.e. in the non-periodic portion) is constant
+%                    and d_3 = d_2, d_6 = d_5, d_9 = d_8, d_12 = d_11, etc. (i.e., the first two timesteps during every period are constant)
+%                    then set window = 1:3 (this specifies d_1 = d_0, d_2 = d_1, and d_3 = d_2. Then, because d_3 pertains to the periodic portion the d_3i = d_3i - 1 constraint repeats every period)
 %     override : boolean :: indicates that user wishes to override an error thrown when
 %                 window connects timesteps between the non-periodic and periodic segments    
 %
@@ -35,7 +36,7 @@ classdef DisturbanceConstantWindow < Disturbance
 %%
 
 properties
-    window (1, :) double {mustBeInteger, mustBeNonnegative}
+    window (1, :) double {mustBeInteger, mustBePositive}
     override logical
 end
 
@@ -56,38 +57,43 @@ methods
     %       Input:
     %          name : char array :: unique ID of disturbance signal (ex. 'sensor_noise')
     %          channel : cell array of columns of naturals :: channels of signals pertaining to disturbance class
-    %          window : array of naturals :: set of contiguous time-steps wherein the signal is constant
-    %                                        (index starting from t0 = 0)
-    %                                        this window is assumed to repeat periodically according to the horizon_period.
-    %                                        For example, if the signals are constant for all time, 
-    %                                            and horizon_period = [0, 2], set window = [0:1];
-    %                                            if horizon_period = [2, 3], set window = [0:4]. 
-    %                                        Instead, if horizon_period = [3, 2], (i.e., it is [3, 2]-eventually periodc) 
-    %                                            the first three timesteps (i.e., in the non-periodic portion) 
-    %                                            then set window = [0:2];
-    %                                        Instead, if horizon_period = [3, 3],
-    %                                            and the first two timesteps of each period are constant,
-    %                                            then set window = [3:4];
-    %                                        Specifying that the last timestep of the non-periodic portion
-    %                                            is the same as the first timestep of the periodic portion has the
+    %          window : array of naturals :: time-instances in which the disturbance signal is constant between the given time-instances and the immediately 
+    %                                            preceding time-instances (index starting from t0 = 0)
+    %                                            this window is assumed to repeat periodically according to the horizon_period.
+    %                                            For example, if the signals are constant for all time, (i.e., d_1 = d_0, d_2 = d_1, etc.)
+    %                                                and horizon_period = [0, 1], set window = 1;
+    %                                            Instead, if horizon_period = [0, 2], (i.e., it is [0, 2]-eventually periodic)
+    %                                                and d_0 = d_1, d_2 = d_3, d_4 = d_5, etc. (the signal is constant within each period, but changes between periods)
+    %                                                set window = 1 (this specifies d_1 - d_0 = 0, and the constraint is extended every two steps because the system is [0, 2]-eventually periodic
+    %                                            Instead, if horizon_period = [3, 3],
+    %                                                the signal during the first three time instances (i.e. in the non-periodic portion) is constant
+    %                                                but then may change arbitrarily afterward,
+    %                                                set window = 1:2 (this specifices d_1 = d_0, and d_2 = d_1) 
+    %                                            Instead, if horizon_period = [3, 3], 
+    %                                               the signal during the first three time instances (i.e. in the non-periodic portion) is constant
+    %                                                and d_3 = d_2, d_6 = d_5, d_9 = d_8, d_12 = d_11, etc. (i.e., the first two timesteps during every period are constant)
+    %                                                then set window = 1:3 (this specifies d_1 = d_0, d_2 = d_1, and d_3 = d_2. Then, because d_3 pertains to the periodic portion the d_3i = d_3i - 1 constraint repeats every period)
+    %                                        Specifying that the last timestep of the non-periodic portion (i.e., ismember(horizon_period(1), window))
+    %                                            is the same as the first timestep of the periodic portion has 
     %                                            the consequence of also specifying the last timestep of the
     %                                            periodic portion is the same as the first timestep in the next period.
     %                                            Because of this, errors are thrown unless the user acknowledges such behavior
     %                                            by setting `override = true`.
-    %                                            For example, if hp = [1, 2], and window = [0, 1], this specifies that
-    %                                            u_0 == u_1, u_2 == u_3, u_4 == u_5, etc.
-    %                                            If you wish to only specify u_0 == u_1, use a one-step-long horizon in the
-    %                                            horizon_period: in the last example, hp = [2, 2], and window = [0, 1].
+    %                                            For example, if hp = [1, 2], and window = [1, 2], this specifies that
+    %                                            d_1 == d_0, d_2 == d_1, d_4 == d_3, etc.
+    %                                            If you wish to only specify u_0 == u_1, expand the non-periodic portion of the 
+    %                                            horizon_period by one timestep and specify the same window:
+    %                                            from the last example, this would mean changing to hp = [2, 2], and keeping window = [1, 2].
     %                                            original_hp = lft.horizon_period;
     %                                            new_hp = original_hp + [1, 0];
     %                                            lft = lft.matchHorizonPeriod(new_hp)
-    %                                            dis = DisturbanceConstantWindow('dis', {[]}, [0, 1], new_hp;
+    %                                            dis = DisturbanceConstantWindow('dis', {[]}, [1, 2], new_hp;
     %                                            lft = lft.addDisturbance({dis})
     %          horizon_period : 1 x 2 array of naturals :: horizon and period of properties of disturbance class
     %          override : boolean :: indicates that the user wishes to override an error thrown by connecting timesteps
     %                                            from the non-periodic portion to the periodic portion
     %       Output:
-    %          this_dis : DisturbanceConstantWindow object :: the produced disturbance set
+    %          this_dis : DisturbanceConstantWindow object :: the produced disturbance object specifying the admissible set of disturbances
     %
     %     See also DisturbanceConstantWindow
     
@@ -97,10 +103,12 @@ methods
             error('DisturbanceConstantWindow:DisturbanceConstantWindow',...
                   'Must provide at least the name of the disturbance')
         case 1
+            % This produces the trivial "constant at all time" signal (which must therefore be 0)
+            % override set to true to enable this, but override should generally be set to false
             chan_in = {[]};
-            window = 0;
+            window = 1;
             horizon_period = [0, 1];
-            override = false;
+            override = true;
         case 4
             override = false;
         case 5
@@ -120,9 +128,9 @@ methods
     
     % Checking inputs for specialized properties of DisturbanceConstantWindow
     total_time = sum(this_dis.horizon_period);
-    withinHorizonPeriod = @(w) (max(w) + 1) < total_time;
-    fillsHorizonPeriod = @(w) isequal(w + 1, 1:total_time);
-    % Only allow ismember(total_time, window + 1) if treating corner case 0 signal 
+    withinHorizonPeriod = @(w) max(w) < total_time;
+    fillsHorizonPeriod = @(w) isequal(w, 1:total_time);
+    % Only allow ismember(total_time, window) if treating corner-case "0" signal 
     assert(withinHorizonPeriod(window) || fillsHorizonPeriod(window),...
            'DisturbanceConstantWindow:DisturbanceConstantWindow',...
            ['The provided window is not consistent with the horizon_period.',...
@@ -130,17 +138,17 @@ methods
             ' within the initial horizon and first period specified by',...
             ' horizon_period. Recall that time indices start at t0 = 0'])
     % Error logic if window spans non-periodic and periodic portion
-    betweenNonperiodAndPeriod = @(w, hp) ismember(hp(1), w + 1);
+    betweenNonperiodAndPeriod = @(w, hp) ismember(hp(1), w);
     if betweenNonperiodAndPeriod(window, this_dis.horizon_period) && ~override
         error('DisturbanceConstantWindow:DisturbanceConstantWindow',...
-           ['The provided window should not specify the final timestep',...
-            ' of the non-periodic portion',...
+           ['The provided window should not specify the first timestep',...
+            ' of the periodic portion',...
             ' because the user may unintentially be specifying additional',...
             ' undesired constraints.\n\n',...
             'If you want to specify the signal is constant between the last',...
-            ' non-periodic time and the first periodic time,',...
+            ' non-periodic time instant and the first periodic time instant,',...
             ' (i.e., ismember(hp(1), window)), but ensure that the last instant of',...
-            ' a period may be different from the first instant of a period,',...
+            ' a period may be different from the first instant of the next period,',...
             ' make an LFT and disturbance whose',...
             ' hp is hp_new = hp + [1, 0], and reconstruct this',...
             ' disturbance with hp_new and the same window.\n\n',...
@@ -166,15 +174,16 @@ methods
     %  See also Ulft.disp, SequenceDisturbance.dsip, Disturbance.disp
     
         disp@Disturbance(this_dis, 'Constant-in-a-window ')
-        if length(this_dis.window) > 5
-            fprintf(['%16s with a total of %3d time-instances where the',...
+        if length(this_dis.window) > 2
+            fprintf(['%16s with a total of %3d timesteps wherein the',...
                      ' signal is constant. \n'],...
                     '',...
                     length(this_dis.window))
         else
-            window = sprintf( '%2d, ', this_dis.window);
+            
+            window = sprintf('[%3d, %3d] ', [this_dis.window-1; this_dis.window]);
             fprintf(['%16s which is constant between time-instances ',...
-                     '[', window(1 : end - 2), '] \n'],...
+                    window(1 : end - 2), '] \n'],...
                     '')
         end  
     end
@@ -225,6 +234,10 @@ methods
             window = [window, find(this_dis.window(i) == (indices - 1))];
         end
         window = sort(window - 1);
+        if isequal(this_dis.window, 1:sum(this_dis.horizon_period))
+        % Corner case where signal is constant through all time
+            window = 1:sum(new_horizon_period);
+        end
         % Shift window indices to start at t0 = 0
         this_dis.window         = window;
         this_dis.horizon_period = new_horizon_period;

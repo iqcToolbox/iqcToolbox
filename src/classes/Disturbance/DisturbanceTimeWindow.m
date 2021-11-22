@@ -6,7 +6,7 @@ classdef DisturbanceTimeWindow < Disturbance
 %     DisturbanceTimeWindow(name, channel, window, horizon_period) :: Constructor
 %     disp(this_dis) :: Display method
 %     matchHorizonPeriod(this_perf, horizon_period) :: Matches disturbance properties to new horizon_period
-%     disturbanceToMultiplier(this_dis) :: Generate multiplier from disturbance
+%     disturbanceToMultiplier(this_dis, 'dim_in_lft', dim_in_lft) :: Generate multiplier from disturbance
 %
 %   extended properties:
 %     window : array of naturals :: time-steps in which signal is non-zero (index starting from t0 = 0)
@@ -56,7 +56,7 @@ methods
     %                                            set window = [0, 3]. 
     %          horizon_period : 1 x 2 array of naturals :: horizon and period of properties of disturbance class
     %       Output:
-    %          this_dis : DisturbanceTimeWindow object :: the produced disturbance set
+    %          this_dis : DisturbanceTimeWindow object :: the produced disturbance object specifying the admissible set of disturbances
     %
     %     See also DisturbanceTimeWindow
     
@@ -117,7 +117,7 @@ methods
                     '',...
                     length(this_dis.window))
         else
-            window = sprintf( '%2d, ', this_dis.window);
+            window = sprintf( '%3d, ', this_dis.window);
             fprintf(['%16s which is non-zero during time-instances ',...
                      '[', window(1 : end - 2), '] \n'],...
                     '')

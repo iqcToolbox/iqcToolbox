@@ -9,8 +9,9 @@ classdef MultiplierConstantWindow < MultiplierDisturbance
 %  extended properties:
 %    chan_in : cell array of column vectors of naturals :: The input channels of the LFT pertaining 
 %                                                          to this disturbance
-%    window : array of integers :: the set of multiple, contiguous timesteps (indexing from 0) in which 
-%                                  the disturbance is constant
+%    window : array of integers :: time-instances in which the disturbance signal is constant between 
+%                                  the given time-instances and the immediately preceding time-instances 
+%                                  (index starting from t0 = 0)
 %
 %  See also MultiplierConstantWindow.MultiplierConstantWindow
 
@@ -33,8 +34,8 @@ methods
 function this_mult = MultiplierConstantWindow(disturbance, dim_in_lft, varargin)
 %% MULTIPLIERCONSTANTWINDOW constructor
 %
-%  multiplier = disturbanceToMultiplier(disturbance, 'dim_in_lft', dim_in_lft, 'quad_time_varying', true)
-%  multiplier = disturbanceToMultiplier(disturbance, 'dim_in_lft', dim_in_lft) assumes the input above
+%  multiplier = MultiplierConstantWindow(disturbance, 'dim_in_lft', dim_in_lft, 'quad_time_varying', true)
+%  multiplier = MultiplierConstantWindow(disturbance, 'dim_in_lft', dim_in_lft) assumes the input above
 %
 %  Variables:
 %  ---------
@@ -95,7 +96,6 @@ this_mult.window            = disturbance.window;
 this_mult.quad_time_varying = quad_time_varying;
 this_mult.discrete          = true;
 
-% This was from first commit
 % Define filter
 total_time = sum(this_mult.horizon_period);
 chan_in    = this_mult.chan_in{1};
@@ -129,9 +129,8 @@ end
 
 ind_dec_var = 1;
 for i = 1:total_time
-    if ismember(i - 2, this_mult.window)
-    % If the index previous to i-1 (subtracted to compare with zero-indexed window)
-    % is within window, set q(i) = -p I
+    if ismember(i, this_mult.window + 1)
+    % If i is within (window + 1), set q(i) = -p I
         % Create decision variables
         if ind_dec_var == 1 || this_mult.quad_time_varying
             p = sdpvar(1);
@@ -147,7 +146,7 @@ for i = 1:total_time
         quad.q{i} = zeros(dim_state);
     end
 end
-if isequal(this_mult.window + 1, 1:total_time)
+if isequal(this_mult.window, 1:total_time)
 % A corner-case where the entire signal is specified constant (and therefore 0)
     p = sdpvar(1);
     ct = ct + ((p >= 0):['Constant Window Multiplier, ',...
