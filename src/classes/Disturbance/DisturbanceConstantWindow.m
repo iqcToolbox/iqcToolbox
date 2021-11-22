@@ -155,6 +155,7 @@ methods
             'This error may be overridden by setting override = true when',...
             ' constructing this disturbance'])
     end
+    uniqueTimeIndices = @(w) length(w) == length(unique(w));
     assert(uniqueTimeIndices(window),...
        'DisturbanceConstantWindow:DisturbanceConstantWindow',...
        ['The provided window has duplicate time indices, ensure the',...
@@ -185,9 +186,10 @@ methods
                     length(this_dis.window))
         else
             
-            window = sprintf('[%3d, %3d] ', [this_dis.window-1; this_dis.window]);
+            window_str = sprintf('[%3d, %3d] ',...
+                                 [this_dis.window-1; this_dis.window]);
             fprintf(['%16s which is constant between time-instances ',...
-                    window(1 : end - 2), '] \n'],...
+                    window_str(1 : end - 2), '] \n'],...
                     '')
         end  
     end
@@ -232,18 +234,18 @@ methods
 
         % Set properties according to new indices
         this_dis.chan_in        = this_dis.chan_in(indices);
-        window = [];
+        window = [];                                                            %#ok<PROPLC>
         for i = 1 : length(this_dis.window)
             % Find when new time indices coincide with old window indices
-            window = [window, find(this_dis.window(i) == (indices - 1))];
+            window = [window, find(this_dis.window(i) == (indices - 1))];       %#ok<AGROW,PROPLC>
         end
-        window = sort(window - 1);
+        window = sort(window - 1);                                              %#ok<PROPLC>
         if isequal(this_dis.window, 1:sum(this_dis.horizon_period))
         % Corner case where signal is constant through all time
-            window = 1:sum(new_horizon_period);
+            window = 1:sum(new_horizon_period);                                 %#ok<PROPLC>
         end
         % Shift window indices to start at t0 = 0
-        this_dis.window         = window;
+        this_dis.window         = window;                                       %#ok<PROPLC>
         this_dis.horizon_period = new_horizon_period;
         this_dis                = matchHorizonPeriod(this_dis);
     end
