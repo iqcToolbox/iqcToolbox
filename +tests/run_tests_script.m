@@ -17,8 +17,8 @@ top_path(end - length(mfilename):end) =  [];
 top_path = fullfile(top_path,'..','src');
 
 cov = CodeCoveragePlugin.forFolder(top_path,...
-                                   'IncludingSubfolders', true);%,...
-%                                    'Producing', CoberturaFormat('+tests/coverage.xml'));
+                                   'IncludingSubfolders', true,...
+                                   'Producing', CoberturaFormat('+tests/coverage.xml'));
 runner.addPlugin(cov)
 %%                   
 result = runner.run(suite);

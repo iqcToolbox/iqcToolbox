@@ -74,8 +74,7 @@ methods
             error('DisturbanceTimeWindow:DisturbanceTimeWindow',...
                   ['Must provide 1 or 4 arguments to construct',...
                    'DisturbanceTimeWindow objects'])
-    end
-    
+    end    
     % Calling Disturbance constructor
     this_dis@Disturbance(name, chan_in, horizon_period);
     

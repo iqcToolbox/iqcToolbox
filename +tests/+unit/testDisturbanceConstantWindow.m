@@ -1,33 +1,41 @@
 %% Requirements:
-%  1. DisturbanceTimeWindow shall be defined by it's name, the input
-%      channels of interest, the window of time-instances when the
-%      signal of interest is non-zero, and the horizon_period of the
-%      channels and time-window
+%  1. DisturbanceConstantWindow shall be defined by it's name, the input
+%      channels of interest, the time-instances when the signal is constant, 
+%      the horizon_period of the channels and time-window
 %  2. Upon construction, and when queried by user, it shall display the
 %      information described in (1).
 %
-%  3. If dimension and/or bound information is not provided by the user, by
-%      default the channel shall be {1}, the window shall be [0], and the
-%      horizon_period shall be [0, 1].
+%  3. If channel information is not provided by the user, by
+%      default the disturbance shall apply to all channels (chan_in = {[]}),
+%      the window shall be [0], and the horizon_period shall be [0, 1]. This
+%      will produce the trivial zero-signal.
 %
-%  4. If the user provides no name, DisturbanceTimeWindow shall throw an 
+%  4. If the user provides no name, DisturbanceConstantWindow shall throw an 
 %      exception
-%  5. If the user provides a channel that is not a cell of vectors of
-%      natural numbers DisturbanceTimeWindow shall throw an exception
+%  5. If the user provides a channel that has more than one cell-entries,
+%      DisturbanceConstantWindow shall throw an exception
 %  6. If the user provides a window and horizon_period that are
-%      inconsistent with each other, DisturbanceTimeWindow shall throw an
+%      inconsistent with each other, DisturbanceConstantWindow shall throw an
 %      exception
 %  7. If the user provides a window with duplicate time indices,
-%      DisturbanceTimeWindow shall throw an exception
+%      DisturbanceConstantWindow shall throw an exception
+%  8. If the user provides a window that bridges the non-periodic and periodic
+%      portions of the horizon_period, DisturbanceConstantWindow shall throw
+%      an error, unless contradicted by the variable "override"
+%  9. If the user provides a window that bridges the last time instance of a
+%      period with the first time instance of the next period, 
+%      DisturbanceConstantWindow shall throw an error, unless the window
+%      fills the entire horizon_period, in which the trivial zero-signal will be
+%      specified.
 %
-%  7. DisturbanceTimeWindow shall ensure that it's properties are consistent 
+%  10. DisturbanceConstantWindow shall ensure that it's properties are consistent 
 %      with its current horizon_period property
-%  8. DisturbanceTimeWindow shall be capable of changing it's properties to 
+%  11. DisturbanceConstantWindow shall be capable of changing it's properties to 
 %      match a newly input horizon_period, as long as the new 
 %      horizon_period is consistent with the prior horizon_period
 %
-%  9. DisturbanceTimeWindow shall be capable of generating a
-%      MultiplierTimeWindow from a DisturbanceTimeWindow object
+%  12. DisturbanceConstantWindow shall be capable of generating a
+%      MultiplierConstantWindow from a DisturbanceConstantWindow object
 
 %%
 %  Copyright (c) 2021 Massachusetts Institute of Technology 
@@ -108,9 +116,26 @@ function testMixingNonperiodicAndPeriodicTimesteps(testCase)
 end
 
 function testMatchHorizonPeriodCorrectness(testCase)
-    horizon_period = [randi([0, 10]), randi([1, 10])];
-    total_time = sum(horizon_period);
-    window = unique(randi([1, total_time]));
+    horizon_period = [2, 5];
+    window = [1, 2, 4];
+    override = true;
+    d = DisturbanceConstantWindow('dis', {[]}, window, horizon_period,override);
+    dim_in = ones(1, sum(horizon_period));
+    mult = MultiplierConstantWindow(d, dim_in);
+    q_class = cellfun(@class, mult.quad.q, 'UniformOutput', false);
+    q_true = {'double', 'sdpvar',...  % Non-periodic portion
+              'sdpvar', 'double', 'sdpvar', 'double', 'double'}; % Periodic portion
+    % Establish correctness before changing horizon_period
+    testCase.assertEqual(q_class, q_true)
+    
+    new_hp = [6, 10];
+    d_new_hp = d.matchHorizonPeriod(new_hp);
+    dim_in = ones(1, sum(new_hp));
+    mult = MultiplierConstantWindow(d_new_hp, dim_in);
+    q_class = cellfun(@class, mult.quad.q, 'UniformOutput', false);
+    q_true = {'double', 'sdpvar', 'sdpvar', 'double', 'sdpvar', 'double',...  % Non-periodic portion
+              'double', 'sdpvar', 'double', 'sdpvar', 'double', 'double', 'sdpvar', 'double', 'sdpvar', 'double'}; % Periodic portion
+    testCase.verifyEqual(q_class, q_true)
 end
 
 function testFullWindow(testCase)
@@ -219,5 +244,4 @@ end
 end
 
 %%  CHANGELOG
-% Sep. 28, 2021 (v0.6.0)
-% Aug. 26, 2021 (v.0.5.0): Initial release - Micah Fry (micah.fry@ll.mit.edu)
+% Nov. 18, 2021: Added after v0.6.0 - Micah Fry (micah.fry@ll.mit.edu)
