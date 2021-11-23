@@ -44,10 +44,7 @@ for i = 1:total_time
     if i < final_time + 1
         c{i} = zeros(size(c{i}));
         d{i} = zeros(size(d{i}));
-    elseif i == final_time + 1
-        a{i} = zeros(size(a{i}));
-        b{i} = zeros(size(b{i}));
-    else
+    elseif i > final_time + 1
         a{i} = zeros(size(a{i}));
         b{i} = zeros(size(b{i}));
         c{i} = zeros(size(c{i}));

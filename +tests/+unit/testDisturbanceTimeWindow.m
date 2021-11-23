@@ -6,9 +6,9 @@
 %  2. Upon construction, and when queried by user, it shall display the
 %      information described in (1).
 %
-%  3. If dimension and/or bound information is not provided by the user, by
-%      default the channel shall be {1}, the window shall be [0], and the
-%      horizon_period shall be [0, 1].
+%  3. If channel information is not provided by the user, by
+%      default the disturbance shall apply to all channels (chan_in = {[]}),
+%      the window shall be [0], and the horizon_period shall be [0, 1].
 %
 %  4. If the user provides no name, DisturbanceTimeWindow shall throw an 
 %      exception

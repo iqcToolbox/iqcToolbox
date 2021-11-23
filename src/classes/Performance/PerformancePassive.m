@@ -5,7 +5,7 @@ classdef PerformancePassive < Performance
 %   extended methods:
 %     PerformancePassive(name, chan_out, chan_in, horizon_period) :: Constructor
 %     disp(this_perf) :: Display method
-%     matchHorizonPeriod(this_perf, total_time) :: Matches performance properties to new horizon_period
+%     matchHorizonPeriod(this_perf, horizon_period) :: Matches performance properties to new horizon_period
 %     performanceToMultiplier(this_perf) :: Generate multiplier from performance
 
 %%
@@ -198,5 +198,4 @@ end
 end
 
 %%  CHANGELOG
-% Sep. 28, 2021 (v0.6.0)
-% Aug. 26, 2021 (v.0.5.0): Initial release - Micah Fry (micah.fry@ll.mit.edu)
+% Oct. 7, 2021: Added after v0.6.0 - Micah Fry (micah.fry@ll.mit.edu)

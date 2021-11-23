@@ -5,7 +5,7 @@ classdef DisturbanceL2 < Disturbance
 %   extended methods:
 %     DisturbanceL2(name, channel, horizon_period) :: Constructor
 %     disp(this_dis) :: Display method
-%     matchHorizonPeriod(this_perf, total_time) :: Matches disturbance properties to new horizon_period
+%     matchHorizonPeriod(this_perf, horizon_period) :: Matches disturbance properties to new horizon_period
 %     disturbanceToMultiplier(this_dis) :: Generate multiplier from disturbance
 %
 %  See also DisturbanceL2.DisturbanceL2, Disturbance

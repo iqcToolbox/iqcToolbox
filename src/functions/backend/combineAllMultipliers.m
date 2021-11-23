@@ -10,9 +10,9 @@ function mult = combineAllMultipliers(mult_del, mult_dis, mult_perf, dim_out)
 %      mult_del : MultiplierDeltaCombined :: MultiplierDelta subclass representing all combined Delta multipliers
 %      mult_dis : MultiplierDisturbanceCombined :: MultiplierDisturbance subclass representing all combined Disturbance multipliers
 %      mult_perf : MultiplierPerformanceCombined :: MultiplierPerformance subclass representing all combined Performance multipliers
-%      dim_out : arry of naturals :: output dimensions of Ulft these multipliers pertain to (size(lft, 1))
+%      dim_out : arry of naturals :: output dimensions of Ulft (i.e., (size(lft, 1)))
 %    Output:
-%      mult : MultiplierDeltaCombined :: Representation of combined multiplier. The fact that it is a MultiplierDelta object
+%      mult : MultiplierDeltaCombined :: Representation of combined multiplier. The fact that it is a MultiplierPerformance object
 %                                        has no intrinsic meaning, it is simply an available class 
 %
 %  See also iqcAnalysis, MultiplierDeltaCombined, MultiplierDisturbanceCombined, MultiplierPerformanceCombined
@@ -93,9 +93,11 @@ for i = 1:total_time
     
     % Constructing filter matrices for combined, augmented filter
     a{i}   = blkdiag(a_del{i}, a_perf{i}, a_dis{i});
-    b1{i}  = blkdiag(b1_del{i}, b1_perf{i});
+    b1{i}  = blkdiag(b1_del{i}, [b1_perf{i};...
+                                 zeros(size(a_dis{i},1), size(b1_perf{i},2))]);
     b2{i}  = blkdiag(b2_del{i}, [b2_perf{i}; b_dis{i}]);
-    c1{i}  = blkdiag(c1_del{i}, c1_perf{i});
+    c1{i}  = blkdiag(c1_del{i}, [c1_perf{i},...
+                                 zeros(size(c1_perf{i},1), size(a_dis{i},1))]);
     c2{i}  = blkdiag(c2_del{i}, c2_perf{i}, c_dis{i});
     d11{i} = blkdiag(d11_del{i}, d11_perf{i});
     d12{i} = blkdiag(d12_del{i}, d12_perf{i});

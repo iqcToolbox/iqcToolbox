@@ -71,6 +71,42 @@ function testReachabilityDelayDynamics(testCase)
     verifyLessThan(testCase, abs(result.performance - gain^3), 1e-2)
 end
 
+function testReachabilityMemoryless(testCase)
+    % Reachability analysis should be the same for memoryless systems
+    dim_outin = 2;
+    rct_object = zeros(dim_outin);
+    for i = 1:3
+        var = randatom('ureal');
+        base = rand(dim_outin);
+        base(base < .5) = 0;
+        base(base >= .5) = 1;
+        rct_object = rct_object + var * base;
+    end  
+    rct_object = uss(rct_object);
+    rct_result = wcgain(rct_object);
+    assumeTrue(testCase, isfinite(rct_result.LowerBound))
+    assumeTrue(testCase, isfinite(rct_result.UpperBound))
+    lft = rctToLft(rct_object);
+    lft = lft + zeros(dim_outin) * DeltaDelayZ(dim_outin);
+    options = AnalysisOptions('verbose', false, 'lmi_shift', 1e-7);
+    result = iqcAnalysis(lft, 'analysis_options', options);
+    % Ensure IQC analysis is returning correct results for LTI system
+    verifyGreaterThan(testCase, result.performance, rct_result.LowerBound * .99)
+    verifyLessThan(testCase, result.performance, rct_result.UpperBound * 1.01)
+    
+    lft_reach = generateReachabilityLft(lft, 0);
+    result2 = iqcAnalysis(lft_reach, 'analysis_options', options);
+    % Ensure IQC analysis is returning correct results for LTI system
+    diff_perf = abs(result.performance - result2.performance);
+    testCase.verifyLessThan(diff_perf / result.performance, 1e-4)
+    
+    lft_reach = generateReachabilityLft(lft, 15);
+    result2 = iqcAnalysis(lft_reach, 'analysis_options', options);
+    % Ensure IQC analysis is returning correct results for LTI system
+    diff_perf = abs(result.performance - result2.performance);
+    testCase.verifyLessThan(diff_perf / result.performance, 1e-4)
+end
+
 function testReachabilityNonTrivialPeriod(testCase)
     % This test would have failed previous to hotfix-009
     timestep = rand + 1e-8; % Creata specific timestep (be sure it is not -1)
@@ -99,10 +135,7 @@ function testReachabilityNonTrivialPeriod(testCase)
         if i < hp_equiv(1)
             c{i} = zeros(size(c{i}));
             d{i} = zeros(size(d{i}));
-        elseif i == hp_equiv(1)
-            a{i} = zeros(size(a{i}));
-            b{i} = zeros(size(b{i}));
-        else
+        elseif i > hp_equiv(1)
             a{i} = zeros(size(a{i}));
             b{i} = zeros(size(b{i}));
             c{i} = zeros(size(c{i}));
@@ -149,10 +182,7 @@ function testReachabilityNonTrivialPeriodShortHorizon(testCase)
         if i < hp_equiv(1)
             c{i} = zeros(size(c{i}));
             d{i} = zeros(size(d{i}));
-        elseif i == hp_equiv(1)
-            a{i} = zeros(size(a{i}));
-            b{i} = zeros(size(b{i}));
-        else
+        elseif i > hp_equiv(1)
             a{i} = zeros(size(a{i}));
             b{i} = zeros(size(b{i}));
             c{i} = zeros(size(c{i}));
