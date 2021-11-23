@@ -31,6 +31,8 @@ end
 
 methods (Test)
 function testReachabilityWithConstantSignal(testCase)
+     rng(1637611100) % failed locally
+     rng(1637629395) % Failed online
     % Check analysis result against simulation result
     zero = [];
     pole = -.5;
@@ -45,7 +47,7 @@ function testReachabilityWithConstantSignal(testCase)
     window = 1 : final_time;
     d = DisturbanceConstantWindow('dis',{[]}, window, lft_reach.horizon_period);
     lft_reach = lft_reach.addDisturbance({d});
-    options = AnalysisOptions('verbose', false, 'lmi_shift', 1e-6);
+    options = AnalysisOptions('verbose', true, 'lmi_shift', 1e-5);
     [result, valid] = iqcAnalysis(lft_reach, 'analysis_options', options);
     assertTrue(testCase, valid)
 
@@ -67,8 +69,8 @@ function testReachabilityWithConstantSignal(testCase)
     end  
     rct_object = uss(rct_object);
     rct_result = wcgain(rct_object);
-    assumeTrue(testCase, isfinite(rct_result.LowerBound))
-    assumeTrue(testCase, isfinite(rct_result.UpperBound))
+    testCase.assumeTrue(isfinite(rct_result.LowerBound))
+    testCase.assumeTrue(isfinite(rct_result.UpperBound))
     lft = rctToLft(rct_object);
     lft = lft - zeros(3) * DeltaDelayZ(3);
     % Make a reachability LFT to allow specification of Disturbance to be constant over a subset of time
@@ -81,8 +83,9 @@ function testReachabilityWithConstantSignal(testCase)
                                   lft_reach.horizon_period);
     lft_reach = lft_reach.addDisturbance({d});
     result = iqcAnalysis(lft_reach, 'analysis_options', options);
-    verifyGreaterThan(testCase, result.performance, rct_result.LowerBound * .99)
-    verifyLessThan(testCase, result.performance, rct_result.UpperBound * 1.01)
+    testCase.assertTrue(result.valid)
+    testCase.verifyGreaterThan(result.performance, rct_result.LowerBound * .99)
+    testCase.verifyLessThan(result.performance, rct_result.UpperBound * 1.01)
     
     % Now, if constant portion exists during the reachability timestep, upper bound will decrease
     lft_reach = lft_reach.removeDisturbance(1);

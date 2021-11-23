@@ -68,20 +68,20 @@ c = cell(1, total_time);
 for i = 1:total_time
     % Commented block was necessary before changing combineAllMultipliers, 
     % maintaining old code in case of regressions
-%     if isempty(filt.b1{i}) && ~isempty(filt.b2{i})
-%         filt.b1{i} = zeros(size(filt.a{i}, 1), size(filt.b1{i}, 2));
-%     elseif isempty(filt.b2{i}) && ~isempty(filt.b1{i})
-%         filt.b2{i} = zeros(size(filt.a{i}, 1), size(filt.b2{i}, 2));
-%     end
+    if isempty(filt.b1{i}) && ~isempty(filt.b2{i})
+        filt.b1{i} = zeros(size(filt.a{i}, 1), size(filt.b1{i}, 2));
+    elseif isempty(filt.b2{i}) && ~isempty(filt.b1{i})
+        filt.b2{i} = zeros(size(filt.a{i}, 1), size(filt.b2{i}, 2));
+    end
     b{i} = [filt.b1{i}, filt.b2{i}];
 
     % Commented block was necessary before changing combineAllMultipliers, 
     % maintaining old code in case of regressions
-%     if isempty(filt.c1{i}) && ~isempty(filt.c2{i})
-%         filt.c1{i} = zeros(size(filt.c1{i}, 1), size(filt.a{i}, 2));
-%     elseif isempty(filt.c2{i}) && ~isempty(filt.c1{i})
-%         filt.c2{i} = zeros(size(filt.c2{i}, 1), size(filt.a{i}, 2));
-%     end
+    if isempty(filt.c1{i}) && ~isempty(filt.c2{i})
+        filt.c1{i} = zeros(size(filt.c1{i}, 1), size(filt.a{i}, 2));
+    elseif isempty(filt.c2{i}) && ~isempty(filt.c1{i})
+        filt.c2{i} = zeros(size(filt.c2{i}, 1), size(filt.a{i}, 2));
+    end
     c{i} = [filt.c1{i}; filt.c2{i}];
 end
 
