@@ -95,6 +95,7 @@ function testReachabilityWithConstantSignal(testCase)
                                   lft_reach.horizon_period);
     lft_reach = lft_reach.addDisturbance({d2});
     result2 = iqcAnalysis(lft_reach, 'analysis_options', options);
+    check(result2.debug.constraints)
     testCase.assertTrue(result2.valid)
     testCase.verifyLessThan(result2.performance, result.performance)
 end
