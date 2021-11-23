@@ -29,7 +29,6 @@ function seedAndReportRng(testCase)
 end    
 end
 
-
 methods (Test)
 function testReachabilityWithConstantSignal(testCase)
     % Check analysis result against simulation result
@@ -46,7 +45,7 @@ function testReachabilityWithConstantSignal(testCase)
     window = 1 : final_time;
     d = DisturbanceConstantWindow('dis',{[]}, window, lft_reach.horizon_period);
     lft_reach = lft_reach.addDisturbance({d});
-    options = AnalysisOptions('verbose', false, 'lmi_shift', 1e-5);
+    options = AnalysisOptions('verbose', false, 'lmi_shift', 1e-6);
     [result, valid] = iqcAnalysis(lft_reach, 'analysis_options', options);
     assertTrue(testCase, valid)
 
@@ -94,6 +93,7 @@ function testReachabilityWithConstantSignal(testCase)
                                   lft_reach.horizon_period);
     lft_reach = lft_reach.addDisturbance({d2});
     result2 = iqcAnalysis(lft_reach, 'analysis_options', options);
+    testCase.assertTrue(result2.valid)
     testCase.verifyLessThan(result2.performance, result.performance)
 end
 
@@ -148,6 +148,7 @@ function testPartiallyConstantThroughPeriodIsImprovement(testCase)
     result_hpf_slow = iqcAnalysis(high_pass, 'analysis_options', options);
     testCase.assertTrue(result_hpf_slow.valid)
     diff_perf = abs(result_hpf.performance - result_hpf_slow.performance);
+    testCase.verifyLessThan(result_hpf_slow.performance, result_hpf.performance)
     testCase.verifyGreaterThan(diff_perf / result_hpf.performance, 0.5); % at least 50% reduction
 end
 end
