@@ -59,9 +59,9 @@ function testReachabilityWithConstantSignal(testCase)
     testCase.verifyLessThan(abs(perf_diff)/perf_sim, 1e-3)
     
     % No impact for memory-less systems (if constant portion irrelevant to reach window)
-    options = AnalysisOptions('verbose', false, 'lmi_shift', 1e-6);
+    options = AnalysisOptions('verbose', false, 'lmi_shift', 1e-4);
     rct_object = zeros(3);
-    for i = 1:3
+    for i = 1:2
         var = randatom('ureal');
         base = rand(3);
         base(base < .5) = 0;
@@ -95,8 +95,12 @@ function testReachabilityWithConstantSignal(testCase)
                                   {[]},...
                                   final_time,...
                                   lft_reach.horizon_period);
+    m2 = MultiplierConstantWindow(d2, size(lft_reach, 2),...
+                                  'quad_time_varying', false);
     lft_reach = lft_reach.addDisturbance({d2});
-    result2 = iqcAnalysis(lft_reach, 'analysis_options', options);
+    result2 = iqcAnalysis(lft_reach,...
+                          'analysis_options', options,...
+                          'multipliers_disturbance', m2);
     check(result2.debug.constraints)
     testCase.assertTrue(result2.valid)
     testCase.verifyLessThan(result2.performance, result.performance)
