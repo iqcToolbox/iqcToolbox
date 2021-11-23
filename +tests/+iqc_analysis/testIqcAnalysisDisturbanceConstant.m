@@ -47,7 +47,7 @@ function testReachabilityWithConstantSignal(testCase)
     window = 1 : final_time;
     d = DisturbanceConstantWindow('dis',{[]}, window, lft_reach.horizon_period);
     lft_reach = lft_reach.addDisturbance({d});
-    options = AnalysisOptions('verbose', true, 'lmi_shift', 1e-5);
+    options = AnalysisOptions('verbose', true, 'lmi_shift', 1e-4);
     [result, valid] = iqcAnalysis(lft_reach, 'analysis_options', options);
     assertTrue(testCase, valid)
 
