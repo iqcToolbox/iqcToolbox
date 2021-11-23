@@ -101,7 +101,7 @@ function testReachabilityWithConstantSignal(testCase)
 end
 
 function testFullWindowIsReducedResult(testCase)
-     % Check analysis result against simulation result
+    % Create stable system
     zero = [];
     pole = -.5;
     gain = 1;
@@ -110,6 +110,7 @@ function testFullWindowIsReducedResult(testCase)
 %     g = drss(3, 1, 1)
 %     g.a = g.a * 0.9;
     lft = toLft(g);
+    % Show that performance is significantly reduced is disturbance is constant (and therefore 0)
     lft = lft.addDisturbance({DisturbanceConstantWindow('d')});
     options = AnalysisOptions('verbose', false, 'lmi_shift', 1e-7);
     [result, valid] = iqcAnalysis(lft, 'analysis_options', options);
@@ -117,6 +118,7 @@ function testFullWindowIsReducedResult(testCase)
     true_performance = norm(g, 'inf');
     testCase.verifyLessThan(result.performance, true_performance)  
     
+    % Show that performance won't change if simply matchingHorizonPeriod
     lft = lft.matchHorizonPeriod([7, 10]);
     [result2, valid] = iqcAnalysis(lft, 'analysis_options', options);
     testCase.assertTrue(valid)
@@ -143,7 +145,7 @@ function testPartiallyConstantThroughPeriodIsImprovement(testCase)
     result_hpf_fast = iqcAnalysis(high_pass, 'analysis_options', options);
     testCase.assertTrue(result_hpf_fast.valid)
     diff_perf = abs(result_hpf.performance - result_hpf_fast.performance);
-    testCase.verifyLessThan(diff_perf / result_hpf.performance, 1e0);
+    testCase.verifyLessThan(diff_perf / result_hpf.performance, 1e-3);
     % Now give constant property over large window, which should significantly reduce upper-bound
     window = 1:(period - 1);
     d = DisturbanceConstantWindow('d', {[]}, window, high_pass.horizon_period);
