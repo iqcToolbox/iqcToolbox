@@ -31,8 +31,6 @@ end
 
 methods (Test)
 function testReachabilityWithConstantSignal(testCase)
-     rng(1637611100) % failed locally
-     rng(1637629395) % Failed online
     % Check analysis result against simulation result
     zero = [];
     pole = -.5;
@@ -95,12 +93,8 @@ function testReachabilityWithConstantSignal(testCase)
                                   {[]},...
                                   final_time,...
                                   lft_reach.horizon_period);
-    m2 = MultiplierConstantWindow(d2, size(lft_reach, 2),...
-                                  'quad_time_varying', false);
     lft_reach = lft_reach.addDisturbance({d2});
-    result2 = iqcAnalysis(lft_reach,...
-                          'analysis_options', options,...
-                          'multipliers_disturbance', m2);
+    result2 = iqcAnalysis(lft_reach, 'analysis_options', options);
     check(result2.debug.constraints)
     testCase.assertTrue(result2.valid)
     testCase.verifyLessThan(result2.performance, result.performance)
