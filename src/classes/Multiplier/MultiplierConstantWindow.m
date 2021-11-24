@@ -1,5 +1,5 @@
 classdef MultiplierConstantWindow < MultiplierDisturbance
-%% MULTIPLIERCONSTANT class for disturbance signals which are constant in given
+%% MULTIPLIERCONSTANTWINDOW class for disturbance signals which are constant in given
 %  windows of time (DisturbanceConstantWindow).
 %  Extends the base class MultiplierDisturbance.
 %
@@ -34,8 +34,8 @@ methods
 function this_mult = MultiplierConstantWindow(disturbance, dim_in_lft, varargin)
 %% MULTIPLIERCONSTANTWINDOW constructor
 %
-%  multiplier = MultiplierConstantWindow(disturbance, 'dim_in_lft', dim_in_lft, 'quad_time_varying', true)
-%  multiplier = MultiplierConstantWindow(disturbance, 'dim_in_lft', dim_in_lft) assumes the input above
+%  multiplier = MultiplierConstantWindow(disturbance, dim_in_lft, 'quad_time_varying', true)
+%  multiplier = MultiplierConstantWindow(disturbance, dim_in_lft) assumes the input above
 %
 %  Variables:
 %  ---------
@@ -70,6 +70,7 @@ addParameter(input_parser,...
 
 parse(input_parser, disturbance, dim_in_lft, varargin{:})
 disturbance       = input_parser.Results.disturbance;
+dim_in_lft        = input_parser.Results.dim_in_lft;
 quad_time_varying = input_parser.Results.quad_time_varying;
 
 assert(sum(disturbance.horizon_period) == length(dim_in_lft),...
@@ -84,7 +85,7 @@ assert(all(consistent_dims),...
 assert(all(dim_in_lft(1) == dim_in_lft),...
        'MultiplierConstantWindow:MultiplierConstantWindow',...
        ['LFT input dimensions must be constant to use',...
-        'DisturbanceConstantWindow in IQC analysis'])
+        'DisturbanceConstantWindow in IQC analysis'])   % This can be relaxed in the future
 
    
 % Define multiplier

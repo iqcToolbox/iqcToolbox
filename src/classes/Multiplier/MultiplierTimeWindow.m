@@ -32,8 +32,8 @@ methods
 function this_mult = MultiplierTimeWindow(disturbance, dim_in_lft, varargin)
 %% MULTIPLIERTIMEWINDOW constructor
 %
-%  multiplier = disturbanceToMultiplier(disturbance, 'dim_in_lft', dim_in_lft, 'quad_time_varying', true)
-%  multiplier = disturbanceToMultiplier(disturbance, 'dim_in_lft', dim_in_lft) assumes the input above
+%  multiplier = disturbanceToMultiplier(disturbance, dim_in_lft, 'quad_time_varying', true)
+%  multiplier = disturbanceToMultiplier(disturbance, dim_in_lft) assumes the input above
 %
 %  Variables:
 %  ---------

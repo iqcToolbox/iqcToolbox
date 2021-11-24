@@ -1,68 +1,103 @@
-classdef DisturbanceL2 < Disturbance
-%% DISTURBANCEL2 class for the set of L2 signals. This extends the base 
-% class Disturbance.
+classdef DisturbanceBandedWhite < Disturbance
+%% DISTURBANCEBANDEDWHITE class for the subset of L2 signals that are white
+% within the given frequency band [-omega, omega]. This extends the base class 
+% Disturbance.
 %
 %   extended methods:
-%     DisturbanceL2(name, chan_in, horizon_period) :: Constructor
+%     DisturbanceBandedWhite(name, chan_in, omega, horizon_period) :: Constructor
 %     disp(this_dis) :: Display method
 %     matchHorizonPeriod(this_perf, horizon_period) :: Matches disturbance properties to new horizon_period
 %     disturbanceToMultiplier(this_dis, 'dim_in_lft', dim_in_lft) :: Generate multiplier from disturbance
 %
-%  See also DisturbanceL2.DisturbanceL2, Disturbance
+%  See also DisturbanceBandedWhite.DisturbanceBandedWhite, Disturbance
 
 %%
 %  Copyright (c) 2021 Massachusetts Institute of Technology 
 %  SPDX-License-Identifier: GPL-2.0
 %%
 
+properties
+    omega (1, 1) double {mustBeNonnegative}
+end
+
 methods
-    function this_dis = DisturbanceL2(name, chan_in, horizon_period)
-    %% DISTURBANCEL2 constructor
+    function this_dis = DisturbanceBandedWhite(name, chan_in, omega, horizon_period)
+    %% DISTURBANCEBandedWhite constructor
     %
-    %  dis = DisturbanceL2(name, chan_in, horizon_period)
-    %  dis = DisturbanceL2(name, chan_in) assumes horizon_period == [0, 1]
-    %  dis = DisturbanceL2(name) also assumes chan_in == {[]}
+    %  dis = DisturbanceBandedWhite(name, chan_in, omega, horizon_period)
+    %  dis = DisturbanceBandedWhite(name, chan_in, omega) assumes horizon_period == [0, 1]
+    %  dis = DisturbanceBandedWhite(name, chan_in) also assumes omega == pi
+    %  dis = DisturbanceBandedWhite(name) also assumes chan_in == {[1]}
     %
     %  Variables:
     %  ---------
     %     Input:
     %       name : char array :: unique ID of disturbance signal (ex. 'sensor_noise')
-    %       chan_in : cell array of naturals :: channels of signals pertaining to disturbance class
+    %       chan_in : cell array of natural :: channel of signals pertaining to disturbance class.
+    %                                          Unlike most disturbances, this must satisfy:
+    %                                          length(chan_in) == 1 && length(chan_in{1}) == 1
+    %       omega : positive double :: frequency defining the band [-omega, omega] wherein the signal is white (for discrete-time systems, omega <= pi)
     %       horizon_period : 1 x 2 array of naturals :: [horizon, period] (in timesteps) of Disturbance properties
     %     Output:
-    %       this_disturbance : DisturbanceL2 object 
+    %       this_disturbance : DisturbanceBandedWhite object 
     %
-    %     See also DisturbanceL2, Disturbance.Disturbance.
+    %     See also DisturbanceBandedWhite, Disturbance.Disturbance.
     
         % Defining defaults for missing arguments
         switch nargin
+            case 0
+                error('DisturbanceBandedWhite:DisturbanceBandedWhite',...
+                      'Must provide at least the name of the disturbance')
             case 1
-                chan_in = {[]};
+                chan_in = {[1]};
+                omega = pi;
                 horizon_period = [0, 1];
             case 2
+                omega = pi;
                 horizon_period = [0, 1];
+            case 3
+                horizon_period = [0, 1];
+            case 4
         end
+        
+        % Checking conditions on chan_in
+        assert(length(chan_in) == 1,... 
+               'DisturbanceBandedWhite:DisturbanceBandedWhite',...
+               ['chan_in must be constant for each timestep, ',...
+                'provide chan_in as a cell of length 1'])
+        assert(length(chan_in{1}) == 1,...
+               'DisturbanceBandedWhite:DisturbanceBandedWhite',...
+               ['chan_in must only specify one channel, ',...
+                'provide chan_in such that chan_in{1} is a scalar'])
         % Calling Disturbance constructor
         this_dis@Disturbance(name, chan_in, horizon_period);
+        
+        % Setting specialized properties of DisturbanceBandedWhite
+        validateattributes(omega, 'numeric', {'scalar', 'positive'})
+        this_dis.omega = omega;
+        
         this_dis = matchHorizonPeriod(this_dis);
     end
 
     function disp(this_dis)
-    %% DISP function for DisturbanceL2 object
+    %% DISP function for DisturbanceBandedWhite object
     %
-    %     disp(dis_l2_obj) (e.g., disp(DisturbanceL2('dis')) )
+    %     disp(dis_bw_obj) (e.g., disp(DisturbanceBandedWhite('dis')) )
     %
     %     Variables:
     %     ---------
     %       Input:
-    %          this_dis : DisturbanceL2 object    
+    %          this_dis : DisturbanceBandedWhite object    
     %
     %     See also Ulft.disp, SequenceDisturbance.disp, Disturbance.disp
-        disp@Disturbance(this_dis, 'L2')        
+        disp@Disturbance(this_dis, 'Banded white')
+        fprintf('%16s which is white between the band [-%3.1f, %3.1f]\n',...
+                '',...
+                this_dis.omega, this_dis.omega)
     end
 
     function this_dis = matchHorizonPeriod(this_dis, new_horizon_period)
-    %% MATCHHORIZONPERIOD function to ensure properties of DisturbanceL2
+    %% MATCHHORIZONPERIOD function to ensure properties of DisturbanceBandedWhite
     %  object match its own horizon_period, or a new_horizon_period
     %
     %  this_dis = matchHorizonPeriod(this_dis, new_horizon_period) will change the horizon_period and associated properties of this_dis
@@ -71,12 +106,12 @@ methods
     %  Variables:
     %  ---------
     %     Input:
-    %       this_dis : DisturbanceL2 object
+    %       this_dis : DisturbanceBandedWhite object
     %       new_horizon_period : 1 x 2 array of naturals :: [horizon, period] (in timesteps) of new sequence
     %     Output:
-    %       this_dis : DisturbanceL2 object
+    %       this_dis : DisturbanceBandedWhite object
     %
-    %  See also DisturbanceL2.
+    %  See also DisturbanceBandedWhite.
     
     if nargin == 1
     % Ensuring that this_dis.horizon_period matches with other properties 
@@ -87,7 +122,7 @@ methods
         total_time = sum(this_dis.horizon_period);
         if length(this_dis.chan_in) ~= total_time
             assert(length(this_dis.chan_in) == 1,...
-                   'DisturbanceL2:matchHorizonPeriod',...
+                   'DisturbanceBandedWhite:matchHorizonPeriod',...
                    'channels of %s is not compatible w/ horizon_period',...
                    this_dis.name);
             this_dis.chan_in = repmat(this_dis.chan_in, 1, total_time);
@@ -100,7 +135,7 @@ methods
             makeNewIndices(this_dis.horizon_period, new_horizon_period);
 
         % Set properties according to indices
-        this_dis.chan_in       = this_dis.chan_in(indices);
+        this_dis.chan_in        = this_dis.chan_in(indices);
         this_dis.horizon_period = new_horizon_period;
         this_dis                = matchHorizonPeriod(this_dis);
     end
@@ -114,17 +149,17 @@ methods
     %  Variables:
     %  ---------
     %     Input:
-    %       this_dis : DisturbanceL2 object
+    %       this_dis : DisturbanceBandedWhite object
     %      dim_in_lft : row of naturals :: input dimension of LFT associated with disturbance
     %     Output:
-    %       multiplier : MultiplierL2 object
+    %       multiplier : MultiplierBandedWhite object
     %
-    %  See also DisturbanceL2
+    %  See also DisturbanceBandedWhite
     input_parser = inputParser;
     addRequired(input_parser,...
                 'disturbance',...
                 @(dis) validateattributes(dis,...
-                                          'DisturbanceL2',...
+                                          'DisturbanceBandedWhite',...
                                           {'nonempty'},...
                                           mfilename));
     addParameter(input_parser,...
@@ -134,25 +169,32 @@ methods
                                           'numeric',...
                                           {'integer', 'row', 'positive'},...
                                           mfilename));
-    addParameter(input_parser,... % This parameter is not used. Only defined for compatibility with other disturbanceToMultiplier calls
+    addParameter(input_parser,... 
                  'discrete',...
                  true,...
                  @(disc) validateattributes(disc, 'logical', {'nonempty'}))
-
+    addParameter(input_parser,...
+                 'poles',...
+                 -0.5,...
+                 @(poles) validateattributes(poles,...
+                                             'numeric',...
+                                             {'real', 'vector'}));
     parse(input_parser, this_dis, varargin{:})
     disturbance = input_parser.Results.disturbance;
     dim_in_lft  = input_parser.Results.dim_in_lft;
+    poles       = input_parser.Results.poles;
+    discrete    = input_parser.Results.discrete;
     if isempty(dim_in_lft)
-        error('DisturbanceL2:disturbanceToMultiplier',...
+        error('DisturbanceBandedWhite:disturbanceToMultiplier',...
               ['Input arguments to disturbanceToMultiplier must include',...
                ' a dim_in_lft as a key/value pair. For example: \n',...
                'disturbanceToMultiplier(dis, ''dim_in_lft'', 1,...)'])
     end
-    multiplier = MultiplierL2(disturbance, dim_in_lft);
+    multiplier = MultiplierBandedWhite(disturbance, dim_in_lft, discrete,...
+                                       'poles', poles);
     end
 end
 end
 
 %%  CHANGELOG
-% Sep. 28, 2021 (v0.6.0)
-% Aug. 26, 2021 (v.0.5.0): Initial release - Micah Fry (micah.fry@ll.mit.edu)
+% Nov. 23, 2021: Added after v0.6.0 - Micah Fry (micah.fry@ll.mit.edu)
