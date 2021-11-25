@@ -94,9 +94,8 @@ if discrete
            ['For discrete-time, frequency band [-omega, omega] is constrained',...
             ' such that omega <= pi'])
     timestep = -1;
-else
-    % Will need to insert conditions for continuous-time
 end
+% Will need to insert conditions for continuous-time
 
    
 % Define multiplier
@@ -136,7 +135,11 @@ for i = 1:(poles_length + 1)
         term = omega;
     else
         pole = this_mult.poles(i - 1);
-        term = -atan(-pole * sin(omega) / (1 - pole * cos(omega))) / pole;
+        if pole == 0
+            term = sin(omega);
+        else
+            term = -atan(-pole * sin(omega) / (1 - pole * cos(omega))) / pole;
+        end
     end
     decision_constraint = decision_constraint + term * x;
     decision_vars{i} = x;
