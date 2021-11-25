@@ -49,7 +49,7 @@ methods
                 error('DisturbanceBandedWhite:DisturbanceBandedWhite',...
                       'Must provide at least the name of the disturbance')
             case 1
-                chan_in = {[1]};
+                chan_in = {1};
                 omega = pi;
                 horizon_period = [0, 1];
             case 2

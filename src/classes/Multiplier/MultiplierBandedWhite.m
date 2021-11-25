@@ -148,7 +148,7 @@ for i = 1:(poles_length + 1)
 end
 constraint = (decision_constraint >= 0):['Banded White Multiplier, ',...
                                          this_mult.name,...
-                                         ', integral(xi, omega) >= 0'];
+                                         ', integral(xi, omega) >= 0'];         %#ok<BDSCA>
 q = [zeros(poles_length),           vertcat(decision_vars{2:end});
      horzcat(decision_vars{2:end}), 2 * decision_vars{1}];
 quad.q = repmat({q}, 1, sum(this_mult.horizon_period));
