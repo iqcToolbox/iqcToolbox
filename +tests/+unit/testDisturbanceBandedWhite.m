@@ -9,23 +9,23 @@
 %      default the disturbance shall apply to the first channel (chan_in = {1}),
 %      the frequency shall be pi, and the horizon_period shall be [0, 1].
 %
-%  4. If the user provides no name, DisturbanceConstantWindow shall throw an 
+%  4. If the user provides no name, DisturbanceBandedWhite shall throw an 
 %      exception
 %  5. If the user provides a channel that has more than one cell-entry,
-%      DisturbanceConstantWindow shall throw an exception
+%      DisturbanceBandedWhite shall throw an exception
 %  6. If the user indicates more than one channel, DisturbanceBandedWhite shall
 %      throw an exception
 %  7. If the user indicates a frequency band with omega = 0, 
 %      DisturbanceBandedWhite shall throw and exception
 %
-%  8. DisturbanceConstantWindow shall ensure that it's properties are consistent 
+%  8. DisturbanceBandedWhite shall ensure that it's properties are consistent 
 %      with its current horizon_period property
-%  9. DisturbanceConstantWindow shall be capable of changing it's properties to 
+%  9. DisturbanceBandedWhite shall be capable of changing it's properties to 
 %      match a newly input horizon_period, as long as the new 
 %      horizon_period is consistent with the prior horizon_period
 %
-%  10. DisturbanceConstantWindow shall be capable of generating a
-%       MultiplierConstantWindow from a DisturbanceConstantWindow object
+%  10. DisturbanceBandedWhite shall be capable of generating a
+%       MultiplierBandedWhite from a DisturbanceBandedWhite object
 %
 %  11. A user may optionally specify the poles of MultiplierBandedWhite.
 %

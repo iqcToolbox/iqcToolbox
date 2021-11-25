@@ -9,9 +9,11 @@ classdef MultiplierBandedWhite < MultiplierDisturbance
 %  extended properties:
 %    chan_in : cell array of column vectors of naturals :: The input channels of the LFT pertaining 
 %                                                          to this disturbance
-%    window : array of integers :: time-instances in which the disturbance signal is constant between 
-%                                  the given time-instances and the immediately preceding time-instances 
-%                                  (index starting from t0 = 0)
+%    dim_in : row of naturals :: The input dimension of the LFT pertaining to this disturbance
+%    omega : positive double :: The frequency which defines the band [-omega, omega] in which
+%                                the disturbance is white
+%    poles : array of poles :: A row or column vector of real, stable poles that parameterize
+%                               the multiplier
 %
 %  See also MultiplierBandedWhite.MultiplierBandedWhite
 

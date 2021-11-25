@@ -9,6 +9,7 @@ classdef MultiplierConstantWindow < MultiplierDisturbance
 %  extended properties:
 %    chan_in : cell array of column vectors of naturals :: The input channels of the LFT pertaining 
 %                                                          to this disturbance
+%    dim_in : row of naturals :: The input dimension of the LFT pertaining to this disturbance
 %    window : array of integers :: time-instances in which the disturbance signal is constant between 
 %                                  the given time-instances and the immediately preceding time-instances 
 %                                  (index starting from t0 = 0)
