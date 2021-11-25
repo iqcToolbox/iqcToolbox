@@ -3,10 +3,10 @@ classdef DisturbanceL2 < Disturbance
 % class Disturbance.
 %
 %   extended methods:
-%     DisturbanceL2(name, channel, horizon_period) :: Constructor
+%     DisturbanceL2(name, chan_in, horizon_period) :: Constructor
 %     disp(this_dis) :: Display method
 %     matchHorizonPeriod(this_perf, horizon_period) :: Matches disturbance properties to new horizon_period
-%     disturbanceToMultiplier(this_dis) :: Generate multiplier from disturbance
+%     disturbanceToMultiplier(this_dis, 'dim_in_lft', dim_in_lft) :: Generate multiplier from disturbance
 %
 %  See also DisturbanceL2.DisturbanceL2, Disturbance
 
@@ -16,18 +16,18 @@ classdef DisturbanceL2 < Disturbance
 %%
 
 methods
-    function this_dis = DisturbanceL2(name, channel, horizon_period)
+    function this_dis = DisturbanceL2(name, chan_in, horizon_period)
     %% DISTURBANCEL2 constructor
     %
-    %  dis = DisturbanceL2(name, channel, horizon_period)
-    %  dis = DisturbanceL2(name, channel) assumes horizon_period == [0, 1]
-    %  dis = DisturbanceL2(name) also assumes channel == 1
+    %  dis = DisturbanceL2(name, chan_in, horizon_period)
+    %  dis = DisturbanceL2(name, chan_in) assumes horizon_period == [0, 1]
+    %  dis = DisturbanceL2(name) also assumes chan_in == {[]}
     %
     %  Variables:
     %  ---------
     %     Input:
     %       name : char array :: unique ID of disturbance signal (ex. 'sensor_noise')
-    %       channel : natural :: channels of signals pertaining to disturbance class
+    %       chan_in : cell array of naturals :: channels of signals pertaining to disturbance class
     %       horizon_period : 1 x 2 array of naturals :: [horizon, period] (in timesteps) of Disturbance properties
     %     Output:
     %       this_disturbance : DisturbanceL2 object 
@@ -37,13 +37,13 @@ methods
         % Defining defaults for missing arguments
         switch nargin
             case 1
-                channel = {[]};
+                chan_in = {[]};
                 horizon_period = [0, 1];
             case 2
                 horizon_period = [0, 1];
         end
         % Calling Disturbance constructor
-        this_dis@Disturbance(name, channel, horizon_period);
+        this_dis@Disturbance(name, chan_in, horizon_period);
         this_dis = matchHorizonPeriod(this_dis);
     end
 

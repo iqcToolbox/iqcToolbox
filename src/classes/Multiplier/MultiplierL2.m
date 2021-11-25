@@ -8,7 +8,7 @@ classdef MultiplierL2 < MultiplierDisturbance
 %  extended properties:
 %    chan_in : cell array of column vectors of naturals :: The input channels of the LFT pertaining 
 %                                                          to this performance
-%    dim_in : row of naturals :: The input dimension of the LFT pertaining to this performance
+%    dim_in : row of naturals :: The input dimension of the LFT pertaining to this disturbance
 %
 %  See also MultiplierL2.MultiplierL2
 
