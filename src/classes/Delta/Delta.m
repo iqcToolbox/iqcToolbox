@@ -242,6 +242,12 @@ methods (Sealed)
         lft_out = mtimes(varargin{:});
     end
     
+    function lft_out = times(varargin)
+        del_ind =  find(cellfun(@(a) isa(a, 'Delta'), varargin), 1, 'first');
+        varargin{del_ind} = toLft(varargin{del_ind});
+        lft_out = times(varargin{:});
+    end
+    
     function lft_out = minus(varargin)
         del_ind =  find(cellfun(@(a) isa(a, 'Delta'), varargin), 1, 'first');
         varargin{del_ind} = toLft(varargin{del_ind});

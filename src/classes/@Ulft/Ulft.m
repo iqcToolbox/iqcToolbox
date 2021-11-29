@@ -25,11 +25,12 @@ classdef (InferiorClasses = {?ss}) Ulft
 %       lft = reorderLftDisturbance(lft, new_order) :: Reordering disturbances within lft
 %       lft = reorderLftPerformance(lft, new_order) :: Reordering performances within lft
 %       lft = sampleDeltas(lft, deltas, values, varargin) :: realizes the specified deltas of lft to specified or random values
+%       [output, time, state] = simulate(lft, input, time, initial_state)
 %       [dim_out, dim_in] = size(lft) :: Provide input/output dimensions of lft
+%       lft = times(left_lft, right_lft) :: .* Multiplication operation between lfts
 %       lft = uminus(lft) :: Negative operator for an lft
 %       lft = uplus(lft) :: Positive operator for an lft
 %       lft = vertcat(lft1, lft2, lft3, ...) :: Vertically concatenate multiple lfts
-%       [output, time, state] = simulate(lft, input, time, initial_state)
 %
 %     properties:
 %       a : cell array of double matrices :: sequence of state/delta matrices
@@ -96,6 +97,7 @@ this_lft = plus(left_lft, right_lft)
 this_lft = uminus(this_lft)
 this_lft = minus(left_lft, right_lft)
 this_lft = inv(this_lft)
+this_lft = times(left_lft, right_lft)
 this_lft = mtimes(left_lft, right_lft)
 this_lft = mpower(this_lft, exponent)
 this_lft = horzcat(varargin)
