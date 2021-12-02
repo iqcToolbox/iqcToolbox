@@ -77,33 +77,16 @@ function testOneArgConstructor(testCase)
     testCase.verifyEqual(d.horizon_period, [0, 1])
 end
 
-function testBadConstructorCalls(testCase)
-    testCase.verifyError(@() DisturbanceBandedWhite(),...
-                         'DisturbanceBandedWhite:DisturbanceBandedWhite')
-    bad_chan = {1, 1};
-    testCase.verifyError(@() DisturbanceBandedWhite('test', bad_chan, 1, [0, 2]),...
-                         'DisturbanceBandedWhite:DisturbanceBandedWhite')
-    bad_chan = {[]};
-    testCase.verifyError(@() DisturbanceBandedWhite('test', bad_chan),...
-                         'DisturbanceBandedWhite:DisturbanceBandedWhite')
-    bad_chan = {[1; 2]};
-    testCase.verifyError(@() DisturbanceBandedWhite('test', bad_chan),...
-                         'DisturbanceBandedWhite:DisturbanceBandedWhite')
-    bad_omega = 0;
-    testCase.verifyError(@() DisturbanceBandedWhite('test', {1}, bad_omega),...
-                         ?MException)
+function testSamplingDelta(testCase)
+    d = DeltaSectorBounded('test');
+    d.validateSample(d.sample)
 end
 
-function testMatchHorizonPeriod(testCase)
-    name = 'test';
-    chan_in = {2};
-    omega = pi/2;
-    d = DisturbanceBandedWhite(name, chan_in, omega);
-    new_hp = [2, 5];
-    d = d.matchHorizonPeriod(new_hp);
-    testCase.verifyEqual(d.chan_in, repmat(chan_in, 1, sum(new_hp)))
-    testCase.verifyEqual(d.omega, omega)
-    testCase.verifyEqual(d.horizon_period, new_hp)
+function testBadConstructorCalls(testCase)
+    testCase.verifyError(@() DeltaSectorBounded(),...
+                         'DeltaSectorBounded:DeltaSectorBounded')
+    testCase.verifyError(@() DeltaSectorBounded('test', 1, -1),...
+                         'DeltaSectorBounded:DeltaSectorBounded')
 end
 
 function testMultiplierConstruction(testCase)
@@ -116,8 +99,9 @@ function testMultiplierConstruction(testCase)
     m = MultiplierSectorBounded(del, 'quad_time_varying', quad_time_varying);
     testCase.verifyEqual(m.quad_time_varying, quad_time_varying)
 end
+
 end
 end
 
 %%  CHANGELOG
-% Nov. 23, 2021: Added after v0.6.0 - Micah Fry (micah.fry@ll.mit.edu)
+% Dec. 1, 2021: Added after v0.6.0 - Micah Fry (micah.fry@ll.mit.edu)

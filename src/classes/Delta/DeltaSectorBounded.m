@@ -190,20 +190,20 @@ methods
     
     function value = sample(this_del, ~)
     %% SAMPLE function for DeltaSectorBounded.
-        total_time = sum(this_delta.horizon_period);
+        total_time = sum(this_del.horizon_period);
         a = cell(1, total_time);
         b = cell(1, total_time);
         c = cell(1, total_time);
         d = cell(1, total_time);
         for t = 1 : total_time
             a{t} = zeros(0,0);
-            b{t} = zeros(0,this_delta.dim_in(t));
-            c{t} = zeros(this_delta.dim_out(t),0);
-            d_mag = (this_delta.upper_bound(t) - this_delta.lower_bound(t))*rand()...
-                    + this_delta.lower_bound(t);
-            d{t} = d_mag * eye(this_delta.dim_out(t));
+            b{t} = zeros(0,this_del.dim_in(t));
+            c{t} = zeros(this_del.dim_out(t),0);
+            d_mag = (this_del.upper_bound(t) - this_del.lower_bound(t))*rand()...
+                    + this_del.lower_bound(t);
+            d{t} = d_mag * eye(this_del.dim_out(t));
         end
-        value = Ulft(a, b, c, d, {}, 'horizon_period', this_delta.horizon_period);
+        value = Ulft(a, b, c, d, {}, 'horizon_period', this_del.horizon_period);
     end
 
     function validateSample(this_delta, value, ~)
