@@ -59,20 +59,40 @@ function testOpenLoopUnstableIsNotRobustlyStableWithSaturation(testCase)
 end
 
 function testRobustlyStableSystem(testCase)
+    % System robustly stable to sector [-10, 50]
     s = tf('s');
     g = toLft(ss(0.1 * s / (2 + s) / (3 + s)));
-    del = DeltaSectorBounded('sb', 1, -10, 50);
-    lft = interconnect(-del, [1; 1] * g * [1, 1])
-    result = iqcAnalysis(lft)
+    del = DeltaSectorBounded('sb', 1, -4, 50);
+    lft = interconnect(-del, [1; 1] * g * [1, 1]);
+    options = AnalysisOptions('verbose', true, 'lmi_shift', 1e-6, 'solver', 'mosek');
+    result = iqcAnalysis(lft, 'analysis_options', options);
+    testCase.verifyTrue(result.valid)
     
+    % System robustly stable to saturation
     g = toLft(ss(4 / ((s + 1) * (s/2 + 1) * (s/3 + 1))));
     del = toLft(DeltaSectorBounded('sb', 1, 0, 1));
-    lft = interconnect(-del, [1; 1] * g * [1, 1])
-    result = iqcAnalysis(lft)
+    lft = interconnect(-del, [1; 1] * g * [1, 1]);
+    result = iqcAnalysis(lft, 'analysis_options', options);
+    testCase.verifyTrue(result.valid)
     
+    % But not a bigger sector
     del = toLft(DeltaSectorBounded('sb', 1, 0, 1.2));
-    lft = interconnect(-del, [1; 1] * g * [1, 1])
-    result = iqcAnalysis(lft)
+    lft = interconnect(-del, [1; 1] * g * [1, 1]);
+    result = iqcAnalysis(lft, 'analysis_options', options);
+    testCase.verifyFalse(result.valid)
+    
+    % System robustly stable to sector [0, .45]
+    g = toLft(ss((10 - s + s^2) / (25 + s + s^2)));
+    del = DeltaSectorBounded('sb', 1, 0, .45);
+    lft = interconnect(-del, [1; 1] * g * [1, 1]);
+    result = iqcAnalysis(lft, 'analysis_options', options);
+    testCase.verifyTrue(result.valid)
+    
+    % But not a bigger sector
+    del = DeltaSectorBounded('sb', 1, 0, .6);
+    lft = interconnect(-del, [1; 1] * g * [1, 1]);
+    result = iqcAnalysis(lft, 'analysis_options', options);
+    testCase.verifyFalse(result.valid)
 end
 end
 end
