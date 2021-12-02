@@ -1,3 +1,11 @@
+%% Requirements:
+%  1. IQC analysis shall produce an "infeasible problem" result when
+%     analyzing sector-bounded uncertain systems that are not robustly stable
+%  2. IQC analysis shall produce an upper-bound on worst-case performance
+%     for many sector-bounded uncertain systems that are robustly stable. 
+%     Producing an upper-bound for ALL SLTV-RB-uncertain-systems is not 
+%     expected.
+
 %%
 %  Copyright (c) 2021 Massachusetts Institute of Technology 
 %  SPDX-License-Identifier: GPL-2.0

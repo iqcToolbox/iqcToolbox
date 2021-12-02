@@ -1,3 +1,26 @@
+%% Requirements:
+%  1. DeltaSectorBounded shall be defined by it's name, the input/output
+%      dimension, the sector's lower bound, the sector's upper bound, and the
+%      horizon_period
+%  2. Upon construction, and when queried by user, it shall display the
+%      information described in (1).
+%
+%  3. If input/output dimenstion is not provided by the user, by
+%      default the in/out dimension shall be 1, the lower bound shall be -1,
+%      the upper bound shall be 1, and the horizon_period shall be [0, 1].
+%
+%  4. If the user provides no name, DeltaSectorBounded shall throw an 
+%      exception
+%
+%  5. DeltaSectorBounded shall ensure that it's properties are consistent 
+%      with its current horizon_period property
+%  6. DeltaSectorBounded shall be capable of changing it's properties to 
+%      match a newly input horizon_period, as long as the new 
+%      horizon_period is consistent with the prior horizon_period
+%
+%  7. DeltaSectorBounded shall be capable of generating a
+%       MultiplierBandedWhite from a DeltaSectorBounded object
+
 %%
 %  Copyright (c) 2021 Massachusetts Institute of Technology 
 %  SPDX-License-Identifier: GPL-2.0
