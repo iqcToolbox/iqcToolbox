@@ -57,6 +57,23 @@ function testOpenLoopUnstableIsNotRobustlyStableWithSaturation(testCase)
     result = iqcAnalysis(lft, 'analysis_options', options);
     testCase.verifyFalse(result.valid)
 end
+
+function testRobustlyStableSystem(testCase)
+    s = tf('s');
+    g = toLft(ss(0.1 * s / (2 + s) / (3 + s)));
+    del = DeltaSectorBounded('sb', 1, -10, 50);
+    lft = interconnect(-del, [1; 1] * g * [1, 1])
+    result = iqcAnalysis(lft)
+    
+    g = toLft(ss(4 / ((s + 1) * (s/2 + 1) * (s/3 + 1))));
+    del = toLft(DeltaSectorBounded('sb', 1, 0, 1));
+    lft = interconnect(-del, [1; 1] * g * [1, 1])
+    result = iqcAnalysis(lft)
+    
+    del = toLft(DeltaSectorBounded('sb', 1, 0, 1.2));
+    lft = interconnect(-del, [1; 1] * g * [1, 1])
+    result = iqcAnalysis(lft)
+end
 end
 end
 
