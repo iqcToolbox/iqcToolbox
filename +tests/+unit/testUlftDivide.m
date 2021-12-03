@@ -1,3 +1,9 @@
+%% Requirements:
+%  1. Ulft.divide shall divide two LFTs by multiplying the numerator with the 
+%     inverse of the denominator.
+%  2. If the user provides a denominator which is non-invertible, Ulft shall
+%     throw an error.
+
 %%
 %  Copyright (c) 2021 Massachusetts Institute of Technology 
 %  SPDX-License-Identifier: GPL-2.0
