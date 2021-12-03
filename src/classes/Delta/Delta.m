@@ -248,6 +248,18 @@ methods (Sealed)
         lft_out = times(varargin{:});
     end
     
+    function lft_out = mrdivide(varargin)
+        del_ind =  find(cellfun(@(a) isa(a, 'Delta'), varargin), 1, 'first');
+        varargin{del_ind} = toLft(varargin{del_ind});
+        lft_out = mrdivide(varargin{:});
+    end
+    
+    function lft_out = rdivide(varargin)
+        del_ind =  find(cellfun(@(a) isa(a, 'Delta'), varargin), 1, 'first');
+        varargin{del_ind} = toLft(varargin{del_ind});
+        lft_out = rdivide(varargin{:});
+    end
+    
     function lft_out = minus(varargin)
         del_ind =  find(cellfun(@(a) isa(a, 'Delta'), varargin), 1, 'first');
         varargin{del_ind} = toLft(varargin{del_ind});
@@ -282,6 +294,10 @@ methods (Sealed)
 
     function lft_out = mpower(this_delta, exponent)
         lft_out = mpower(toLft(this_delta), exponent);
+    end
+    
+    function lft_out = power(this_delta, exponent)
+        lft_out = power(toLft(this_delta), exponent);
     end
 end
 end

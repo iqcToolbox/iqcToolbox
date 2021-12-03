@@ -174,27 +174,6 @@ function testTimesCommonHp(testCase)
     verifyEqual(testCase, lftm.horizon_period, correct_hp)
 end
 end
-methods (Static)
-    
-function a = productA(left_a, right_a, left_b, right_c)
-    a = [left_a, left_b * right_c;  
-         zeros(size(right_a, 1), size(left_a, 2)), ...
-         right_a];
-end
-
-function b = productB(left_b, right_b, right_d)
-    b = [left_b * right_d; right_b];
-end
-
-function c = productC(left_c, right_c, left_d)
-    c = [left_c, left_d * right_c];
-end
-
-function d = productD(left_d, right_d)
-    d = left_d * right_d;
-end
-
-end
 end
 
 %%  CHANGELOG
