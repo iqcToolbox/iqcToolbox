@@ -72,7 +72,7 @@ function testRobustlyStableSystem(testCase)
     g = toLft(ss(0.1 * s / (2 + s) / (3 + s)));
     del = DeltaSectorBounded('sb', 1, -4, 50);
     lft = interconnect(-del, [1; 1] * g * [1, 1]);
-    options = AnalysisOptions('verbose', true, 'lmi_shift', 1e-6, 'solver', 'mosek');
+    options = AnalysisOptions('verbose', false, 'lmi_shift', 1e-5, 'solver', 'sdpt3');
     result = iqcAnalysis(lft, 'analysis_options', options);
     testCase.verifyTrue(result.valid)
     
