@@ -12,7 +12,7 @@ function power_lft = mpower(this_lft, exponent)
 %       Output:
 %         power_lft : Ulft object :: lft raised to the given power
 %
-%     See also Ulft, mtimes.
+%     See also Ulft, mtimes, power.
 
 %%
 %  Copyright (c) 2021 Massachusetts Institute of Technology 
