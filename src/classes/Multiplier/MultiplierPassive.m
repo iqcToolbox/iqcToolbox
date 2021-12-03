@@ -1,9 +1,9 @@
 classdef MultiplierPassive < MultiplierDelta
-%% MUTLIPLIERPASSIVE class. Used for the passive performance metric (PerformancePassive)
-%  Extends the base class MultiplierPerformance
+%% MUTLIPLIERPASSIVE class. Used for passive Delta uncertainties (DeltaPassive)
+%  Extends the base class MultiplierDelta
 %
 %  extended methods:
-%    MultiplierPassive(performance) :: Constructor
+%    MultiplierPassive(delta) :: Constructor
 %
 %  See also MultiplierPassive.MultiplierPassive
 
@@ -70,9 +70,10 @@ for i = 1:total_time
     quad.q11{i} = zeros(delta.dim_out(i), delta.dim_in(i));
     quad.q22{i} = zeros(delta.dim_in(i), delta.dim_out(i));    
 end       
-this_mult.filter      = filter;
-this_mult.quad        = quad;
-this_mult.constraints = constraints;
+this_mult.filter        = filter;
+this_mult.quad          = quad;
+this_mult.constraints   = constraints;
+this_mult.decision_vars = {decision_var};
 end    
 end
 

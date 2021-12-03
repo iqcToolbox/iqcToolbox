@@ -8,7 +8,7 @@ classdef MultiplierSltv < MultiplierDelta
 %
 %  extended properties:
 %     upper_bound : double :: upper bound of uncertainty
-%     lower_bound : double :: upper bound of uncertainty
+%     lower_bound : double :: lower bound of uncertainty
 %     dim_outin : double :: input/output dimensions of uncertainty
 %     quad_time_varying : logical :: true if desired to define a
 %                         time-varying quadratic decision variable
