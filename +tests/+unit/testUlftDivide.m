@@ -82,7 +82,8 @@ function testTimesNonLftRandom(testCase)
     lfti_l_size = size(lfti_l, 2);
     % Convertible non-lft objects
     lft_double = eye(lfti_l_size);
-    lft_delta = (DeltaSlti('a', dim_outin).^2 + 3 * eye(dim_outin))^2;
+    lft_delta = DeltaSltv('a', dim_outin);
+    lft_delta_sqr = (DeltaSlti('a', dim_outin).^2 + 3 * eye(dim_outin))^2;
     lft_ss_cont = ss(eye(dim_outin), eye(dim_outin), eye(dim_outin), eye(dim_outin));
     lft_ss_disc = ss(eye(dim_outin), eye(dim_outin), eye(dim_outin), eye(dim_outin), -1);
     
@@ -90,7 +91,7 @@ function testTimesNonLftRandom(testCase)
     
     % non-lft object is right
     lft_a1 = lfti_l ./ lft_double;
-    lft_a3 = lfti_l / lft_delta;
+    lft_a3 = lfti_l / lft_delta_sqr;
     lft_a4 = lfti_l ./ lft_ss_cont;
     lft_a5 = lfti_l / lft_ss_cont;
     
@@ -101,14 +102,18 @@ function testTimesNonLftRandom(testCase)
     
     % non-lft object is left
     lft_b1 = lft_double / lfti_r;
-    lft_b3 = lft_delta ./ lfti_r;
+    lft_b2 = lft_delta / lfti_r;
+    lft_b3 = lft_delta_sqr ./ lfti_r;
     lft_b4 = lft_ss_disc / lfti_r;
     lft_b5 = lft_ss_cont ./ lfti_r;
+    lft_b6 = lft_delta ./ lfti_r;
     
     verifyClass(testCase, lft_b1, 'Ulft') 
+    verifyClass(testCase, lft_b2, 'Ulft') 
     verifyClass(testCase, lft_b3, 'Ulft') 
     verifyClass(testCase, lft_b4, 'Ulft') 
     verifyClass(testCase, lft_b5, 'Ulft') 
+    verifyClass(testCase, lft_b6, 'Ulft') 
     
     % non-convertible non-lft object - right
     verifyError(testCase, @() rdivide(lfti_l, obj), ?MException)
