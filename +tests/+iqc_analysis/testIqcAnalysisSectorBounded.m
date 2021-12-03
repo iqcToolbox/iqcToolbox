@@ -55,7 +55,7 @@ function testOpenLoopUnstableIsNotRobustlyStableWithSaturation(testCase)
     sat_k = sat * k;
     lft = interconnect(sat_k, toLft(g));
     % IQC analysis should fail when checking if nominal system is stable
-    options = AnalysisOptions('verbose', true);
+    options = AnalysisOptions('verbose', false);
     result = iqcAnalysis(lft, 'analysis_options', options);
     testCase.verifyFalse(result.valid)
     % Repeat analysis with different model
