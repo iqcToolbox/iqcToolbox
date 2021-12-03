@@ -11,7 +11,7 @@ classdef DeltaSectorBounded < Delta
 %     deltaToMultiplier(this_delta, varargin)
 %                        :: Method for constructing a multiplier from a delta
 %
-%   Note: A passive nonlinearities (see DeltaPassive) are sector-bounded within
+%   Note: Passive nonlinearities (see DeltaPassive) are sector-bounded within
 %     the sector [0, Inf].
 %
 %   See also Delta, DeltaSectorBounded.DeltaSectorBounded, DeltaPassive

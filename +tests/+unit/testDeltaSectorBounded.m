@@ -19,7 +19,7 @@
 %      horizon_period is consistent with the prior horizon_period
 %
 %  7. DeltaSectorBounded shall be capable of generating a
-%       MultiplierBandedWhite from a DeltaSectorBounded object
+%       MultiplierSectorBounded from a DeltaSectorBounded object
 
 %%
 %  Copyright (c) 2021 Massachusetts Institute of Technology 

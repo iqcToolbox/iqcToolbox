@@ -3,7 +3,7 @@
 %     analyzing sector-bounded uncertain systems that are not robustly stable
 %  2. IQC analysis shall produce an upper-bound on worst-case performance
 %     for many sector-bounded uncertain systems that are robustly stable. 
-%     Producing an upper-bound for ALL SLTV-RB-uncertain-systems is not 
+%     Producing an upper-bound for ALL SB uncertain systems is not 
 %     expected.
 
 %%
@@ -106,4 +106,4 @@ end
 end
 
 %%  CHANGELOG
-% Nov. 18, 2021: Added after v0.6.0 - Micah Fry (micah.fry@ll.mit.edu)
+% Dec. 02, 2021: Added after v0.6.0 - Micah Fry (micah.fry@ll.mit.edu)
