@@ -106,9 +106,8 @@ if isempty(chan_in)
     chan_select = eye(dim_state);
 else
     dim_state  = length(chan_in);
-    cols = [eye(dim_state), zeros(dim_state, 1)];
-    chan_select = [cols(:, chan_in), zeros(dim_state,...
-                   this_mult.dim_in(1) - dim_state)];
+    cols = eye(this_mult.dim_in(1));
+    chan_select = cols(chan_in, :);
 end
 chan_select = repmat({chan_select}, 1, total_time);
 chan_select = toLft(chan_select, this_mult.horizon_period);

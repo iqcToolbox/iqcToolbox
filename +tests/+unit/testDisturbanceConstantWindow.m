@@ -212,6 +212,8 @@ function testMultiplierConstructor(testCase)
     testCase.verifyEqual(m.window, window)
     testCase.verifyEqual(m.horizon_period, horizon_period)    
     testCase.verifyEqual(m.dim_in, dim_in_lft)
+    % The following verification would have failed prior to hotfix-010
+    testCase.verifyEqual(m.filter_lft.d, repmat({[0, -1]}, 1, sum(horizon_period)))
 end
 
 function testMultiplierBadConstructionCall(testCase)
@@ -253,6 +255,39 @@ function testTimeVaryingQuad(testCase)
                     'UniformOutput', false);
     testCase.verifyEqual(quads_ti{1}, 0)
     testCase.verifyTrue(all(cellfun(@(q) isequal(q, quads_ti{2}), quads_ti(2:end))))
+end
+
+function testMultiplierConstructionWithChannelGreaterThanTwo(testCase)
+    % This test would have failed previous to hotfix-010
+    % Although the Multiplier could be correctly constructed with a disturbance
+    % channel of all or 1, it constructed the wrong multiplier for all other
+    % channel specifications (also see method testMultiplierConstructor)
+    name = 'd';
+    chan_floor = 3;
+    dim_max = 6;
+    dim_in = randi([chan_floor, dim_max]);
+    chan_in = unique(randi([chan_floor, dim_in], [dim_in + 1 - chan_floor, 1]));
+    window = 1;
+    horizon_period = [0, 1];
+    override = true;
+    d = DisturbanceConstantWindow(name,...
+                                  {chan_in},...
+                                  window,...
+                                  horizon_period,...
+                                  override);              
+    dim_in_lft = dim_in * ones(1, sum(horizon_period));
+    m = MultiplierConstantWindow(d, dim_in_lft);
+    testCase.verifyEqual(m.name, 'd')
+    testCase.verifyEqual(m.chan_in, repmat({chan_in}, 1, sum(horizon_period)))
+    testCase.verifyEqual(m.window, window)
+    testCase.verifyEqual(m.horizon_period, horizon_period)    
+    testCase.verifyEqual(m.dim_in, dim_in_lft)
+    d_matrix = zeros(length(chan_in), dim_in);
+    for i = 1:length(chan_in)
+        d_matrix(i, chan_in(i)) = -1;
+    end
+    testCase.verifyEqual(m.filter_lft.d,...
+                         repmat({d_matrix}, 1, sum(horizon_period)))
 end
 end
 end
