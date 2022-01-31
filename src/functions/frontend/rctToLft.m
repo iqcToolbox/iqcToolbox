@@ -126,14 +126,14 @@ function lft_out = ussToLft(uss_in, varargin)
     end
     
     delta_cell = cell(size(delta_norm,1), 1);
-    map = varargin{1}{1};
-    if nargin == 1
+
+    if length(varargin{1}) == 0
         for i = 1:size(delta_norm)
             delta_cell{i} = toDelta(delta_norm{i});
         end
-    elseif nargin == 2
+    elseif length(varargin{1}) == 1
         for i = 1:size(delta_norm)
-            delta_cell{i} = toDelta(delta_norm{i}, map);
+            delta_cell{i} = toDelta(delta_norm{i}, varargin{1}{1});
         end
     end
     
