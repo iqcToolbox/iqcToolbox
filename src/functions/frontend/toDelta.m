@@ -1,7 +1,7 @@
-function delta_out = toDelta(rct_obj)
+function delta_out = toDelta(rct_obj, varargin)
 %% TODELTA - Function for converting uncertain RCT objects to iqcToolbox Deltas.
 %
-%     delta_out = toDelta(rct_obj)
+%     delta_out = toDelta(rct_obj, varagin)
 %
 %     If input is ultidyn, output is a DeltaDlti.
 %     If input is ureal, output is a DeltaSlti. 
@@ -11,6 +11,7 @@ function delta_out = toDelta(rct_obj)
 %     ---------
 %       Input:
 %         rct_obj : ureal or ultidyn (from Robust Control Toolbox)
+%         varagin : map of delta names and objects from lftToRct
 %       output:
 %         delta_out : Delta object :: the resultant delta
 %
@@ -33,8 +34,10 @@ if nargin == 1
         error('toDelta:toDelta', ['When providing a single argument for toDelta, ',...
               'that input must be a ureal or ultidyn']);
     end
-
+elseif nargin == 2
+    delta_out = normalizeLft(toLft(varargin{1}(erase(rct_obj.Name, 'Normalized')))).delta.deltas{1};
 end
+
 end
 
 function delta_out = ultidynToDelta(ulti_in)

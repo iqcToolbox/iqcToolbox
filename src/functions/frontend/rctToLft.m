@@ -1,4 +1,4 @@
-function lft_out = rctToLft(rct_obj) 
+function lft_out = rctToLft(rct_obj, varargin) 
 %% RCTTOLFT for converting ureal, ultidyn, umat, uss objects to Ulft objects.
 %
 %     lft_out = rctToLft(rct_obj)
@@ -11,6 +11,8 @@ function lft_out = rctToLft(rct_obj)
 %     ---------
 %       Input:
 %         rct_obj : ureal, ultidyn, umat, or uss object
+%         varagin : optional containers.Map object of delta names to rct
+%                   deltas. 
 %       Output:
 %         lft_out : Ulft object :: the resultant lft
 %
@@ -23,7 +25,7 @@ function lft_out = rctToLft(rct_obj)
 
 %% Calling appropriate functions for different input arguments
     if isa(rct_obj, 'uss')
-        lft_out = ussToLft(rct_obj);
+        lft_out = ussToLft(rct_obj, varargin);
     elseif isa(rct_obj, 'umat')
         lft_out = umatToLft(rct_obj);
     elseif isa(rct_obj, 'ultidyn')
@@ -74,7 +76,7 @@ function lft_out = umatToLft(umat_in)
     lft_out = Ulft(a, b, c, d, delta_object);
 end
 
-function lft_out = ussToLft(uss_in)
+function lft_out = ussToLft(uss_in, varargin)
 
     [m, delta_std, ~, delta_norm] = lftdata(uss_in);
     m = [m.A, m.B; m.C, m.D];
@@ -124,9 +126,15 @@ function lft_out = ussToLft(uss_in)
     end
     
     delta_cell = cell(size(delta_norm,1), 1);
-    
-    for i = 1:size(delta_norm)
-        delta_cell{i} = toDelta(delta_norm{i});
+
+    if isempty(varargin{1})
+        for i = 1:size(delta_norm)
+            delta_cell{i} = toDelta(delta_norm{i});
+        end
+    elseif length(varargin{1}) == 1
+        for i = 1:size(delta_norm)
+            delta_cell{i} = toDelta(delta_norm{i}, varargin{1}{1});
+        end
     end
     
     % check to see if there are any states/whether any time deltas were
