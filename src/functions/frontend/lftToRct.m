@@ -1,4 +1,4 @@
-function uss_out = lftToRct(ulft_input)
+function [uss_out, delta_map] = lftToRct(ulft_input)
 %% lftToRct for converting Ulft objects to uss objects.
 %
 %     uss_out = lftToRct(ulft_input)
@@ -61,8 +61,15 @@ function uss_out = lftToRct(ulft_input)
     d = m(dim_in+1:end, dim_out+1:end);
     
     ss_lft = ss(a, b, c, d, ts);
-    
+    delta_map = delta_mapper(ulft_input);
     uss_out = lft(uncertainties, ss_lft);
+end
+
+function mapped_delta = delta_mapper(in_lft)
+    mapped_delta = containers.Map;
+    for i = 1:length(in_lft.delta.deltas)
+        mapped_delta(in_lft.delta.deltas{i}.name) = in_lft.delta.deltas{i};
+    end
 end
 
 %%  CHANGELOG
