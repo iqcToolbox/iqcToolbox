@@ -1,0 +1,41 @@
+# Checks tests across different OS and MATLAB versions
+
+name: Test Compilers
+
+# Controls when the action will run.
+on:
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+env:
+  CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+jobs:
+  # This workflow executes a matrix of jobs for different OS and MATLAB versions
+  multiple-versions:
+    # The type of runner that the job will run on
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-2019, macos-11]
+        release: [R2021b]
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+
+      # Sets up MATLAB on the GitHub Actions runner
+      - name: Setup MATLAB
+        uses: matlab-actions/setup-matlab@v1
+        with:
+          release: ${{ matrix.release }}
+
+
+      # Compiler tests
+      - name: Compiler tests
+        uses: matlab-actions/run-command@v1
+        with:
+          command: addpath('scripts'); test_compiler
+
