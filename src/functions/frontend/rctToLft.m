@@ -127,7 +127,7 @@ function lft_out = ussToLft(uss_in, varargin)
     
     delta_cell = cell(size(delta_norm,1), 1);
 
-    if length(varargin{1}) == 0
+    if isempty(varargin{1})
         for i = 1:size(delta_norm)
             delta_cell{i} = toDelta(delta_norm{i});
         end
