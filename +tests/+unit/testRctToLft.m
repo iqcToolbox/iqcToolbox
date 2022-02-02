@@ -1,7 +1,9 @@
 %% Requirements:
 %   1. rctToLft shall convert uss, umat, ureal, and ultidyn objects to Ulft objects
-%	2. rctToLft shall throw an error if provided an invalid object
-%   3. rctToLft shall throw a warning (but not interrupt) if the output
+%   2. rctToLft shall convert uss that have udyn objects to Ulft objects if an
+%       appropriate map defining the properties of each udyn object is provided
+%	3. rctToLft shall throw an error if provided an invalid object
+%   4. rctToLft shall throw a warning (but not interrupt) if the output
 %       Ulft must have normalized Deltas.
 
 %%
@@ -408,6 +410,32 @@ function testUreal(testCase)
     d_iqc = rctToLft(d_rct);
     d_expected = toLft(DeltaSlti(name, dim_outin, lower_bound, upper_bound));
     verifyEqual(testCase, d_iqc, d_expected)
+end
+
+function testUdynConversion(testCase)
+    % Create a random LFT object
+    num_del = 4;
+    dim = randi([1, 5]);
+    del_passive = DeltaPassive('pass', dim);
+    req_dels = {'DeltaBounded', del_passive, 'DeltaSltvRateBnd'};
+    lft_obj1 = Ulft.random('num_deltas', num_del,...
+                          'req_deltas', req_dels,...
+                          'horizon_period', [0, 1]);
+%     lft_obj1 = toLft(DeltaSlti('d') + 1); % Use simple LFT object instead
+    lft_obj1 = lft_obj1.normalizeLft();
+    % Convert it to an RCT object
+    [rct_obj, del_map] = lftToRct(lft_obj1);
+    % Convert it back to an LFT object (should be equivalent)
+    lft_obj2 = rctToLft(rct_obj, del_map);
+    % Reorder original LFT to make comparison
+    [~, ~, ~, del_n] = lftdata(rct_obj);
+    del_inds = zeros(1, length(del_n));
+    for i = 1:length(del_n)
+        name = erase(del_n{i}.Name, 'Normalized');
+        del_inds(i) = find(strcmp(lft_obj1.delta.names, name));
+    end    
+    lft_obj1 = lft_obj1.reorderLftDelta(del_inds);
+    testCase.verifyEqual(lft_obj1, lft_obj2);
 end
 
 end

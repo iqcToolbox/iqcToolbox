@@ -1,6 +1,9 @@
 %% Requirements:
 % 1. lftToRct shall convert time-invariant Ulft to uss, umat, or ss objects
-% 2. lftToRct shall throw an error if provided an invalid object or an object 
+% 2. lftToRct shall map all non-convertible Delta objects to udyn objects and
+%     provide an additional output remapping each udyn object to its original
+%     Delta object
+% 3. lftToRct shall throw an error if provided an invalid object or an object 
 %     that doesn't have a [0 1] horizon_period
 
 %%
@@ -146,6 +149,26 @@ function testTimeVaryingErrorAndBadInput(testCase)
     verifyError(testCase, @() lftToRct(lft_tv), 'lftToRct:lftToRct')
     verifyError(testCase, @() lftToRct('a'), 'MATLAB:invalidType')
     verifyError(testCase, @() lftToRct({1}), 'MATLAB:invalidType')
+end
+
+function testUdynMapping(testCase)
+    num_del = 4;
+    dim = randi([1, 5]);
+    lb = -rand;
+    ub = rand;
+    del_sector = DeltaSectorBounded('sb', dim, lb, ub);
+    req_dels = {'DeltaBounded', del_sector, 'DeltaSltvRateBnd'};
+    lft_obj = Ulft.random('num_deltas', num_del,...
+                          'req_deltas', req_dels,...
+                          'horizon_period', [0, 1]);
+    [rct_obj, del_map] = lftToRct(lft_obj);
+    [~, ~, ~, delta_norm] = lftdata(rct_obj);
+    for i = 1:length(delta_norm)
+        name = erase(delta_norm{i}.Name, 'Normalized');
+        del_ind = strcmp(lft_obj.delta.names, name);
+        testCase.verifyEqual(del_map(name), lft_obj.delta.deltas{del_ind});
+    end
+    
 end
 end
     
