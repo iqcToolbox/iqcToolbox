@@ -34,8 +34,12 @@ jobs:
         uses: matlab-actions/setup-matlab@v0
 
       # Use static analyzer and rules from HEAD commit
+#        run: git checkout ${{ github.event.pull_request.head.sha }} -- +tests/static_analyzer_base.m +tests/chkcode_rules.txt
       - name: Checkout static_analyzer and rules
-        run: git checkout ${{ github.event.pull_request.head.sha }} -- +tests/static_analyzer_base.m +tests/chkcode_rules.txt
+        run: gh pr checkout ${{ github.event.pull_request.number }}; pr_commit=$(git rev-parse HEAD);  git checkout ${{ github.event.pull_request.base.sha }}; git checkout $pr_commit -- +tests/static_analyzer_base.m +tests/chkcode_rules.txt
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
 
       # Run static analysis on base commit
       - name: Base static analysis
@@ -45,7 +49,9 @@ jobs:
 
       # Save old results and checkout head commit
       - name: Switching to head commit
-        run: git add old_results.mat; git stash; git checkout ${{ github.event.pull_request.head.sha }}; git stash pop
+        run: git add old_results.mat; git stash; gh pr checkout ${{ github.event.pull_request.number }}; git stash pop
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       # Run static analysis on merge commit
       - name: Diff static analysis on merge commit
