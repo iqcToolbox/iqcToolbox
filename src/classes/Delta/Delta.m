@@ -104,16 +104,16 @@ methods
                type)                      
     end
     
-    function [recastA, recastB, recastC, recastD, recastDelta] = recastMatricesAndDelta(this_delta) %#ok<MANU>
+    function [recastA, recastB, recastC, recastDelta] = recastMatricesAndDelta(this_delta) %#ok<MANU>
     %% RECASTMATRICESANDDELTA method for creating a modified LFT for IQC analysis.
     %  this method should be extended for any subclass of Delta whereby IQC
     %  analysis is conducted on an analyzable, but different LFT (see, for
     %  example, DeltaSltvRateBnd and DeltaSltvRateBndImpl). The output
     %  arguments are function handles for modifying the initial LFT a, b,
-    %  c, d matrices and Delta objects. These handles are used in the
+    %  c matrices and Delta objects. These handles are used in the
     %  sub-function iqcAnalysis/modifyLft.
     %
-    %    [newA, newB, newC, newD, newDelta] = recastMatricesAndDelta(this_delta)
+    %    [newA, newB, newC, newDelta] = recastMatricesAndDelta(this_delta)
     %
     %    Variables:
     %    ---------
@@ -123,14 +123,12 @@ methods
     %         recastA : function_handle :: function to transform a matrices of LFT
     %         recastB : function_handle :: function to transform b matrices of LFT
     %         recastC : function_handle :: function to transform c matrices of LFT
-    %         recastD : function_handle :: function to transform d matrices of LFT
     %         recastDelta : Delta object :: new Delta object for modified LFT
     %
     %    See also iqcAnalysis.modifyLft, DeltaSltvRateBnd.recastMatricesAndDelta.
         recastA     = function_handle.empty();
         recastB     = function_handle.empty();
         recastC     = function_handle.empty();
-        recastD     = function_handle.empty();
         recastDelta = [];
     end
     

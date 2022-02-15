@@ -22,19 +22,10 @@ function mult = combineAllMultipliers(mult_del, mult_dis, mult_perf, dim_out)
 %  SPDX-License-Identifier: GPL-2.0
 %%
 
-validateattributes(mult_del,...
-                   'MultiplierDeltaCombined',...
-                   {'nonempty'},...
-                   mfilename)
-validateattributes(mult_dis,...
-                   'MultiplierDisturbanceCombined',...
-                   {'nonempty'},...
-                   mfilename)
-validateattributes(mult_perf,...
-                   'MultiplierPerformanceCombined',...
-                   {'nonempty'},...
-                   mfilename)
-validateattributes(dim_out, 'numeric', {'integer', 'positive'}, mfilename)
+validateattributes(mult_del, 'MultiplierDeltaCombined', {'nonempty'}, mfilename)
+validateattributes(mult_dis, 'MultiplierDisturbanceCombined', {}, mfilename)
+validateattributes(mult_perf, 'MultiplierPerformanceCombined', {}, mfilename)
+validateattributes(dim_out, 'numeric', {'integer', 'nonnegative'}, mfilename)
 
 % Create combined filter, create combined quad
 a_del   = mult_del.filter.a;
@@ -47,34 +38,43 @@ d12_del = mult_del.filter.d12;
 d21_del = mult_del.filter.d21;
 d22_del = mult_del.filter.d22;
 
-a_perf   = mult_perf.filter.a;
-b1_perf  = mult_perf.filter.b1;
-b2_perf  = mult_perf.filter.b2;
-c1_perf  = mult_perf.filter.c1;
-c2_perf  = mult_perf.filter.c2;
-d11_perf = mult_perf.filter.d11;
-d12_perf = mult_perf.filter.d12;
-d21_perf = mult_perf.filter.d21;
-d22_perf = mult_perf.filter.d22;
-
-a_dis = mult_dis.filter.a;
-b_dis = mult_dis.filter.b;
-c_dis = mult_dis.filter.c;
-d_dis = mult_dis.filter.d;
-
 q11_del = mult_del.quad.q11;
 q12_del = mult_del.quad.q12;
 q21_del = mult_del.quad.q21;
 q22_del = mult_del.quad.q22;
 
-q11_perf = mult_perf.quad.q11;
-q12_perf = mult_perf.quad.q12;
-q21_perf = mult_perf.quad.q21;
-q22_perf = mult_perf.quad.q22;
-
-q   = mult_dis.quad.q;
-
 total_time = length(a_del);
+
+if isempty(mult_perf)
+    [a_perf,   b1_perf,  b2_perf,  c1_perf, c2_perf,...
+     d11_perf, d12_perf, d21_perf, d22_perf,...
+     q11_perf, q12_perf, q21_perf, q22_perf] = deal(repmat({[]}, 1, total_time));
+else
+    a_perf   = mult_perf.filter.a;
+    b1_perf  = mult_perf.filter.b1;
+    b2_perf  = mult_perf.filter.b2;
+    c1_perf  = mult_perf.filter.c1;
+    c2_perf  = mult_perf.filter.c2;
+    d11_perf = mult_perf.filter.d11;
+    d12_perf = mult_perf.filter.d12;
+    d21_perf = mult_perf.filter.d21;
+    d22_perf = mult_perf.filter.d22;
+    q11_perf = mult_perf.quad.q11;
+    q12_perf = mult_perf.quad.q12;
+    q21_perf = mult_perf.quad.q21;
+    q22_perf = mult_perf.quad.q22;
+end
+
+if isempty(mult_dis)
+    [a_dis, b_dis, c_dis, d_dis, q] = deal(repmat({[]}, 1, total_time));
+else
+    a_dis = mult_dis.filter.a;
+    b_dis = mult_dis.filter.b;
+    c_dis = mult_dis.filter.c;
+    d_dis = mult_dis.filter.d;
+    q     = mult_dis.quad.q;
+end
+
 a   = cell(1, total_time);
 b1  = cell(1, total_time);
 b2  = cell(1, total_time);
@@ -143,7 +143,10 @@ mult.decision_vars  = [mult_del.decision_vars,...
 mult.constraints    = [mult_del.constraints,...
                        mult_perf.constraints,...
                        mult_dis.constraints];
-mult.objective      = mult_perf.objective;
-mult.horizon_period = mult_perf.horizon_period;
+mult.horizon_period = mult_del.horizon_period;
 mult.discrete       = discrete;
+if isempty(mult_perf)
+    mult.objective  = [];
+else
+    mult.objective  = mult_perf.objective;
 end

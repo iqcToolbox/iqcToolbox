@@ -28,7 +28,11 @@ function this_mult = MultiplierPerformanceCombined(mults_perf)
 %
 %  See also MultiplierPerformanceCombined
 
-    validateattributes(mults_perf, 'MultiplierPerformance', {'nonempty'})
+    validateattributes(mults_perf, 'MultiplierPerformance', {})
+    if isempty(mults_perf)
+        this_mult = MultiplierPerformanceCombined.empty();
+        return
+    end
 
     horizon_periods = vertcat(mults_perf.horizon_period);
     matchingHorizonPeriods = @(hp) all(ismember(hp, hp(end,:), 'rows'));
