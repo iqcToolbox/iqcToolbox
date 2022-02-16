@@ -129,7 +129,7 @@ methods
         end
     end
     
-    function [recastB, recastC, recastD, recastDis, newPerf] = recastMatricesAndPerformance(this_perf)
+    function [recastB, recastC, recastD, recastDis, newPerf] = recastMatricesAndPerformance(this_perf) %#ok<MANU>
     %% RECASTMATRICESANDPERFORMANCE method for creating a modified LFT for IQC analysis.
     %  this method should be extended for any subclass of Performance whereby IQC
     %  analysis is conducted on an analyzable, but different LFT (see, for

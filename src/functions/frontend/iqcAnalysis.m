@@ -572,8 +572,8 @@ end
 
 % For Performances
 [dim_out, dim_in] = size(lft_analyze);
-all_chan_out = arrayfun(@(dim) [1:dim], dim_out, 'UniformOutput', false);
-all_chan_in  = arrayfun(@(dim) [1:dim], dim_in, 'UniformOutput', false);
+all_chan_out = arrayfun(@(dim) 1:dim, dim_out, 'UniformOutput', false);
+all_chan_in  = arrayfun(@(dim) 1:dim, dim_in, 'UniformOutput', false);
 b_cell = lft_analyze.b;
 c_cell = lft_analyze.c;
 d_cell = lft_analyze.d;
@@ -692,8 +692,6 @@ if new_lft
                        'horizon_period', lft_analyze.horizon_period,...
                        'disturbance', dis,...
                        'performance', perf);
-else
-    lft_analyze = lft_analyze;
 end
 end    
 

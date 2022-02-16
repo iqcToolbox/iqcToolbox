@@ -105,7 +105,7 @@ else
 end
 end
 
-function multiplier = performanceToMultiplier(performance, varargin)
+function multiplier = performanceToMultiplier(performance, varargin)            %#ok<INUSD,VANUS,STOUT>
 %% PERFORMANCETOMULTIPLIER function to generate a multiplier from this object. 
 %
 %  multiplier = performanceToMultiplier(this_perf)
@@ -124,7 +124,7 @@ error('PerformanceStable:performanceToMultiplier',...
        'This method should never be called'])
 end
 
-function [recastB, recastC, recastD, recastDis, newPerf] = recastMatricesAndPerformance(this_perf)
+function [recastB, recastC, recastD, recastDis, newPerf] = recastMatricesAndPerformance(this_perf) %#ok<MANU>
     %% RECASTMATRICESANDPERFORMANCE method for creating a modified LFT for IQC analysis.
     %  this method should be extended for any subclass of Performance whereby IQC
     %  analysis is conducted on an analyzable, but different LFT (see, for
