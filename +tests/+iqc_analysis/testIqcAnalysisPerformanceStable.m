@@ -142,7 +142,7 @@ function testSmallGain(testCase)
         testCase.verifyTrue(result.valid)
         % Make it unstable
         lft.delta.deltas{2}.upper_bound = 1.1 / 0.9 * d.upper_bound;
-        result = iqcAnalysis(lft);
+        result = iqcAnalysis(lft, 'analysis_options', options);
         testCase.verifyFalse(result.valid)
     end
 end
@@ -164,7 +164,7 @@ function testPassiveTheorems(testCase)
     del = DeltaPassive('del_up');
     lft = interconnect(toLft(del), g_lft);
     lft = lft.addPerformance({PerformanceStable()});
-    options = AnalysisOptions('lmi_shift', 1e-12, 'verbose', true);
+    options = AnalysisOptions('lmi_shift', 1e-12, 'verbose', false);
     result = iqcAnalysis(lft, 'analysis_options', options);
     testCase.verifyTrue(result.valid)
     % Check that this fails when doing L2 induced performance
