@@ -85,7 +85,10 @@ if lft_in.uncertain && ~isempty(lft_in.timestep)
     % We normalize here to ensure nominal analysis is in the appropriate range
     % Normalization is not forced on the intended analysis of the system because the user-provided
     % Multipliers pertain to the Deltas of the given lft, and not the normalized ones
-    lft_normalized = normalizeLft(lft_in);
+    lft_normalized = lft_in.removeDisturbance(1:length(lft_in.disturbance.names))...
+                           .removePerformance(1:length(lft_in.performance.names))...
+                           .addPerformance({PerformanceStable()})...
+                           .normalizeLft;
     nominal_system = removeUncertainty(lft_normalized,...
                                        lft_normalized.delta.names(2:end));
     op = AnalysisOptions('verbose', options.yalmip_settings.verbose,...
@@ -335,8 +338,14 @@ dim_in = num2cell(size(lft_in_state, 2));
 
 % Generate system: filter_lft_eye = mult.filter * [lft ; eye]
 identity_cell = cellfun(@(dim) eye(dim), dim_in, 'UniformOutput', false);
-identity_lft = toLft(identity_cell, lft_in.horizon_period);
-filt_lft_eye = mult.filter_lft * [lft_in_state; identity_lft];
+if all(cellfun(@isempty, identity_cell))
+    % This will corner case will occur if the combined multiplier is empty
+    % (i.e., stability analysis on nominal systems)
+    filt_lft_eye = lft_in_state;
+else
+    identity_lft = toLft(identity_cell, lft_in.horizon_period);
+    filt_lft_eye = mult.filter_lft * [lft_in_state; identity_lft];
+end
 
 % Reset state_in dimensions to pertain to filt_lft_eye, rather than lft_in
 if ~isempty(filt_lft_eye.timestep)
@@ -615,7 +624,7 @@ for i = 1:num_perfs
         for k = 1:total_time
             b_pre{k} = b_cell{k}(:, 1 : chan_in{k}(1) - 1);
             b_this{k} = b_cell{k}(:, chan_in{k});
-            b_post{k} = b_cell{k}(:, chan_in{k} + 1 : end);
+            b_post{k} = b_cell{k}(:, chan_in{k}(end) + 1 : end);
         end
         b_this = recastB(b_this);
         for k = 1:total_time
@@ -630,7 +639,7 @@ for i = 1:num_perfs
         for k = 1:total_time
             c_pre{k} = c_cell{k}(1 : chan_out{k}(1) - 1, :);
             c_this{k} = c_cell{k}(chan_out{k}, :);
-            c_post{k} = c_cell{k}(chan_out{k} + 1 : end, :);
+            c_post{k} = c_cell{k}(chan_out{k}(end) + 1 : end, :);
         end
         c_this = recastC(c_this);
         for k = 1:total_time
@@ -647,10 +656,10 @@ for i = 1:num_perfs
         for k = 1:total_time
             out_pre_inds  = (1 : chan_out{k}(1) - 1);
             out_this_inds = chan_out{k};
-            out_post_inds = (chan_out{k} + 1 : size(d_cell{k}, 1));
+            out_post_inds = (chan_out{k}(end) + 1 : size(d_cell{k}, 1));
             in_pre_inds   = (1 : chan_in{k}(1) - 1);
             in_this_inds  = chan_in{k};
-            in_post_inds  = (chan_in{k} + 1 : size(d_cell{k}, 2));            
+            in_post_inds  = (chan_in{k}(end) + 1 : size(d_cell{k}, 2));            
             d_11{k} = d_cell{k}(out_pre_inds,  in_pre_inds);
             d_12{k} = d_cell{k}(out_pre_inds,  in_this_inds);
             d_13{k} = d_cell{k}(out_pre_inds,  in_post_inds);
