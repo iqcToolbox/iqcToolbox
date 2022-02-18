@@ -468,8 +468,7 @@ function testDeltaPassiveSampleAndValidate(testCase)
 end
 
 function testDeltaSampleAndValidate(testCase)
-    del = DeltaSltvRateBnd('d');
-    [~, ~, ~, del] = recastMatricesAndDelta(del);
+    del = DeltaSltvRateBndImpl('d');
     verifyError(testCase, @() sample(del), 'Delta:sample')
     verifyError(testCase, @() validateSample(del), 'Delta:validateSample')
 end

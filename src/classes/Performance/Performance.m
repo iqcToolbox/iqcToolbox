@@ -129,7 +129,7 @@ methods
         end
     end
     
-function mod_lft_handle = modifyLft(this_perf)
+function mod_lft_handle = modifyLft(this_perf)                                  %#ok<MANU>
     %% MODIFYLFT method for creating a modified LFT for IQC analysis.
     %  this method should be extended for any subclass of Performance whereby IQC
     %  analysis is conducted on an analyzable, but different LFT (see, for

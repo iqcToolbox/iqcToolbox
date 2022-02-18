@@ -296,7 +296,7 @@ function mod_lft_handle = modifyLft(this_del)
                     lft_in.c, dim_in, 'UniformOutput', false);
         deltas = lft_in.delta.deltas;
         names = lft_in.delta.names;
-        this_ind = find(strcmp(names, this_del.name));
+        this_ind = strcmp(names, this_del.name);
         total_time = sum(this_del.horizon_period);
         box = cell(1, total_time);
         for i = 1 : total_time
