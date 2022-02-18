@@ -153,7 +153,8 @@ function testPassiveTheorems(testCase)
     upper_lft = toLft(DeltaPassive('del_up'));
     lft = interconnect(upper_lft, lower_lft);
     lft = lft.addPerformance({PerformanceStable()});
-    result = iqcAnalysis(lft);
+    options = AnalysisOptions('verbose', false);
+    result = iqcAnalysis(lft, 'analysis_options', options);
     testCase.verifyTrue(result.valid)
     
     % Interconnection of strictly passive TF with passive operator is robustly stable (Khalil Theorem 6.4)
