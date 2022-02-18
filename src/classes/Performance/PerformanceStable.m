@@ -124,7 +124,7 @@ error('PerformanceStable:performanceToMultiplier',...
        'This method should never be called'])
 end
 
-function [recastB, recastC, recastD, recastDis, newPerf] = recastMatricesAndPerformance(this_perf) %#ok<MANU>
+function mod_lft_handle = modifyLft(this_perf)
     %% RECASTMATRICESANDPERFORMANCE method for creating a modified LFT for IQC analysis.
     %  this method should be extended for any subclass of Performance whereby IQC
     %  analysis is conducted on an analyzable, but different LFT (see, for
@@ -147,14 +147,21 @@ function [recastB, recastC, recastD, recastDis, newPerf] = recastMatricesAndPerf
     %         newPerf : Performance object :: new Performance object for modified LFT
     %
     %    See also iqcAnalysis.modifyLft, PerformanceStable.recastMatricesAndPerformance
-    recastB = @(b_cell) cellfun(@(b) zeros(size(b, 1), 0), b_cell,...
-                                'UniformOutput', false);
-    recastC = @(c_cell) cellfun(@(c) zeros(0, size(c, 2)), c_cell,...
-                                'UniformOutput', false);
-    recastD = @(d_cell) cellfun(@(d) [], d_cell,...
-                                'UniformOutput', false);
-    recastDis = @(dis) [];
-    newPerf = [];
+    function lft_new = modifyLftByPerformanceStability(lft_in)
+        this_perf.name
+        total_time = sum(lft_in.horizon_period);
+        [b, c, d] = deal(cell(1, total_time));
+        for i = 1:total_time
+            b{i} = zeros(size(lft_in.a{i}, 1), 0);
+            c{i} = zeros(0, size(lft_in.a{i}, 2));
+            d{i} = [];
+        end
+        lft_new = Ulft(lft_in.a, b, c, d, lft_in.delta,...
+                       'horizon_period', lft_in.horizon_period,...
+                       'disturbance', SequenceDisturbance(),...
+                       'performance', SequencePerformance());
+    end
+    mod_lft_handle = @modifyLftByPerformanceStability;
 end
 end
 end
