@@ -129,35 +129,27 @@ methods
         end
     end
     
-    function [recastB, recastC, recastD, recastDis, newPerf] = recastMatricesAndPerformance(this_perf) %#ok<MANU>
-    %% RECASTMATRICESANDPERFORMANCE method for creating a modified LFT for IQC analysis.
+function mod_lft_handle = modifyLft(this_perf)
+    %% MODIFYLFT method for creating a modified LFT for IQC analysis.
     %  this method should be extended for any subclass of Performance whereby IQC
     %  analysis is conducted on an analyzable, but different LFT (see, for
-    %  example, PerformanceStable). The output
-    %  arguments are function handles for modifying the initial LFT b,
-    %  c, d matrices, Disturbance, and Performance objects. These handles are used in the
+    %  example, PerformanceStable). The output argument is a function handle 
+    %  for modifying the LFT given the current LFT. This handle is used in the
     %  sub-function iqcAnalysis/modifyLft.
     %
-    %    [recastB, recastC, recastD, recastDis, newPerf] = recastMatricesAndPerformance(this_perf)
+    %    mod_lft_handle = modifyLft(this_perf)
     %
     %    Variables:
     %    ---------
     %      Input:
     %         this_perf : Performance object
     %      Output:
-    %         recastB : function_handle :: function to transform b matrices of LFT
-    %         recastC : function_handle :: function to transform c matrices of LFT
-    %         recastD : function_handle :: function to transform d matrices of LFT
-    %         recastDis : function_handle :: function to transform Disturbance objects
-    %         newPerf : Performance object :: new Performance object for modified LFT
+    %         modifyLft : function_handle :: function to transform original LFT
     %
-    %    See also iqcAnalysis.modifyLft, PerformanceStable.recastMatricesAndPerformance.
-        recastB   = function_handle.empty();
-        recastC   = function_handle.empty();
-        recastD   = function_handle.empty();
-        recastDis = function_handle.empty();
-        newPerf   = nan;        
-    end
+    %    See also iqcAnalysis.modifyLft, PerformanceStable.modifyLft
+    
+    mod_lft_handle = function_handle.empty;
+end
 end
 end
 

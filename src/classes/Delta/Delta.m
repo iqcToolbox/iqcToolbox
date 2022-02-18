@@ -104,32 +104,27 @@ methods
                type)                      
     end
     
-    function [recastA, recastB, recastC, recastDelta] = recastMatricesAndDelta(this_delta) %#ok<MANU>
-    %% RECASTMATRICESANDDELTA method for creating a modified LFT for IQC analysis.
+    function mod_lft_handle = modifyLft(this_delta)
+    %% MODIFYLFT method for creating a modified LFT for IQC analysis.
     %  this method should be extended for any subclass of Delta whereby IQC
     %  analysis is conducted on an analyzable, but different LFT (see, for
-    %  example, DeltaSltvRateBnd and DeltaSltvRateBndImpl). The output
-    %  arguments are function handles for modifying the initial LFT a, b,
-    %  c matrices and Delta objects. These handles are used in the
+    %  example, DeltaSltvRateBnd and DeltaSltvRateBndImpl). 
+    %  The output argument is a function handle 
+    %  for modifying the LFT given the current LFT. This handle is used in the
     %  sub-function iqcAnalysis/modifyLft.
     %
-    %    [newA, newB, newC, newDelta] = recastMatricesAndDelta(this_delta)
+    %    mod_lft_handle = modifyLft(this_delta)
     %
     %    Variables:
     %    ---------
     %      Input:
     %         this_delta : Delta object
     %      Output:
-    %         recastA : function_handle :: function to transform a matrices of LFT
-    %         recastB : function_handle :: function to transform b matrices of LFT
-    %         recastC : function_handle :: function to transform c matrices of LFT
-    %         recastDelta : Delta object :: new Delta object for modified LFT
+    %         modifyLft : function_handle :: function to transform original LFT
     %
-    %    See also iqcAnalysis.modifyLft, DeltaSltvRateBnd.recastMatricesAndDelta.
-        recastA     = function_handle.empty();
-        recastB     = function_handle.empty();
-        recastC     = function_handle.empty();
-        recastDelta = [];
+    %    See also iqcAnalysis.modifyLft, DeltaSltvRateBnd.modifyLft
+    
+    mod_lft_handle = function_handle.empty;
     end
     
     function [del_diff, del_ave, del_scale, del_norm] = normalizeDelta(this_delta)

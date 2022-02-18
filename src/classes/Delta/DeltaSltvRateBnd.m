@@ -272,53 +272,52 @@ function multiplier = deltaToMultiplier(this_del, varargin)                     
            ' DeltaSltvRateBndImpl uncertainty']);
 end
 
-function [recastA, recastB, recastC, newDelta] = recastMatricesAndDelta(this_del)
-%% RECASTMATRICESANDDELTA function to recast the LFT and DeltaSltvRateBnd such that
-%  analysis results of former LFT is equivalent to the recast LFT. This
+function mod_lft_handle = modifyLft(this_del)
+%% MODIFYLFT method for modifying the LFT and DeltaSltvRateBnd such that
+%  analysis results of former LFT is equivalent to the modified LFT. This
 %  involves replacing DeltaSltvRateBnd with DeltaSltvRateBndImpl, and
 %  modifying the LFT to have extra zero inputs
 %
-%    [newA, newB, newC, newDelta] = recastMatricesAndDelta(this_delta)
+%    mod_lft_handle = modifyLft(this_delta)
 %
 %    Variables:
 %    ---------
 %      Input:
 %         this_delta : DeltaSltvRateBnd object
 %      Output:
-%         recastA : function_handle :: function to transform a matrices of LFT
-%         recastB : function_handle :: function to transform b matrices of LFT
-%         recastC : function_handle :: function to transform c matrices of LFT
-%         recastDelta : DeltaSltvRateBndImpl object :: new Delta object for modified LFT
+%         modifyLft : function_handle :: function to transform original LFT
 %
 %    See also iqcAnalysis.modifyLft, DeltaSltvRateBndImpl.
-    dim_out = num2cell(this_del.dim_out);
-    dim_in  = num2cell(this_del.dim_in * (this_del.basis_length - 1));
-    recastA = @(a_cell)...
-        cellfun(@(a_mat, dim_out, dim_in) [a_mat, zeros(size(a_mat, 1), dim_in)],...
-                a_cell,...
-                dim_out,...
-                dim_in,...
-                'UniformOutput', false);
-    recastB = [];
-    recastC = @(c_cell)...
-        cellfun(@(c_mat, dim_out, dim_in) [c_mat, zeros(size(c_mat, 1), dim_in)],...
-                c_cell,...
-                dim_out,...
-                dim_in,...
-                'UniformOutput', false);
-    total_time = sum(this_del.horizon_period);
-    box = cell(1, total_time);
-    for i = 1 : total_time
-        box{1, i} = [this_del.lower_bound(i), this_del.upper_bound(i);
-                     this_del.lower_rate(i),  this_del.upper_rate(i)];
+    function lft_new = modifyLftByDeltaSltvRateBnd(lft_in)
+        dim_in  = num2cell(this_del.dim_in * (this_del.basis_length - 1));
+        a = cellfun(@(a_mat, dim_in) [a_mat, zeros(size(a_mat, 1), dim_in)],...
+                    lft_in.a, dim_in, 'UniformOutput', false);
+        c = cellfun(@(c_mat, dim_in) [c_mat, zeros(size(c_mat, 1), dim_in)],...
+                    lft_in.c, dim_in, 'UniformOutput', false);
+        deltas = lft_in.delta.deltas;
+        names = lft_in.delta.names;
+        this_ind = find(strcmp(names, this_del.name));
+        total_time = sum(this_del.horizon_period);
+        box = cell(1, total_time);
+        for i = 1 : total_time
+            box{1, i} = [this_del.lower_bound(i), this_del.upper_bound(i);
+                         this_del.lower_rate(i),  this_del.upper_rate(i)];
+        end
+        region_type = 'box';
+        new_delta = DeltaSltvRateBndImpl(this_del.name,...
+                                         this_del.dim_in,...
+                                         region_type,...
+                                         box,...
+                                         this_del.horizon_period,...
+                                         this_del.basis_length);
+        deltas{this_in} = new_delta;
+        delta = SequenceDelta(deltas);
+        lft_new = Ulft(a, lft_in.b, c, lft_in.d, delta,...
+                       'horizon_period', lft_in.horizon_period,...
+                       'performance', lft_in.performance,...
+                       'disturbance', lft_in.disturbance);
     end
-    region_type = 'box';
-    newDelta = DeltaSltvRateBndImpl(this_del.name,...
-                                              this_del.dim_in,...
-                                              region_type,...
-                                              box,...
-                                              this_del.horizon_period,...
-                                              this_del.basis_length);
+    mod_lft_handle = @modifyLftByDeltaSltvRateBnd;
 end
 
 function [del_diff, del_ave, del_scale, del_norm] = normalizeDelta(this_delta)

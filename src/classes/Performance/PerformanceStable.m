@@ -124,7 +124,7 @@ error('PerformanceStable:performanceToMultiplier',...
        'This method should never be called'])
 end
 
-function mod_lft_handle = modifyLft(this_perf)
+function mod_lft_handle = modifyLft(this_perf)                                  %#ok<MANU>
     %% MODIFYLFT method for creating a modified LFT for IQC analysis.
     %  this method should be extended for any subclass of Performance whereby IQC
     %  analysis is conducted on an analyzable, but different LFT (see, for
@@ -137,14 +137,13 @@ function mod_lft_handle = modifyLft(this_perf)
     %    Variables:
     %    ---------
     %      Input:
-    %         this_perf : Performance object
+    %         this_perf : PerformanceStable object
     %      Output:
     %         modifyLft : function_handle :: function to transform original LFT
     %
     %    See also iqcAnalysis.modifyLft, PerformanceStable.modifyLft
     
     function lft_new = modifyLftByPerformanceStability(lft_in)
-        this_perf.name
         total_time = sum(lft_in.horizon_period);
         [b, c, d] = deal(cell(1, total_time));
         for i = 1:total_time
