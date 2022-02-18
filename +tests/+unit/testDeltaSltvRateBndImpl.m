@@ -440,14 +440,11 @@ function testDeltaToMultiplier(testCase)
     verifyEqual(testCase, mult.discrete, is_discrete)
 end
 
-function testRecastMatricesAndDelta(testCase)
+function testModifyLft(testCase)
     name = 'test';
     del = DeltaSltvRateBndImpl(name);
-    [recastA, recastB, recastC, newDelta] = recastMatricesAndDelta(del);
-    verifyEmpty(testCase, recastA)
-    verifyEmpty(testCase, recastB)
-    verifyEmpty(testCase, recastC)
-    verifyEmpty(testCase, newDelta)
+    mod_handle = del.modifyLft();
+    testCase.verifyEmpty(mod_handle)
 end
 
 function testTimeVaryingMultiplier(testCase)

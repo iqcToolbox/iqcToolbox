@@ -481,226 +481,35 @@ objective = mult.objective + options.scale_state_obj * objective_state;
 kyp_variables = horzcat(p, {p0_state});
 end
 
-function lft_analyze = modifyLft(lft_in)
+function lft_out = modifyLft(lft_in)
 %% MODIFYLFT function for generating modified LFTs which are analyzed in 
 %  place of the original LFT.  This is only necessitated for specific
 %  Deltas (as encoded in their class), such as DeltaRateBndSltv, and relies
-%  on an extension of the recastMatricesAndDelta method
-%  Variables:
-%     lft_in : Ulft object
+%  on an extension of the Delta/Disturbance/Performance.modifyLft methods
+%    Variables:
+%    ---------
+%      Input:
+%         lft_in : Ulft object
+%      Output:
+%         lft_out : Ulft object
 
-total_time = sum(lft_in.horizon_period);
-
-% For Deltas
-delta = lft_in.delta;
-num_dels = length(delta.names);
-% Make LFT matrix blocks
-a_block = cell(1, total_time);
-b_block = cell(1, total_time);
-c_block = cell(1, total_time);
-for i = 1:total_time
-    a_block{i} = mat2cell(lft_in.a{i},...
-                          lft_in.delta.dim_ins(:,i),...
-                          lft_in.delta.dim_outs(:,i));
-    b_block{i} = mat2cell(lft_in.b{i},...
-                          lft_in.delta.dim_ins(:,i),...
-                          size(lft_in.b{i}, 2));
-    c_block{i} = mat2cell(lft_in.c{i},...
-                          size(lft_in.c{i}, 1),...
-                          lft_in.delta.dim_outs(:,i));
-end
-new_lft = false;
-for i = 1:num_dels
-    [recastA, recastB, recastC, newDelta] = ...
-        recastMatricesAndDelta(delta.deltas{i});
-    % Update A matrices
-    if ~isempty(recastA)
-        new_lft = true;
-        mat_temp = cellfun(@(a_block) a_block(i, i),...
-                         a_block);
-        mat_temp = recastA(mat_temp);
-        for k = 1 : total_time
-            a_block{k}{i, i} = mat_temp{k};
-        end
+% For deltas
+lft_out = lft_in;
+deltas = lft_out.delta.deltas;
+for i = 1:length(deltas)
+    mod_lft_handle = deltas{i}.modifyLft();
+    if ~isempty(mod_lft_handle)
+        lft_out = mod_lft_handle(lft_out);
     end
-    % Update B matrices
-    if ~isempty(recastB)
-        new_lft = true;
-        for j = 1 : num_dels
-            if j == i
-                mat_temp = cellfun(@(b_block) b_block(j), b_block);
-            else
-                mat_temp = cellfun(@(a_block) a_block(i, j), a_block);
-            end
-            mat_temp = recastB(mat_temp);
-            for k = 1 : total_time
-                if j == i
-                    b_block{k}{j} = mat_temp{k};
-                else
-                    a_block{k}{i, j} = mat_temp{k};
-                end
-            end
-        end
-    end
-    % Update C matrices
-    if ~isempty(recastC)
-        new_lft = true;
-        for j = 1 : num_dels
-            if j == i
-                mat_temp = cellfun(@(c_block) c_block(j), c_block);
-            else
-                mat_temp = cellfun(@(a_block) a_block(j, i), a_block);
-            end
-            mat_temp = recastC(mat_temp);
-            for k = 1 : total_time
-                if j == i
-                    c_block{k}{j} = mat_temp{k};
-                else
-                    a_block{k}{j, i} = mat_temp{k};
-                end
-            end
-        end
-    end
-    if ~isempty(newDelta)
-        new_lft = true;
-        delta.deltas{i} = newDelta;
-    end
-end
-if new_lft
-    a = cellfun(@(a_block) cell2mat(a_block), a_block, 'UniformOutput', false);
-    b = cellfun(@(b_block) cell2mat(b_block), b_block, 'UniformOutput', false);
-    c = cellfun(@(c_block) cell2mat(c_block), c_block, 'UniformOutput', false);
-    delta = SequenceDelta(delta.deltas);
-    lft_analyze = Ulft(a, b, c, lft_in.d, delta,...
-                       'horizon_period', lft_in.horizon_period,...
-                       'disturbance', lft_in.disturbance,...
-                       'performance', lft_in.performance);
-else
-    lft_analyze = lft_in;
 end
 
 % For Performances
-[dim_out, dim_in] = size(lft_analyze);
-all_chan_out = arrayfun(@(dim) 1:dim, dim_out, 'UniformOutput', false);
-all_chan_in  = arrayfun(@(dim) 1:dim, dim_in, 'UniformOutput', false);
-b_cell = lft_analyze.b;
-c_cell = lft_analyze.c;
-d_cell = lft_analyze.d;
-perfs = lft_analyze.performance.performances;
-num_perfs = length(perfs);
-% For the simplest implementation, assume only 1 performance and contiguous channels
-assert(num_perfs <= 1,...
-       'iqcAnalysis:modifyLft',...
-       'Cannot have more than 1 performance')
-new_lft = false;
-for i = 1:num_perfs
-    chan_out = cell(1, total_time);
-    chan_in = cell(1, total_time);
-    for k = 1:total_time
-        if isempty(perfs{i}.chan_out{k}) || isequal(perfs{i}.chan_out{k}, 0)
-            chan_out{k} = all_chan_out{k};
-        else
-            chan_out{k} = perfs{i}.chan_out{k};
-        end
-        if isempty(perfs{i}.chan_in{k}) || isequal(perfs{i}.chan_in{k}, 0)
-            chan_in{k} = all_chan_in{k};
-        else
-            chan_in{k} = perfs{i}.chan_in{k};
-        end
-        assert(all(diff(chan_in{k}) == 1),...
-               'iqcAnalysis:modifyLft',...
-               'Input channels of performance must be contiguous to modify LFT')
-        assert(all(diff(chan_out{k}) == 1),...
-               'iqcAnalysis:modifyLft',...
-               'Output channels of performance must be contiguous to modify LFT')
+perfs = lft_out.performance.performances;
+for i = 1:length(perfs)
+    mod_lft_handle = perfs{i}.modifyLft();
+    if ~isempty(mod_lft_handle)
+        lft_out = mod_lft_handle(lft_out);
     end
-    [recastB, recastC, recastD, recastDis, newPerf] = ...
-        recastMatricesAndPerformance(perfs{i});
-    % Update B matrices
-    if ~isempty(recastB)
-        new_lft = true;
-        % Create columns of b matrix separated by chan_in
-        [b_pre, b_this, b_post] = deal(cell(1, total_time));
-        for k = 1:total_time
-            b_pre{k} = b_cell{k}(:, 1 : chan_in{k}(1) - 1);
-            b_this{k} = b_cell{k}(:, chan_in{k});
-            b_post{k} = b_cell{k}(:, chan_in{k}(end) + 1 : end);
-        end
-        b_this = recastB(b_this);
-        for k = 1:total_time
-            b_cell{k} = [b_pre{k}, b_this{k}, b_post{k}];
-        end
-    end
-    % Update C matrices
-    if ~isempty(recastC)
-        new_lft = true;
-        % Create rows of c matrix separated by chan_out
-        [c_pre, c_this, c_post] = deal(cell(1, total_time));
-        for k = 1:total_time
-            c_pre{k} = c_cell{k}(1 : chan_out{k}(1) - 1, :);
-            c_this{k} = c_cell{k}(chan_out{k}, :);
-            c_post{k} = c_cell{k}(chan_out{k}(end) + 1 : end, :);
-        end
-        c_this = recastC(c_this);
-        for k = 1:total_time
-            c_cell{k} = [c_pre{k}; c_this{k}; c_post{k}];
-        end
-    end    
-    % Update D matrices
-    if ~isempty(recastD)
-        new_lft = true;
-        % Break d matrix into blocks of matrices that are changed according to 
-        % recastC (d_21, d_23), recastB (d_12, d_32), and recastD (d_22)
-        [d_11, d_12, d_13, d_21, d_22, d_23, d_31, d_32, d_33] = ...
-            deal(cell(1, total_time));
-        for k = 1:total_time
-            out_pre_inds  = (1 : chan_out{k}(1) - 1);
-            out_this_inds = chan_out{k};
-            out_post_inds = (chan_out{k}(end) + 1 : size(d_cell{k}, 1));
-            in_pre_inds   = (1 : chan_in{k}(1) - 1);
-            in_this_inds  = chan_in{k};
-            in_post_inds  = (chan_in{k}(end) + 1 : size(d_cell{k}, 2));            
-            d_11{k} = d_cell{k}(out_pre_inds,  in_pre_inds);
-            d_12{k} = d_cell{k}(out_pre_inds,  in_this_inds);
-            d_13{k} = d_cell{k}(out_pre_inds,  in_post_inds);
-            d_21{k} = d_cell{k}(out_this_inds, in_pre_inds);
-            d_22{k} = d_cell{k}(out_this_inds, in_this_inds);
-            d_23{k} = d_cell{k}(out_this_inds, in_post_inds);
-            d_31{k} = d_cell{k}(out_post_inds, in_pre_inds);
-            d_32{k} = d_cell{k}(out_post_inds, in_this_inds);
-            d_33{k} = d_cell{k}(out_post_inds, in_post_inds);
-        end
-        d_new_12 = recastB(d_12);
-        d_new_32 = recastB(d_32);
-        d_new_21 = recastC(d_21);
-        d_new_23 = recastC(d_23);
-        d_new_22 = recastD(d_22);
-        % Put d_new_cen into d_new_row to make 
-        for k = 1:total_time
-            d_cell{k} = [d_11{k},       d_new_12{k},    d_13{k};
-                         d_new_21{k},   d_new_22{k},    d_new_23{k};
-                         d_31{k},       d_new_32{k},    d_33{k}];
-        end
-    end
-    if isempty(newPerf) || ~isnan(newPerf)    
-        new_lft = true;
-        perfs{i} = newPerf;
-    end
-    dists = lft_analyze.disturbance.disturbances;
-    if ~isempty(recastDis)
-        new_lft = true;
-        for j = 1:length(dists)
-            dists{i} = recastDis(dists{i});
-        end
-    end        
-end
-perf = SequencePerformance(perfs(cellfun(@(p) ~isempty(p), perfs)));
-dis = SequenceDisturbance(dists(cellfun(@(d) ~isempty(d), dists)));
-if new_lft
-    lft_analyze = Ulft(lft_analyze.a, b_cell, c_cell, d_cell, lft_analyze.delta,...
-                       'horizon_period', lft_analyze.horizon_period,...
-                       'disturbance', dis,...
-                       'performance', perf);
 end
 end    
 
