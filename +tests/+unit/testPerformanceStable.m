@@ -37,8 +37,14 @@ function testPerformanceToMultiplier(testCase)
 end
 
 function testMatchHorizonPeriod(testCase)
-    horizon_period = [2, 2];
-    perf = PerformanceStable(horizon_period);
+    perf = PerformanceStable();
+    hp_new = [2, 2];
+    total_time = sum(hp_new);
+    perf = perf.matchHorizonPeriod(hp_new)
+    testCase.verifyEqual(perf.horizon_period, hp_new)
+    testCase.verifyEqual(perf.chan_in, repmat({0}, 1, total_time))
+    testCase.verifyEqual(perf.chan_out, repmat({0}, 1, total_time))
+    perf = PerformanceStable(hp_new);
     perf.chan_out = {0, 0};
     verifyError(testCase,...
                 @() perf.matchHorizonPeriod(),...
