@@ -440,7 +440,7 @@ function testDeltaToMultiplier(testCase)
     verifyEqual(testCase, mult.discrete, is_discrete)
 end
 
-function testRecastMatricesAndDelta(testCase)
+function testModifyLft(testCase)
     name = 'test';
     del = DeltaSltvRateBndImpl(name);
     mod_handle = del.modifyLft();
