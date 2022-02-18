@@ -29,6 +29,7 @@ classdef (Abstract) MultiplierPerformance < matlab.mixin.Heterogeneous
 %                                 less structured terms (a Ulft object)
 %
 %  See also MultiplierDisturbance, MultiplierDelta
+
 %%
 %  Copyright (c) 2021 Massachusetts Institute of Technology 
 %  SPDX-License-Identifier: GPL-2.0

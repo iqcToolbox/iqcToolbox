@@ -85,7 +85,10 @@ if lft_in.uncertain && ~isempty(lft_in.timestep)
     % We normalize here to ensure nominal analysis is in the appropriate range
     % Normalization is not forced on the intended analysis of the system because the user-provided
     % Multipliers pertain to the Deltas of the given lft, and not the normalized ones
-    lft_normalized = normalizeLft(lft_in);
+    lft_normalized = lft_in.removeDisturbance(1:length(lft_in.disturbance.names))...
+                           .removePerformance(1:length(lft_in.performance.names))...
+                           .addPerformance({PerformanceStable()})...
+                           .normalizeLft;
     nominal_system = removeUncertainty(lft_normalized,...
                                        lft_normalized.delta.names(2:end));
     op = AnalysisOptions('verbose', options.yalmip_settings.verbose,...
@@ -142,6 +145,9 @@ end
 % Define multipliers for each Disturbance
 dis = lft_analyzed.disturbance;
 num_disturbances = length(dis.names);
+if num_disturbances == 0
+    mults_dis = initMultiplierDisturbance(0);
+end
 assert(num_disturbances == length(mults_dis),...
        'iqcAnalysis:iqcAnalysis',...
        'Number of Disturbances and Multipliers are not the same')
@@ -172,6 +178,9 @@ end
 % Define multipliers for each Performance
 perf = lft_analyzed.performance;
 num_performances = length(perf.names);
+if num_performances == 0
+    mults_perf = initMultiplierPerformance(0);
+end
 assert(num_performances == length(mults_perf),...
        'iqcAnalysis:iqcAnalysis',...
        'Number of Performances and Multipliers are not the same')
@@ -329,8 +338,14 @@ dim_in = num2cell(size(lft_in_state, 2));
 
 % Generate system: filter_lft_eye = mult.filter * [lft ; eye]
 identity_cell = cellfun(@(dim) eye(dim), dim_in, 'UniformOutput', false);
-identity_lft = toLft(identity_cell, lft_in.horizon_period);
-filt_lft_eye = mult.filter_lft * [lft_in_state; identity_lft];
+if all(cellfun(@isempty, identity_cell))
+    % This will corner case will occur if the combined multiplier is empty
+    % (i.e., stability analysis on nominal systems)
+    filt_lft_eye = lft_in_state;
+else
+    identity_lft = toLft(identity_cell, lft_in.horizon_period);
+    filt_lft_eye = mult.filter_lft * [lft_in_state; identity_lft];
+end
 
 % Reset state_in dimensions to pertain to filt_lft_eye, rather than lft_in
 if ~isempty(filt_lft_eye.timestep)
@@ -475,9 +490,10 @@ function lft_analyze = modifyLft(lft_in)
 %     lft_in : Ulft object
 
 total_time = sum(lft_in.horizon_period);
+
+% For Deltas
 delta = lft_in.delta;
 num_dels = length(delta.names);
-
 % Make LFT matrix blocks
 a_block = cell(1, total_time);
 b_block = cell(1, total_time);
@@ -562,7 +578,131 @@ if new_lft
 else
     lft_analyze = lft_in;
 end
+
+% For Performances
+[dim_out, dim_in] = size(lft_analyze);
+all_chan_out = arrayfun(@(dim) 1:dim, dim_out, 'UniformOutput', false);
+all_chan_in  = arrayfun(@(dim) 1:dim, dim_in, 'UniformOutput', false);
+b_cell = lft_analyze.b;
+c_cell = lft_analyze.c;
+d_cell = lft_analyze.d;
+perfs = lft_analyze.performance.performances;
+num_perfs = length(perfs);
+% For the simplest implementation, assume only 1 performance and contiguous channels
+assert(num_perfs <= 1,...
+       'iqcAnalysis:modifyLft',...
+       'Cannot have more than 1 performance')
+new_lft = false;
+for i = 1:num_perfs
+    chan_out = cell(1, total_time);
+    chan_in = cell(1, total_time);
+    for k = 1:total_time
+        if isempty(perfs{i}.chan_out{k}) || isequal(perfs{i}.chan_out{k}, 0)
+            chan_out{k} = all_chan_out{k};
+        else
+            chan_out{k} = perfs{i}.chan_out{k};
+        end
+        if isempty(perfs{i}.chan_in{k}) || isequal(perfs{i}.chan_in{k}, 0)
+            chan_in{k} = all_chan_in{k};
+        else
+            chan_in{k} = perfs{i}.chan_in{k};
+        end
+        assert(all(diff(chan_in{k}) == 1),...
+               'iqcAnalysis:modifyLft',...
+               'Input channels of performance must be contiguous to modify LFT')
+        assert(all(diff(chan_out{k}) == 1),...
+               'iqcAnalysis:modifyLft',...
+               'Output channels of performance must be contiguous to modify LFT')
+    end
+    [recastB, recastC, recastD, recastDis, newPerf] = ...
+        recastMatricesAndPerformance(perfs{i});
+    % Update B matrices
+    if ~isempty(recastB)
+        new_lft = true;
+        % Create columns of b matrix separated by chan_in
+        [b_pre, b_this, b_post] = deal(cell(1, total_time));
+        for k = 1:total_time
+            b_pre{k} = b_cell{k}(:, 1 : chan_in{k}(1) - 1);
+            b_this{k} = b_cell{k}(:, chan_in{k});
+            b_post{k} = b_cell{k}(:, chan_in{k}(end) + 1 : end);
+        end
+        b_this = recastB(b_this);
+        for k = 1:total_time
+            b_cell{k} = [b_pre{k}, b_this{k}, b_post{k}];
+        end
+    end
+    % Update C matrices
+    if ~isempty(recastC)
+        new_lft = true;
+        % Create rows of c matrix separated by chan_out
+        [c_pre, c_this, c_post] = deal(cell(1, total_time));
+        for k = 1:total_time
+            c_pre{k} = c_cell{k}(1 : chan_out{k}(1) - 1, :);
+            c_this{k} = c_cell{k}(chan_out{k}, :);
+            c_post{k} = c_cell{k}(chan_out{k}(end) + 1 : end, :);
+        end
+        c_this = recastC(c_this);
+        for k = 1:total_time
+            c_cell{k} = [c_pre{k}; c_this{k}; c_post{k}];
+        end
+    end    
+    % Update D matrices
+    if ~isempty(recastD)
+        new_lft = true;
+        % Break d matrix into blocks of matrices that are changed according to 
+        % recastC (d_21, d_23), recastB (d_12, d_32), and recastD (d_22)
+        [d_11, d_12, d_13, d_21, d_22, d_23, d_31, d_32, d_33] = ...
+            deal(cell(1, total_time));
+        for k = 1:total_time
+            out_pre_inds  = (1 : chan_out{k}(1) - 1);
+            out_this_inds = chan_out{k};
+            out_post_inds = (chan_out{k}(end) + 1 : size(d_cell{k}, 1));
+            in_pre_inds   = (1 : chan_in{k}(1) - 1);
+            in_this_inds  = chan_in{k};
+            in_post_inds  = (chan_in{k}(end) + 1 : size(d_cell{k}, 2));            
+            d_11{k} = d_cell{k}(out_pre_inds,  in_pre_inds);
+            d_12{k} = d_cell{k}(out_pre_inds,  in_this_inds);
+            d_13{k} = d_cell{k}(out_pre_inds,  in_post_inds);
+            d_21{k} = d_cell{k}(out_this_inds, in_pre_inds);
+            d_22{k} = d_cell{k}(out_this_inds, in_this_inds);
+            d_23{k} = d_cell{k}(out_this_inds, in_post_inds);
+            d_31{k} = d_cell{k}(out_post_inds, in_pre_inds);
+            d_32{k} = d_cell{k}(out_post_inds, in_this_inds);
+            d_33{k} = d_cell{k}(out_post_inds, in_post_inds);
+        end
+        d_new_12 = recastB(d_12);
+        d_new_32 = recastB(d_32);
+        d_new_21 = recastC(d_21);
+        d_new_23 = recastC(d_23);
+        d_new_22 = recastD(d_22);
+        % Put d_new_cen into d_new_row to make 
+        for k = 1:total_time
+            d_cell{k} = [d_11{k},       d_new_12{k},    d_13{k};
+                         d_new_21{k},   d_new_22{k},    d_new_23{k};
+                         d_31{k},       d_new_32{k},    d_33{k}];
+        end
+    end
+    if isempty(newPerf) || ~isnan(newPerf)    
+        new_lft = true;
+        perfs{i} = newPerf;
+    end
+    dists = lft_analyze.disturbance.disturbances;
+    if ~isempty(recastDis)
+        new_lft = true;
+        for j = 1:length(dists)
+            dists{i} = recastDis(dists{i});
+        end
+    end        
 end
+perf = SequencePerformance(perfs(cellfun(@(p) ~isempty(p), perfs)));
+dis = SequenceDisturbance(dists(cellfun(@(d) ~isempty(d), dists)));
+if new_lft
+    lft_analyze = Ulft(lft_analyze.a, b_cell, c_cell, d_cell, lft_analyze.delta,...
+                       'horizon_period', lft_analyze.horizon_period,...
+                       'disturbance', dis,...
+                       'performance', perf);
+end
+end    
 
 %%  CHANGELOG
 % Sep. 28, 2021 (v0.6.0)

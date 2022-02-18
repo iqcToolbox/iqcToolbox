@@ -45,7 +45,9 @@ fprintf(s1);
 % Print Delta, Disturbance, and Performance data
 if (~isempty(this_lft.delta.names) > 0); disp(this_lft.delta); end
 notDefault = @(sig) ~(length(sig.names) == 1 &&...
-                      strcmp(sig.names, 'default_l2'));
+                      strcmp(sig.names, 'default_l2'))...
+                    &&...
+                    ~isempty(sig.names);
 if notDefault(this_lft.disturbance);  disp(this_lft.disturbance);  end
 if notDefault(this_lft.performance);  disp(this_lft.performance);  end
 end

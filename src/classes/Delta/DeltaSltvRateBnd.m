@@ -278,7 +278,7 @@ function [recastA, recastB, recastC, newDelta] = recastMatricesAndDelta(this_del
 %  involves replacing DeltaSltvRateBnd with DeltaSltvRateBndImpl, and
 %  modifying the LFT to have extra zero inputs
 %
-%    [newA, newB, newC, newD, newDelta] = recastMatricesAndDelta(this_delta)
+%    [newA, newB, newC, newDelta] = recastMatricesAndDelta(this_delta)
 %
 %    Variables:
 %    ---------
@@ -288,7 +288,6 @@ function [recastA, recastB, recastC, newDelta] = recastMatricesAndDelta(this_del
 %         recastA : function_handle :: function to transform a matrices of LFT
 %         recastB : function_handle :: function to transform b matrices of LFT
 %         recastC : function_handle :: function to transform c matrices of LFT
-%         recastD : function_handle :: function to transform d matrices of LFT
 %         recastDelta : DeltaSltvRateBndImpl object :: new Delta object for modified LFT
 %
 %    See also iqcAnalysis.modifyLft, DeltaSltvRateBndImpl.

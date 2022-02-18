@@ -29,7 +29,11 @@ function this_mult = MultiplierDisturbanceCombined(mults_dis)
 %
 %  See also MultiplierDisturbanceCombined
 
-    validateattributes(mults_dis, 'MultiplierDisturbance', {'nonempty'})
+    validateattributes(mults_dis, 'MultiplierDisturbance', {})
+    if isempty(mults_dis)
+        this_mult = MultiplierDisturbanceCombined.empty();
+        return
+    end
 
     horizon_periods = vertcat(mults_dis.horizon_period);
     matchingHorizonPeriods = @(hp) all(ismember(hp, hp(end,:), 'rows'));
