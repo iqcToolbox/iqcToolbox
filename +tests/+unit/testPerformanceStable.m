@@ -40,11 +40,19 @@ function testMatchHorizonPeriod(testCase)
     perf = PerformanceStable();
     hp_new = [2, 2];
     total_time = sum(hp_new);
-    perf = perf.matchHorizonPeriod(hp_new)
+    perf.horizon_period = hp_new;
+    perf = perf.matchHorizonPeriod();
     testCase.verifyEqual(perf.horizon_period, hp_new)
     testCase.verifyEqual(perf.chan_in, repmat({0}, 1, total_time))
     testCase.verifyEqual(perf.chan_out, repmat({0}, 1, total_time))
-    perf = PerformanceStable(hp_new);
+    
+    hp_new2 = [4, 4];
+    total_time = sum(hp_new2);
+    perf = perf.matchHorizonPeriod(hp_new2);
+    testCase.verifyEqual(perf.horizon_period, hp_new2)
+    testCase.verifyEqual(perf.chan_in, repmat({0}, 1, total_time))
+    testCase.verifyEqual(perf.chan_out, repmat({0}, 1, total_time))
+    perf = PerformanceStable(hp_new2);
     perf.chan_out = {0, 0};
     verifyError(testCase,...
                 @() perf.matchHorizonPeriod(),...
