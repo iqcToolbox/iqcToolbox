@@ -104,7 +104,7 @@ methods
                type)                      
     end
     
-    function mod_lft_handle = modifyLft(this_delta)
+    function mod_lft_handle = modifyLft(this_delta)                             %#ok<MANU>
     %% MODIFYLFT method for creating a modified LFT for IQC analysis.
     %  this method should be extended for any subclass of Delta whereby IQC
     %  analysis is conducted on an analyzable, but different LFT (see, for

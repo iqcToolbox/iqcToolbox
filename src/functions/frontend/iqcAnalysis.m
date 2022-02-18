@@ -481,110 +481,34 @@ objective = mult.objective + options.scale_state_obj * objective_state;
 kyp_variables = horzcat(p, {p0_state});
 end
 
-function lft_analyze = modifyLft(lft_in)
+function lft_out = modifyLft(lft_in)
 %% MODIFYLFT function for generating modified LFTs which are analyzed in 
 %  place of the original LFT.  This is only necessitated for specific
 %  Deltas (as encoded in their class), such as DeltaRateBndSltv, and relies
-%  on an extension of the recastMatricesAndDelta method
-%  Variables:
-%     lft_in : Ulft object
+%  on an extension of the Delta/Disturbance/Performance.modifyLft methods
+%    Variables:
+%    ---------
+%      Input:
+%         lft_in : Ulft object
+%      Output:
+%         lft_out : Ulft object
 
-total_time = sum(lft_in.horizon_period);
-
-% For Deltas
-delta = lft_in.delta;
-num_dels = length(delta.names);
-% Make LFT matrix blocks
-a_block = cell(1, total_time);
-b_block = cell(1, total_time);
-c_block = cell(1, total_time);
-for i = 1:total_time
-    a_block{i} = mat2cell(lft_in.a{i},...
-                          lft_in.delta.dim_ins(:,i),...
-                          lft_in.delta.dim_outs(:,i));
-    b_block{i} = mat2cell(lft_in.b{i},...
-                          lft_in.delta.dim_ins(:,i),...
-                          size(lft_in.b{i}, 2));
-    c_block{i} = mat2cell(lft_in.c{i},...
-                          size(lft_in.c{i}, 1),...
-                          lft_in.delta.dim_outs(:,i));
-end
-new_lft = false;
-for i = 1:num_dels
-    [recastA, recastB, recastC, newDelta] = ...
-        recastMatricesAndDelta(delta.deltas{i});
-    % Update A matrices
-    if ~isempty(recastA)
-        new_lft = true;
-        mat_temp = cellfun(@(a_block) a_block(i, i),...
-                         a_block);
-        mat_temp = recastA(mat_temp);
-        for k = 1 : total_time
-            a_block{k}{i, i} = mat_temp{k};
-        end
+% For deltas
+lft_out = lft_in;
+deltas = lft_out.delta.deltas;
+for i = 1:length(deltas)
+    mod_lft_handle = deltas{i}.modifyLft();
+    if ~isempty(mod_lft_handle)
+        lft_out = mod_lft_handle(lft_out);
     end
-    % Update B matrices
-    if ~isempty(recastB)
-        new_lft = true;
-        for j = 1 : num_dels
-            if j == i
-                mat_temp = cellfun(@(b_block) b_block(j), b_block);
-            else
-                mat_temp = cellfun(@(a_block) a_block(i, j), a_block);
-            end
-            mat_temp = recastB(mat_temp);
-            for k = 1 : total_time
-                if j == i
-                    b_block{k}{j} = mat_temp{k};
-                else
-                    a_block{k}{i, j} = mat_temp{k};
-                end
-            end
-        end
-    end
-    % Update C matrices
-    if ~isempty(recastC)
-        new_lft = true;
-        for j = 1 : num_dels
-            if j == i
-                mat_temp = cellfun(@(c_block) c_block(j), c_block);
-            else
-                mat_temp = cellfun(@(a_block) a_block(j, i), a_block);
-            end
-            mat_temp = recastC(mat_temp);
-            for k = 1 : total_time
-                if j == i
-                    c_block{k}{j} = mat_temp{k};
-                else
-                    a_block{k}{j, i} = mat_temp{k};
-                end
-            end
-        end
-    end
-    if ~isempty(newDelta)
-        new_lft = true;
-        delta.deltas{i} = newDelta;
-    end
-end
-if new_lft
-    a = cellfun(@(a_block) cell2mat(a_block), a_block, 'UniformOutput', false);
-    b = cellfun(@(b_block) cell2mat(b_block), b_block, 'UniformOutput', false);
-    c = cellfun(@(c_block) cell2mat(c_block), c_block, 'UniformOutput', false);
-    delta = SequenceDelta(delta.deltas);
-    lft_analyze = Ulft(a, b, c, lft_in.d, delta,...
-                       'horizon_period', lft_in.horizon_period,...
-                       'disturbance', lft_in.disturbance,...
-                       'performance', lft_in.performance);
-else
-    lft_analyze = lft_in;
 end
 
 % For Performances
-perfs = lft_analyze.performance.performances;
+perfs = lft_out.performance.performances;
 for i = 1:length(perfs)
     mod_lft_handle = perfs{i}.modifyLft();
     if ~isempty(mod_lft_handle)
-        lft_analyze = mod_lft_handle(lft_in);
+        lft_out = mod_lft_handle(lft_out);
     end
 end
 end    
