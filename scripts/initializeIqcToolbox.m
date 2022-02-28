@@ -53,7 +53,6 @@ addpath(genpath(install_dir_lpsolve))
 if ispc
     try mxlpsolve('make_lp', 1, 1);
     catch
-        disp('Setting path')
         setenv('PATH', [getenv('PATH'), install_dir_lpsolve, ';'])
         if save_added_paths
             if ~exist(fullfile('C:','Windows','lpsolve55.dll'), 'file')    
@@ -64,14 +63,11 @@ if ispc
             end
             ls(fullfile('C:', 'Windows', 'lp*'))
         end
-%         ls(install_dir_lpsolve)
-        getenv('PATH')
         curr_dir = pwd;
         cd(install_dir_lpsolve)
         pwd
         cd(curr_dir)
         mxlpsolve('make_lp', 1, 1);
-        disp('Sucessfully ran lpsolve')
     end
 else
     if save_added_paths
@@ -87,7 +83,6 @@ else
                              ' ',...
                              fullfile('/','usr','lib')]);
         end
-        ls(fullfile('/','usr','lib','liblp*'))
     else
         curr_dir = pwd;
         cd(install_dir_lpsolve)
@@ -96,7 +91,6 @@ else
     end
 end
 mxlpsolve('make_lp', 1, 1);
-disp('passed final mxlpsolve')
 
 %% Add iqcToolbox startup path (to avoid using other startup.m in directory
 % This should be the last addpath

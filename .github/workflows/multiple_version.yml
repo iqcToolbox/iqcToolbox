@@ -23,15 +23,17 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-2019, ubuntu-latest]
-        release: [R2021b]
-#        include:
-#          - os: windows-2019
-#            release: R2021b
+        os: [ubuntu-18.04, ubuntu-latest]
+        release: [R2020b, R2021a, R2021b]
+        include:
+          - os: ubuntu-18.04
+            release: R2020a
+          - os: windows-2019
+            release: R2021a
+          - os: windows-2019
+            release: R2021b
 #          - os: macos-11
 #            release: R2021b
-#          - os: ubuntu-18.04
-#            release: R2020a
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -50,19 +52,6 @@ jobs:
         with:
           command: addpath('scripts'); installIqcToolbox(true, false);
 
-      - name: Try lpsolve again
-        uses: matlab-actions/run-command@v1
-        if: ${{ failure() }}
-        with:
-          command: cd('dependencies/lpsolve'); example1;
-
-      - name: SSH Debug
-        uses: mxschmitt/action-tmate@v3
-        if: ${{ failure() }}
-#        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }}
-        with:
-          limit-access-to-actor: true
-
       # Run tests script
       - name: Run all tests
         uses: matlab-actions/run-command@v1
@@ -75,3 +64,10 @@ jobs:
         uses: matlab-actions/run-command@v1
         with:
           command: load('+tests/test_results', 'result'); assertSuccess(result);
+
+#      - name: SSH debug on failure
+#        uses: mxschmitt/action-tmate@v3
+#        if: ${{ failure() }}
+#        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }}
+#        with:
+#          limit-access-to-actor: true
