@@ -155,9 +155,9 @@ case 'PCWIN'
         install_dir_lpsolve = fullfile(top_dir, 'dependencies', 'lpsolve');
         tmp_dir = tempname;
         mkdir(tmp_dir);
-        lpsolve_ex = 'https://github.com/iqcToolbox/lpsolve552/blob/master/lp_solve_5.5.2.0_exe_win64.zip';
-        lpsolve_dev = 'https://github.com/iqcToolbox/lpsolve552/blob/master/lp_solve_5.5.2.0_dev_win64.zip';
-        lpsolve_mat = 'https://github.com/iqcToolbox/lpsolve552/blob/master/lp_solve_5.5.2.0_MATLAB_exe_win64.zip';
+        lpsolve_ex = 'https://github.com/iqcToolbox/lpsolve552/raw/master/lp_solve_5.5.2.0_exe_win64.zip';
+        lpsolve_dev = 'https://github.com/iqcToolbox/lpsolve552/raw/master/lp_solve_5.5.2.0_dev_win64.zip';
+        lpsolve_mat = 'https://github.com/iqcToolbox/lpsolve552/raw/master/lp_solve_5.5.2.0_MATLAB_exe_win64.zip';
         websave(fullfile(tmp_dir, 'lpsolve_ex.zip'), lpsolve_ex);
         websave(fullfile(tmp_dir, 'lpsolve_dev.zip'), lpsolve_dev);
         websave(fullfile(tmp_dir, 'lpsolve_mat.zip'), lpsolve_mat);
@@ -183,9 +183,9 @@ case 'GLNXA'
         install_dir_lpsolve = fullfile(top_dir, 'dependencies', 'lpsolve');
         tmp_dir = tempname;
         mkdir(tmp_dir);
-        lpsolve_ex = 'https://github.com/iqcToolbox/lpsolve552/blob/master/lp_solve_5.5.2.0_exe_ux64.tar.gz';
-        lpsolve_dev = 'https://github.com/iqcToolbox/lpsolve552/blob/master/lp_solve_5.5.2.0_dev_ux64.tar.gz';
-        lpsolve_mat = 'https://github.com/iqcToolbox/lpsolve552/blob/master/lp_solve_5.5.2.0_MATLAB_exe_ux64.tar.gz';
+        lpsolve_ex = 'https://github.com/iqcToolbox/lpsolve552/raw/master/lp_solve_5.5.2.0_exe_ux64.tar.gz';
+        lpsolve_dev = 'https://github.com/iqcToolbox/lpsolve552/raw/master/lp_solve_5.5.2.0_dev_ux64.tar.gz';
+        lpsolve_mat = 'https://github.com/iqcToolbox/lpsolve552/raw/master/lp_solve_5.5.2.0_MATLAB_exe_ux64.tar.gz';
         fname_ex = fullfile(tmp_dir, 'lpsolve_ex.tar.gz');
         fname_dev = fullfile(tmp_dir, 'lpsolve_dev.tar.gz');
         fname_mat = fullfile(tmp_dir, 'lpsolve_mat.tar.gz');
