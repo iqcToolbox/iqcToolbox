@@ -74,12 +74,12 @@ catch
     dependency_installed_sdpt3 = false;
 end
 
-% MinGW (for windows)
+% C/C++ Compiler
 try
-    matlab.addons.isAddonEnabled('ML_MINGW');
-    dependency_installed_mingw = true;
+    mex -setup C
+    dependency_installed_ccompiler = true;
 catch
-    dependency_installed_mingw = false;
+    dependency_installed_ccompiler = false;
 end
 
 % LPSOLVE
@@ -106,7 +106,7 @@ if ~dependency_installed_yalmip
         if interactive
             affirmInstallation('yalmip')
         end
-        disp(['Installing from the fork',...
+        disp(['Installing from the fork ',...
               '<a href="https://github.com/iqcToolbox/yalmip">YALMIP</a>, ',...
               'Copyright (c) 2012-2021 by Johan Löfberg'])
         install_dir_yalmip = fullfile(top_dir, 'dependencies', 'yalmip');
@@ -126,16 +126,22 @@ comp = computer;
 comp = comp(1 : end - 2);
 switch comp
 case 'PCWIN'
-    if ~dependency_installed_mingw
+    if ~dependency_installed_ccompiler
         error('installIqcToolbox:installIqcToolbox',...
-              ['In order to compile the SDPT3 dependency, the MATLAB-',...
-              'supported add-on MinGW C/C++ Compiler must be installed. \n',...
-              '\nDownload and install this add-on.',...
-              ' Visit and follow the instructions on ',...
+              ['In order to compile the SDPT3 dependency, MATLAB ',...
+              'must have access to a C/C++ Compiler. \n',...
+              'Various free compilers are available for different',...
+              ' platforms (Windows, Linux, Mac).',...
+              '\n\nFor Windows machines, MATLAB provides a MinGW C/C++ ',...
+              ' compiler. Visit and follow the instructions on ',...
               '<a href="https://www.mathworks.com/matlabcentral/fileexchange/52848-matlab-support-for-mingw-w64-c-c-compiler?s_tid=prof_contriblnk">this site</a> \n',...
               'Or, alternatively, in the main MATLAB',...
               ' window, go to Environment -> Add-Ons -> Get Add-ons, ',...
-              ' & search for the MinGW C/C++ Compiler supported by Mathworks'])
+              ' & search for the MinGW C/C++ Compiler Add On.',...
+              '\n\n More information on other compilers and other platforms',...
+              ' may be found ',...
+              '<a href="https://www.mathworks.com/support/requirements/supported-compilers.html">here</a>.',...
+              ])
     end
     
     if ~dependency_installed_lpsolve
@@ -149,9 +155,9 @@ case 'PCWIN'
         install_dir_lpsolve = fullfile(top_dir, 'dependencies', 'lpsolve');
         tmp_dir = tempname;
         mkdir(tmp_dir);
-        lpsolve_ex = 'https://sourceforge.net/projects/lpsolve/files/lpsolve/5.5.2.0/lp_solve_5.5.2.0_exe_win64.zip';
-        lpsolve_dev = 'https://sourceforge.net/projects/lpsolve/files/lpsolve/5.5.2.0/lp_solve_5.5.2.0_dev_win64.zip';
-        lpsolve_mat = 'https://sourceforge.net/projects/lpsolve/files/lpsolve/5.5.2.0/lp_solve_5.5.2.0_MATLAB_exe_win64.zip';
+        lpsolve_ex = 'https://github.com/iqcToolbox/lpsolve552/raw/master/lp_solve_5.5.2.0_exe_win64.zip';
+        lpsolve_dev = 'https://github.com/iqcToolbox/lpsolve552/raw/master/lp_solve_5.5.2.0_dev_win64.zip';
+        lpsolve_mat = 'https://github.com/iqcToolbox/lpsolve552/raw/master/lp_solve_5.5.2.0_MATLAB_exe_win64.zip';
         websave(fullfile(tmp_dir, 'lpsolve_ex.zip'), lpsolve_ex);
         websave(fullfile(tmp_dir, 'lpsolve_dev.zip'), lpsolve_dev);
         websave(fullfile(tmp_dir, 'lpsolve_mat.zip'), lpsolve_mat);
@@ -177,9 +183,9 @@ case 'GLNXA'
         install_dir_lpsolve = fullfile(top_dir, 'dependencies', 'lpsolve');
         tmp_dir = tempname;
         mkdir(tmp_dir);
-        lpsolve_ex = 'https://sourceforge.net/projects/lpsolve/files/lpsolve/5.5.2.0/lp_solve_5.5.2.0_exe_ux64.tar.gz';
-        lpsolve_dev = 'https://sourceforge.net/projects/lpsolve/files/lpsolve/5.5.2.0/lp_solve_5.5.2.0_dev_ux64.tar.gz';
-        lpsolve_mat = 'https://sourceforge.net/projects/lpsolve/files/lpsolve/5.5.2.0/lp_solve_5.5.2.0_MATLAB_exe_ux64.tar.gz';
+        lpsolve_ex = 'https://github.com/iqcToolbox/lpsolve552/raw/master/lp_solve_5.5.2.0_exe_ux64.tar.gz';
+        lpsolve_dev = 'https://github.com/iqcToolbox/lpsolve552/raw/master/lp_solve_5.5.2.0_dev_ux64.tar.gz';
+        lpsolve_mat = 'https://github.com/iqcToolbox/lpsolve552/raw/master/lp_solve_5.5.2.0_MATLAB_exe_ux64.tar.gz';
         fname_ex = fullfile(tmp_dir, 'lpsolve_ex.tar.gz');
         fname_dev = fullfile(tmp_dir, 'lpsolve_dev.tar.gz');
         fname_mat = fullfile(tmp_dir, 'lpsolve_mat.tar.gz');
@@ -240,7 +246,8 @@ end
    
 %% Save configuration
 install_complete = dependency_installed_yalmip && ...
-                   dependency_installed_sdpt3;
+                   dependency_installed_sdpt3 && ...
+                   dependency_installed_lpsolve;
 mkdir(fullfile(top_dir, 'configuration'));
 save(cfg_fname, 'install_complete',...
                 'install_dir_sdpt3',...

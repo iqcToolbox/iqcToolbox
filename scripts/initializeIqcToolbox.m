@@ -54,6 +54,20 @@ if ispc
     try mxlpsolve('make_lp', 1, 1);
     catch
         setenv('PATH', [getenv('PATH'), install_dir_lpsolve, ';'])
+        if save_added_paths
+            if ~exist(fullfile('C:','Windows','lpsolve55.dll'), 'file')    
+                [~, ~] = system(['copy ',...
+                                 fullfile(install_dir_lpsolve, 'lpsolve55.dll'),...
+                                 ' ',...
+                                 fullfile('C:','Windows')]);
+            end
+            ls(fullfile('C:', 'Windows', 'lp*'))
+        end
+        curr_dir = pwd;
+        cd(install_dir_lpsolve)
+        pwd
+        cd(curr_dir)
+        mxlpsolve('make_lp', 1, 1);
     end
 else
     if save_added_paths
