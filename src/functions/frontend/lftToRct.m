@@ -8,8 +8,13 @@ function [uss_out, delta_map] = lftToRct(ulft_input)
 %       Input:
 %         ulft_input : ulft object
 %       Output:
-%         uss_out : uss_object :: the resultant uncertain state space
-%         object
+%         uss_out : uss_object :: the resultant uncertain state space object
+%         delta_map: containers.Map object :: a mapping between names of
+%                       of uncertainties, and the original Delta object.
+%                       This is only needed when wanting to preserve information
+%                       on uncertainties that are not part of the Robust Control
+%                       Toolbox, because the uss object will merely create
+%                       nondescript udyn objects as
 %
 %     See also Ulft, Ulft.Ulft, rctToLft, toLft
 
