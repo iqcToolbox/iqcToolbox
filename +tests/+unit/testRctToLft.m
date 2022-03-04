@@ -504,6 +504,11 @@ function testUdynConversionUnnormalized(testCase)
     norm_diff = norm(samp1_ss - samp2_ss, 'inf');
     testCase.verifyLessThan(norm_diff, 1e-3);
 end
+
+function testDisallowedRctConversion(testCase)
+    unc = umargin();
+    testCase.verifyError(@() toDelta(unc), 'toDelta:toDelta')
+end
 end
     
 end
