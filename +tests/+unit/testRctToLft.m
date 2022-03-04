@@ -1,7 +1,9 @@
 %% Requirements:
 %   1. rctToLft shall convert uss, umat, ureal, and ultidyn objects to Ulft objects
-%	2. rctToLft shall throw an error if provided an invalid object
-%   3. rctToLft shall throw a warning (but not interrupt) if the output
+%   2. rctToLft shall convert uss that have udyn objects to Ulft objects if an
+%       appropriate map defining the properties of each udyn object is provided
+%	3. rctToLft shall throw an error if provided an invalid object
+%   4. rctToLft shall throw a warning (but not interrupt) if the output
 %       Ulft must have normalized Deltas.
 
 %%
@@ -29,6 +31,7 @@ methods (TestMethodSetup)
     % tests.unit.testRctToLft.old_warning_state = warning('query');
     warning('off', 'rctToLft:rctToLft')
     warning('off', 'toDelta:toDelta')
+    warning('off', 'Robust:umodel:ureal9')
     end    
 end
 
@@ -410,6 +413,102 @@ function testUreal(testCase)
     verifyEqual(testCase, d_iqc, d_expected)
 end
 
+function testUdynConversion(testCase)
+    % Create a random LFT object
+    num_del = 7;
+    dim = randi([1, 5]);
+    del_passive = DeltaPassive('pass', dim);
+    req_dels = {'DeltaBounded', del_passive, 'DeltaSltvRateBnd',...
+                'DeltaSlti', 'DeltaDlti', 'DeltaDelayZ'};
+    lft_obj1 = Ulft.random('num_deltas', num_del,...
+                          'req_deltas', req_dels,...
+                          'horizon_period', [0, 1]);
+    % Ensure lft object is normalized (to make testing much easier)
+    lft_obj1 = lft_obj1.normalizeLft();
+    % Convert it to an RCT object
+    [rct_obj, del_map] = lftToRct(lft_obj1);
+    [~, ~, ~, del_n] = lftdata(rct_obj);
+    % Reorder original LFT to match rct obj for verification
+    del_inds = zeros(1, length(del_n));
+    for i = 1:length(del_n)
+        name = erase(del_n{i}.Name, 'Normalized');
+        del_inds(i) = find(strcmp(lft_obj1.delta.names, name));
+    end
+    if ~isempty(lft_obj1.timestep)
+        % When one of the Ulft deltas is a state evolution operator, 
+        % reorderLft needs the first delta to remain first
+        del_inds = [1, del_inds];
+    end
+    % Remove repitions of indices, which happens because rct repeats the same
+    % 1 dimensional unc, rather than have 1 unc with dimensions matching the
+    % repititions
+    del_inds = unique(del_inds, 'stable');
+    lft_obj1 = lft_obj1.reorderLftDelta(del_inds);
+    % Convert it back to an LFT object (should be equivalent)
+    lft_obj2 = rctToLft(rct_obj, del_map);
+    % Check if equivalent by sampling the deltas (need name1 and name2 because
+    % the first set of names doesn't have "Normalized" appended to the end
+    % of DeltaSlti and DeltaDlti uncertainties
+    names1 = lft_obj1.delta.names;
+    names2 = lft_obj2.delta.names;
+    if ~isempty(lft_obj1.timestep)
+        names1 = names1(2:end);
+        names2 = names2(2:end);
+    end        
+    samp_dels = cell(1, length(names1));
+    for i = 1:length(names1)
+        del_ind = strcmp(names1{i}, lft_obj1.delta.names);
+        dim_out_del = lft_obj1.delta.dim_outs(del_ind);
+        dim_in_del  = lft_obj1.delta.dim_ins(del_ind);
+        % Will just sample random dimension-matching matrices
+        samp_dels{i} = toLft(randn(dim_out_del, dim_in_del));
+    end
+    samp1 = lft_obj1.sampleDeltas(names1, samp_dels, 'override', true);
+    samp2 = lft_obj2.sampleDeltas(names2, samp_dels, 'override', true);
+    samp1_ss = lftToSs(samp1);
+    samp2_ss = lftToSs(samp2);
+    norm_diff = norm(samp1_ss - samp2_ss, 'inf');
+    testCase.verifyLessThan(norm_diff, 1e-3);
+end
+
+function testUdynConversionUnnormalized(testCase)
+    % This creates a simpler LFT, but one which is not normalized pre-conversion
+    lower_bound = -5;
+    upper_bound = -1;
+    dim_del = 2;
+    dslti = DeltaSlti('dslti', dim_del, lower_bound, upper_bound);
+    dsltv = DeltaSltv('dsltv', dim_del, lower_bound, upper_bound);
+    req_dels = {DeltaDelayZ(dim_del), dslti, dsltv};
+    % Create LFT
+    lft_obj1 = Ulft.random('num_deltas', length(req_dels),...
+                          'req_deltas', req_dels,...
+                          'horizon_period', [0, 1]);
+    % Convert to RCT
+    [rct_obj, del_map] = lftToRct(lft_obj1);
+    % Convert back to LFT
+    lft_obj2 = rctToLft(rct_obj, del_map);
+    % Sample to check correctness
+    rand_val = rand;
+    sampn_slti = 2 * rand_val - 1;
+    samp_slti  = (upper_bound - lower_bound) * rand_val + lower_bound;
+    samp_sltv  = (upper_bound - lower_bound) * rand + lower_bound;
+    sampn_slti_lft = toLft(sampn_slti * eye(dim_del));
+    samp_slti_lft = toLft(samp_slti * eye(dim_del));
+    samp_sltv_lft = toLft(samp_sltv * eye(dim_del));
+    samp1 = lft_obj1.sampleDeltas({'dslti', 'dsltv'},...
+                                  {samp_slti_lft, samp_sltv_lft});
+    samp2 = lft_obj2.sampleDeltas({'dsltiNormalized', 'dsltv'},...
+                                  {sampn_slti_lft, samp_sltv_lft});
+    samp1_ss = lftToSs(samp1);
+    samp2_ss = lftToSs(samp2);
+    norm_diff = norm(samp1_ss - samp2_ss, 'inf');
+    testCase.verifyLessThan(norm_diff, 1e-3);
+end
+
+function testDisallowedRctConversion(testCase)
+    unc = umargin();
+    testCase.verifyError(@() toDelta(unc), 'toDelta:toDelta')
+end
 end
     
 end

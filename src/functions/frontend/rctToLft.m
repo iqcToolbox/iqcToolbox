@@ -1,4 +1,4 @@
-function lft_out = rctToLft(rct_obj) 
+function lft_out = rctToLft(rct_obj, del_map) 
 %% RCTTOLFT for converting ureal, ultidyn, umat, uss objects to Ulft objects.
 %
 %     lft_out = rctToLft(rct_obj)
@@ -11,6 +11,12 @@ function lft_out = rctToLft(rct_obj)
 %     ---------
 %       Input:
 %         rct_obj : ureal, ultidyn, umat, or uss object
+%         del_map : containers.Map object :: map of of delta names to Delta objects. This is necessary when
+%                                             converting udyns, which save no information in the RCT.  This del_map
+%                                             can be defined by the user, or is given when converting
+%                                             non-cataloged Delta objects to an RCT object.  For example:
+%                                             [rct_obj, del_map] = lftToRct(toLft(DeltaSltv('d')))
+%                                             lft_obj = rctToLft(rct_obj, del_map)
 %       Output:
 %         lft_out : Ulft object :: the resultant lft
 %
@@ -23,7 +29,11 @@ function lft_out = rctToLft(rct_obj)
 
 %% Calling appropriate functions for different input arguments
     if isa(rct_obj, 'uss')
-        lft_out = ussToLft(rct_obj);
+        if nargin == 1
+            lft_out = ussToLft(rct_obj);
+        elseif nargin == 2
+            lft_out = ussToLft(rct_obj, del_map);
+        end
     elseif isa(rct_obj, 'umat')
         lft_out = umatToLft(rct_obj);
     elseif isa(rct_obj, 'ultidyn')
@@ -74,7 +84,7 @@ function lft_out = umatToLft(umat_in)
     lft_out = Ulft(a, b, c, d, delta_object);
 end
 
-function lft_out = ussToLft(uss_in)
+function lft_out = ussToLft(uss_in, del_map)
 
     [m, delta_std, ~, delta_norm] = lftdata(uss_in);
     m = [m.A, m.B; m.C, m.D];
@@ -110,23 +120,28 @@ function lft_out = ussToLft(uss_in)
                                    ' not match the bounds of the ultidyn',...
                                    ' uncertainty'))
                 end
-            otherwise
-            if ~isequal(std_uncertainty.Range(1), -1) ||...
-               ~isequal(std_uncertainty.Range(2), 1) ||...
-               ~isequal(std_uncertainty.NominalValue, 0)
-                warning('rctToLft:rctToLft',...
-                        strcat('rctToLft will use a normalized delta to',...
-                               ' convert to a Ulft object. Be aware that',...
-                               ' the Delta bounds of the DeltaSlti may',...
-                               ' not match the bounds of the ureal uncertainty'));
-            end    
+            case 'ureal'
+                if ~isequal(std_uncertainty.Range(1), -1) ||...
+                   ~isequal(std_uncertainty.Range(2), 1) ||...
+                   ~isequal(std_uncertainty.NominalValue, 0)
+                    warning('rctToLft:rctToLft',...
+                            strcat('rctToLft will use a normalized delta to',...
+                                   ' convert to a Ulft object. Be aware that',...
+                                   ' the Delta bounds of the DeltaSlti may',...
+                                   ' not match the bounds of the ureal',... 
+                                   ' uncertainty'));
+                end
         end
     end
     
     delta_cell = cell(size(delta_norm,1), 1);
-    
+
     for i = 1:size(delta_norm)
-        delta_cell{i} = toDelta(delta_norm{i});
+        if nargin == 1
+            delta_cell{i} = toDelta(delta_norm{i});
+        elseif nargin == 2
+            delta_cell{i} = toDelta(delta_norm{i}, del_map);
+        end
     end
     
     % check to see if there are any states/whether any time deltas were
