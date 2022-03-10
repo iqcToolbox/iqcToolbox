@@ -23,6 +23,13 @@ classdef (Abstract) MultiplierDelta < matlab.mixin.Heterogeneous
 %                                                 of Multiplier properties
 %     filter_lft : Ulft object :: convenience getter property to express the filter in
 %                                 less structured terms (a Ulft object)
+%     exponential : scalar double :: the scalar used to define the exponential
+%                                     IQC (rho in discrete-time, alpha in continuous-time
+%                                     per the literature). If no argument is given for
+%                                     the default constructor, "exponential" is set
+%                                     to [], which signals the default value:
+%                                     0 for continuous-time or 1 for discrete-time.
+%
 %
 %  See also MultiplierPerformance, MultiplierDisturbance
 
@@ -41,27 +48,40 @@ properties
     discrete logical
 end
 
+properties (SetAccess = immutable)
+    exponential double {mustBeNonnegative}
+end
+
 properties (Dependent)
     filter_lft
 end
 
 methods (Static, Sealed, Access = protected)
-    function default_multiplier = getDefaultScalarElement
-    %% GETDEFAULTSCALARELEMENT method for filling unspecified elements in an object array
-    %
-    %  default_mult = MultiplierDelta.getDefaultScalarElement()
-    %
-    %  Variables:
-    %  ---------
-    %    Output:
-    %       default_multiplier : MultiplierDeltaDefault object :: placeholder for undefined multiplier
-    %
-    %  See also MultiplierDelta
-        default_multiplier = MultiplierDeltaDefault();
-    end
+function default_multiplier = getDefaultScalarElement
+%% GETDEFAULTSCALARELEMENT method for filling unspecified elements in an object array
+%
+%  default_mult = MultiplierDelta.getDefaultScalarElement()
+%
+%  Variables:
+%  ---------
+%    Output:
+%       default_multiplier : MultiplierDeltaDefault object :: placeholder for undefined multiplier
+%
+%  See also MultiplierDelta
+    default_multiplier = MultiplierDeltaDefault();
+end
 end        
 
 methods
+
+function this_mult = MultiplierDelta(exponential)
+if nargin == 0
+    this_mult.exponential = [];
+elseif nargin == 1
+    this_mult.exponential = exponential;
+end
+end
+
 function filter_lft = get.filter_lft(this_mult)
 filt = this_mult.filter;
 a = filt.a;
