@@ -265,12 +265,14 @@ y = 'y';
 Y = y;
 n = 'n';
 N = n;
-affirm = false;
-while ~affirm
-    yesno = input([dependency, ' is not detected on your system and ',...
-                  'must be installed. Do you wish to install? [''y''/''n'']',...
-                  '\n ']);
-    affirm = strcmp(yesno, 'y');
+yesno = input([dependency, ' is not detected on your system and ',...
+              'must be installed. Do you wish to install? [''y''/''n'']',...
+              '\n ']);
+affirm = strcmp(yesno, 'y');
+if ~affirm
+    error('installIqcToolbox:affirmInstallation',...
+          ['Installation cannot proceed unless you agree to install ',...
+           dependency])
 end
 
 %%  CHANGELOG
