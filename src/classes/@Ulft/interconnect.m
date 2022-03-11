@@ -45,8 +45,8 @@ else
     ll = lower_lft;
 end
 
-validateattributes(ul, 'Ulft', {'nonempty'}, mfilename)
-validateattributes(ll, 'Ulft', {'nonempty'}, mfilename)
+validateattributes(ul, {'Ulft'}, {'nonempty'}, mfilename)
+validateattributes(ll, {'Ulft'}, {'nonempty'}, mfilename)
 
 if ~isequal(ul.horizon_period, ll.horizon_period)
     horizon_period = commonHorizonPeriod([ul.horizon_period;
