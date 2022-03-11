@@ -23,7 +23,7 @@ for i = 1 : nargin
     if ~isa(varargin{i}, 'Ulft')
         varargin{i} = toLft(varargin{i}); 
     end
-    validateattributes(varargin{i}, 'Ulft', {'nonempty'}, mfilename)
+    validateattributes(varargin{i}, {'Ulft'}, {'nonempty'}, mfilename)
 end
 horizon_periods = cell2mat(cellfun(@(lft) lft.horizon_period,...
                                    varargin',...
