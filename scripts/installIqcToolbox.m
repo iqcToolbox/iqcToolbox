@@ -59,7 +59,8 @@ end
 
 % SDPT3
 try
-    B = graph2(10);
+    B = diag([1, 1, 1, 1], 1);
+    B = B + B';
     feas = 1;
     [blk,At,C,b] = thetaproblem(B, feas);
     ops.printlevel = 0;
