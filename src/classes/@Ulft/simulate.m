@@ -55,7 +55,7 @@ assert(~this_lft.uncertain,...
 dim_in = size(this_lft, 2);
 if all(dim_in == dim_in(1))
     % If lft dimensions are constant
-    validateattributes(input, 'numeric', {'2d', 'nrows', dim_in(1)})
+    validateattributes(input, {'numeric'}, {'2d', 'nrows', dim_in(1)})
 else
     % If lft dimensions are time-varying, need to map sequence to new indices
     total_time = size(input, 2);
@@ -64,7 +64,7 @@ else
     time_indices = makeNewIndices(this_lft.horizon_period, horz_per);
     time_indices = time_indices(1 : total_time);
     % Check matching dimensions
-    validateattributes(input, 'cell', {'nonempty'})
+    validateattributes(input, {'cell'}, {'nonempty'})
     dim_match = all(dim_in(time_indices) == cellfun(@length, input));
     assert(dim_match, 'Ulft:simulate', 'Dims of input and Ulft do not match')
 end

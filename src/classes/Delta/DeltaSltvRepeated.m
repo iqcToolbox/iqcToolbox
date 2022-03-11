@@ -151,7 +151,7 @@ function this_delta = DeltaSltvRepeated(names,...
            'region_type must be "ellipse", "box", or "polytope"')
     switch region_type
         case 'ellipse'
-            validateattributes(region_data, 'cell', {'size', [1, NaN]})
+            validateattributes(region_data, {'cell'}, {'size', [1, NaN]})
             for i = 1:length(region_data)
                 ellipse = region_data{1, i};
                 validateattributes(ellipse, {'numeric'}, {'positive',...
@@ -160,7 +160,7 @@ function this_delta = DeltaSltvRepeated(names,...
                                                         'finite'})
             end
         case 'box'
-            validateattributes(region_data, 'cell', {'size', [1, NaN]})
+            validateattributes(region_data, {'cell'}, {'size', [1, NaN]})
             for i = 1:length(region_data)
                 box = region_data{1, i};
                 validateattributes(box,...
@@ -173,7 +173,7 @@ function this_delta = DeltaSltvRepeated(names,...
             end
             
         case 'polytope'
-            validateattributes(region_data, 'cell', {'size', [1, NaN]})
+            validateattributes(region_data, {'cell'}, {'size', [1, NaN]})
             for i = 1:length(region_data)
                 polytope = region_data{1, i};
                 validateattributes(polytope, {'numeric'}, {'size', [n,NaN],...

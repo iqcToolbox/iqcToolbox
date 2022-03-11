@@ -19,7 +19,7 @@ function power_lft = mpower(this_lft, exponent)
 %  SPDX-License-Identifier: GPL-2.0
 %%
 
-validateattributes(exponent, 'numeric', {'integer', 'positive'})
+validateattributes(exponent, {'numeric'}, {'integer', 'positive'})
 power_lft = this_lft;
 for i = 1:exponent - 1
     power_lft = power_lft * this_lft;    

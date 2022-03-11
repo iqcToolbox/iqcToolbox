@@ -21,7 +21,7 @@ function [valid, points] = processConvexHullPoints(points)
 %  SPDX-License-Identifier: GPL-2.0
 %%
 
-validateattributes(points, 'numeric', {'nonempty',...
+validateattributes(points, {'numeric'}, {'nonempty',...
                                       'finite',...
                                       '2d'})
 dim_points = size(points, 1);
@@ -47,10 +47,10 @@ end
 
 function inside = pointInConvexHull(point, points)
 [dim_points, n_points] = size(points);
-validateattributes(point, 'numeric', {'nonempty',...
+validateattributes(point, {'numeric'}, {'nonempty',...
                                       'finite',...
                                       'size', [dim_points, 1]})
-validateattributes(points, 'numeric', {'nonempty', 'finite'})
+validateattributes(points, {'numeric'}, {'nonempty', 'finite'})
 
 Aeq = [points; ones(1, n_points)];
 beq = [point; 1];
