@@ -52,11 +52,11 @@ methods
     %  See also Performance.
     
         % Checking validity of inputs
-        validateattributes(name, 'char', {'row'}, mfilename);
+        validateattributes(name, {'char'}, {'row'}, mfilename);
         if iscell(chan_out) && isempty(chan_out)
             chan_out = {[]};
         end
-        validateattributes(chan_out, 'cell', {'row'}, mfilename);
+        validateattributes(chan_out, {'cell'}, {'row'}, mfilename);
         for i = 1:length(chan_out)
             validateattributes(chan_out{i},...
                                    'numeric',...
@@ -73,7 +73,7 @@ methods
         if iscell(chan_in) && isempty(chan_in)
             chan_in = {[]};
         end
-        validateattributes(chan_in, 'cell', {'row'}, mfilename);
+        validateattributes(chan_in, {'cell'}, {'row'}, mfilename);
         for i = 1:length(chan_in)
             validateattributes(chan_in{i},...
                                    'numeric',...

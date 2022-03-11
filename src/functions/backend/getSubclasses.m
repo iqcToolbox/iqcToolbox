@@ -15,7 +15,7 @@ function subclasses = getSubclasses(superclass)
 %  SPDX-License-Identifier: GPL-2.0
 %%
 
-validateattributes(superclass, 'char', {'nonempty'});
+validateattributes(superclass, {'char'}, {'nonempty'});
 
 directory = fileparts(which(superclass));
 files = struct2cell(dir(directory));

@@ -28,7 +28,7 @@ function this_mult = MultiplierPerformanceCombined(mults_perf)
 %
 %  See also MultiplierPerformanceCombined
 
-    validateattributes(mults_perf, 'MultiplierPerformance', {})
+    validateattributes(mults_perf, {'MultiplierPerformance'}, {})
     if isempty(mults_perf)
         this_mult = MultiplierPerformanceCombined.empty();
         return

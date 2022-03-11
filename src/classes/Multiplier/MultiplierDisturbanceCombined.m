@@ -29,7 +29,7 @@ function this_mult = MultiplierDisturbanceCombined(mults_dis)
 %
 %  See also MultiplierDisturbanceCombined
 
-    validateattributes(mults_dis, 'MultiplierDisturbance', {})
+    validateattributes(mults_dis, {'MultiplierDisturbance'}, {})
     if isempty(mults_dis)
         this_mult = MultiplierDisturbanceCombined.empty();
         return

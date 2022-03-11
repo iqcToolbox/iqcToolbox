@@ -27,7 +27,7 @@ function lmi_mat = kypLmiLti(filter, quad, kyp_var)
 %  SPDX-License-Identifier: GPL-2.0
 %%
 
-validateattributes(filter, 'ss', {'nonempty'}, mfilename)
+validateattributes(filter, {'ss'}, {'nonempty'}, mfilename)
 assert(isa(quad, 'sdpvar') || isa(quad, 'numeric'),...
        'kypLmiLti:kypLmiLti',...
        'quad must be either an sdpvar or numeric')

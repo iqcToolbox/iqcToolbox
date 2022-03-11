@@ -20,7 +20,7 @@ function vertices_time = boxToVertices(box)
 %  SPDX-License-Identifier: GPL-2.0
 %%
 
-validateattributes(box, 'cell', {'nonempty'})
+validateattributes(box, {'cell'}, {'nonempty'})
 total_time = length(box);
 dims = size(box{1}, 1);
 
