@@ -70,7 +70,7 @@ function [lft_red, error_out] = modelReduction(lft_in, desired_error)
         lft_in = lft_norm;
         warning('modelReduction:modelReduction',...
                 strcat('Input LFT is not normalized. Normalzing LFT to',...
-                       ' apply model reduction algorimth'))
+                       ' apply model reduction algorithm'))
     end
     
     %% Check if strongly stable, get Right Coprime Factorization if not
