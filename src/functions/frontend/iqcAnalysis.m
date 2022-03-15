@@ -445,7 +445,7 @@ for i = 1:total_time
     end
 end
 % Set constraints for initial conditions
-if any(isnan(options.init_cond_ellipse), 'all')
+if any(any(isnan(options.init_cond_ellipse)))
     % Initial condition at zero
     ellipse = nan;
     state_amplification = nan;
@@ -457,7 +457,7 @@ elseif ~isempty(filt_lft_eye.timestep) && any(filt_lft_eye.timestep)
     states = options.init_cond_states;
     states = [false(1, size(mult.filter.a{1}, 1)), states];
     p0_state = p{1}(states,states);
-    if any(isinf(ellipse), 'all')
+    if any(any(isinf(ellipse)))
         ellipse = sdpvar(size(ellipse, 1)); 
         state_amplification = 1;
         ellipse_eigenvalues = sdpvar(size(ellipse,1),1);

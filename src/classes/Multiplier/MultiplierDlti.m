@@ -167,7 +167,7 @@ else
                '(i.e., not following repeated pole scheme) ',...
                'its number of rows must be one less than basis_length'])
     end
-    if any(~isreal(basis_poles), 'all')
+    if any(any(~isreal(basis_poles)))
         try 
             cplxpair(basis_poles);
         catch ME
