@@ -332,7 +332,7 @@ function testDeltaDltiSampleAndValidate(testCase)
     bad_samp = drss(dim_state);
     bad_samp.a = bad_samp.a * 0.9;
     bad_samp = 0.99 * bad_samp / norm(bad_samp, 'inf');
-    bad_samp = toLft(bad_samp).matchHorizonPeriod(hp);
+    bad_samp = matchHorizonPeriod(toLft(bad_samp), hp);
     discrete = true;
     verifyError(testCase,...
                 @() validateSample(del, bad_samp, discrete),...
@@ -404,7 +404,7 @@ function testDeltaBoundedSampleAndValidate(testCase)
     bad_samp = drss(dim_state);
     bad_samp.a = bad_samp.a * 0.9;
     bad_samp = 0.99 * bad_samp / norm(bad_samp, 'inf');
-    bad_samp = toLft(bad_samp).matchHorizonPeriod(hp);
+    bad_samp = matchHorizonPeriod(toLft(bad_samp), hp);
     timestep = -1;
     verifyError(testCase,...
                 @() validateSample(del, bad_samp, timestep),...

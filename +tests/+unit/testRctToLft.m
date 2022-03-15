@@ -12,7 +12,7 @@
 %%
 
 %% Test class for rctToLft
-classdef testRctToLft < matlab.unittest.TestCase
+classdef (TestTags = {'RCT'}) testRctToLft < matlab.unittest.TestCase
 
 properties (Constant)
     old_warning_state = warning('query')

@@ -12,7 +12,7 @@
 %%
 
 %% Test class for lftToRct
-classdef testLftToRct < matlab.unittest.TestCase
+classdef (TestTags = {'RCT'}) testLftToRct < matlab.unittest.TestCase
     
 methods (TestMethodSetup)
 function seedAndReportRng(testCase)
