@@ -272,7 +272,7 @@ end
 
 % disturbance against b and d
 if ~isempty(disturbance.disturbances)
-allChannelsEmpty = @(chan) all(cellfun(@isempty, chan), 'all');
+allChannelsEmpty = @(chan) all(all(cellfun(@isempty, chan)));
 matInputContainsChannels = @(chan, mat) ...
     all(cellfun('size', mat, 2) >= max(cellfun(@maxEmpty, chan), [], 1));
 bConsistentWithDis = allChannelsEmpty(disturbance.chan_ins)...

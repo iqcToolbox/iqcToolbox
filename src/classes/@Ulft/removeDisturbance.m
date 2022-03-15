@@ -35,7 +35,7 @@ if isChar(disturbance)
                  disturbance,...
                  ', does not appear in the lft'])
     end
-elseif isa(disturbance, 'cell') && all(cellfun(isChar, disturbance), 'all')
+elseif isa(disturbance, 'cell') && all(all(cellfun(isChar, disturbance)))
     disturbance_ind = [];
     for i = 1:length(disturbance)
         disturbance_i = disturbance{i};
