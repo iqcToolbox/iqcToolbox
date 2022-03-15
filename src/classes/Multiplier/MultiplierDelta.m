@@ -48,7 +48,7 @@ properties
     discrete logical
 end
 
-properties (SetAccess = immutable)
+properties (SetAccess = protected)
     exponential double {mustBeNonnegative}
 end
 
@@ -75,11 +75,103 @@ end
 methods
 
 function this_mult = MultiplierDelta(exponential)
+%% MUTLIPLIERDELTA base constructor
+%  This does not construct the entire multiplier. It only fills the exponential field
+%  (for rho- or alpha-IQC multipliers). If not explicitly called in a subclass's
+%  constructor, this contructor will be called before anything else in the subclass
+%  constructor.  This design approach allows developers unaware of exponential IQCs
+%  to design multiplier classes without this generalization in mind.
+%
+%  this_mult = this_mult@MultiplierDelta(exponential) sets this_mult.exponential to the provided value
+%  this_mult = this_mult@MultiplierDelta() sets this_mult.exponential to [], which indicates 
+%                                          the "default" value (1 for disrete-time, 0 for continuous-time)
+%
+%  Variables:
+%  ---------
+%    Input:
+%       exponential : double scalar :: scalar indicating exponential rate of exponential IQCs
+%                                      this is "rho" for discrete-time IQCs (rho ^ -2k),
+%                                      and "alpha" for continuous-time IQCs (exp ^ -2*alpha*t)
+%
+%    Output:
+%       this_mult : MultiplierDelta object :: the base class MultiplierDelta
+%     
+%  See also MultiplierDelta
 if nargin == 0
     this_mult.exponential = [];
 elseif nargin == 1
     this_mult.exponential = exponential;
 end
+end
+
+function this_mult = shiftMultiplier(this_mult, exponential)
+%% SHIFTMULTIPLIER method for MultiplierDelta objects.
+%  This standardizes how all multiplier shifting is done for any subclass of MultiplierDelta.
+%  It is expected that this method would be called near the end of the subclass's
+%  constructor method (after this_mult.filter and this_mult.discrete are assigned in that constructor).
+%  This will shift the multiplier's filter depending on the multiplier being discrete- or continuous-time
+%  After shifting, this method checks that the multiplier is still stable.
+%
+%  this_mult = shiftMultiplier@MultiplierDelta(this_mult, exponential) % Shifts A-matrices of this_mult.filter, and sets this_mult.exponential
+%  this_mult = shiftMultiplier@MultiplierDelta(this_mult) % Shifts A-matrices according to pre-defined this_mult.exponential
+%
+%  Variables:
+%  ---------
+%    Input:
+%       exponential : double scalar :: scalar indicating exponential rate of exponential IQCs
+%                                      this is "rho" for discrete-time IQCs (rho ^ -2k),
+%                                      and "alpha" for continuous-time IQCs (exp ^ 2*alpha*t)
+%
+%    Output:
+%       this_mult : MultiplierDelta object :: the shifted MultiplierDelta* object
+%
+%  See also MultiplierDelta, MultiplierDelta.MultiplierDelta
+
+    % First check if multiplier has continuous/discrete-time dynamics, quit if not
+    if isempty(this_mult.discrete)
+        return
+    end
+    % If exponential is not given, use the pre-existing field in the object
+    if nargin == 1
+        exponential = this_mult.exponential;
+    end
+    % If exponential is empty (denoting default), set to 1 for discrete-time, 0 for continuous-time
+    if isempty(exponential) 
+        if this_mult.discrete
+            exponential = 1;
+        else
+            exponential = 0;
+        end
+    end
+    % Shift A-matrices of filter
+    if this_mult.discrete
+        a_mat = cellfun(@(a) a / exponential, this_mult.filter.a,...
+                        'UniformOutput', false);
+    else
+        a_mat = cellfun(@(a) a + eye(size(a)) * exponential, this_mult.filter.a,...
+                        'UniformOutput', false);
+    end
+    this_mult.filter.a = a_mat;
+    % Check that filter remains stable
+    if sum(this_mult.horizon_period) == 1
+    % Time-invariant systems
+        if this_mult.discrete
+            stable = max(abs(eig(this_mult.filter.a{1}))) < 1;
+        else
+            stable = max(real(eig(this_mult.filter.a{1}))) < 0;
+        end
+    else
+        filt_lft = addPerformance(this_mult.filter_lft,...
+                                    {PerformanceStable(this_mult.horizon_period)});
+        result = iqcAnalysis(filt_lft);
+        stable = result.valid;
+    end
+    assert(stable, 'MultiplierDelta:shiftMultiplier',...
+           ['Shifting Multiplier ', this_mult.name, ' by the exponential rate ',...
+            exponential, ' produces an unstable multiplier.  You must construct',...
+            ' a Multiplier and provide an exponential rate such that the',...
+            ' shifted Multiplier remains stable'])
+    this_mult.exponential = exponential;
 end
 
 function filter_lft = get.filter_lft(this_mult)

@@ -79,6 +79,16 @@ mults_perf = input_parser.Results.multipliers_performance;
 options = input_parser.Results.analysis_options;
 
 is_discrete = ~isempty(lft_in.timestep) && any(lft_in.timestep);
+if isempty(options.exponential)
+    if is_discrete
+        options.exponential = 1;
+    elseif ~isempty(lft_in.timestep) && all(~lft_in.timestep) 
+    % is continuous-time
+        options.exponential = 0;
+    end
+end
+
+
 
 %% Check nominal stability
 if lft_in.uncertain && ~isempty(lft_in.timestep)
@@ -216,6 +226,10 @@ mult_perf = MultiplierPerformanceCombined(mults_perf);
 
 dim_out = size(lft_analyzed, 1);
 mult = combineAllMultipliers(mult_del, mult_dis, mult_perf, dim_out);
+
+%% Check that exponential rate is amenable with lft_analyzed and mult
+
+
 %% Formulate KYP lmis
 [objective, kyp_constraints, state_amplification, ellipse, kyp_variables] = ...
                                     kypLmi(lft_analyzed, mult, options);

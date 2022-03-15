@@ -37,6 +37,7 @@ properties
     init_cond_ellipse
     init_cond_states
     p0
+    exponential
 end
 
 methods
@@ -62,6 +63,9 @@ methods
     %               associated with a performance multiplier)
     %          'p0' : May be empty or symmetric matrix. Specifies the 0th indexed lyapunov matrix which satisfies
     %               the IQC analysis KYP LMIs. Typically used for debugging.
+    %          'exponential' : May be empty or double scalar. Used to analyze exponential rates of systems
+    %                          For analysis of continuous-time systems, should be within [0, inf)
+    %                          For analysis of discrete-time systems, should be within (0, 1].
     
     input_parser = inputParser;
 
@@ -110,9 +114,13 @@ methods
                  @(in) validateattributes(in,...
                                          'numeric',...
                                          {'finite'},...
-                                         mfilename))                                 
+                                         mfilename))
     % Other potential inputs: [matrix] which is used as the first lyapunov matrix in an attempt to satisfy the IQC KYP LMIs
-
+    addParameter(input_parser,...
+                 'exponential',...
+                 [],...  % [] corresponds to the "default" value for exponential rates (1 for discrete-time, 0 for continuous-time)
+                 @(in) validateattributes(in, 'numeric', {'finite'}, mfilename))
+    
     parse(input_parser, varargin{:})
     
     yalmip_settings         = sdpsettings();
@@ -126,7 +134,7 @@ methods
     this_options.init_cond_ellipse = input_parser.Results.init_cond_ellipse;
     this_options.init_cond_states  = input_parser.Results.init_cond_states;
     this_options.p0                = input_parser.Results.p0;
-    
+    this_options.exponential       = input_parser.Results.exponential;    
     end
 end
 end
