@@ -133,6 +133,27 @@ function testLowPassFilter(testCase)
     testCase.verifyLessThan(result.performance, result_no_dis.performance*0.75)
 end
 
+function testIndependentOfHorizonPeriod(testCase)
+    % Analyze any system
+    g = drss(3, 1, 1);
+    g.a = g.a * 0.9;
+    g_lft = toLft(g);
+    g_lft_dis = g_lft.addDisturbance({DisturbanceBandedWhite('d', {1})});
+    options = AnalysisOptions('verbose', false, 'lmi_shift', 1e-6);
+    % Get baseline result
+    result = iqcAnalysis(g_lft_dis, 'analysis_options', options);
+    testCase.assertTrue(result.valid)
+    % New horizon_period
+    new_hp = [randi([0, 10]), randi([1, 10])];
+    g_lft_hp = g_lft_dis.matchHorizonPeriod(new_hp);
+    result_hp = iqcAnalysis(g_lft_hp, 'analysis_options', options); 
+    testCase.assertTrue(result.valid)
+    diff_perf = abs(result.performance - result_hp.performance);
+    testCase.verifyLessThan(diff_perf / result.performance, 1e-3)
+end
+end
+
+methods (Test, TestTags = {'RCT'})
 function testNoEffectForMemoryless(testCase)
     % Generate uncertain memoryless object
     rct_object = zeros(3);
@@ -168,25 +189,6 @@ function testNoEffectForMemoryless(testCase)
                              'multipliers_disturbance', mults);
     testCase.assertTrue(result.valid)
     diff_perf = abs(result.performance - result_dis.performance);
-    testCase.verifyLessThan(diff_perf / result.performance, 1e-3)
-end
-
-function testIndependentOfHorizonPeriod(testCase)
-    % Analyze any system
-    g = drss(3, 1, 1);
-    g.a = g.a * 0.9;
-    g_lft = toLft(g);
-    g_lft_dis = g_lft.addDisturbance({DisturbanceBandedWhite('d', {1})});
-    options = AnalysisOptions('verbose', false, 'lmi_shift', 1e-6);
-    % Get baseline result
-    result = iqcAnalysis(g_lft_dis, 'analysis_options', options);
-    testCase.assertTrue(result.valid)
-    % New horizon_period
-    new_hp = [randi([0, 10]), randi([1, 10])];
-    g_lft_hp = g_lft_dis.matchHorizonPeriod(new_hp);
-    result_hp = iqcAnalysis(g_lft_hp, 'analysis_options', options); 
-    testCase.assertTrue(result.valid)
-    diff_perf = abs(result.performance - result_hp.performance);
     testCase.verifyLessThan(diff_perf / result.performance, 1e-3)
 end
 end

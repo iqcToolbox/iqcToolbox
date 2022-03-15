@@ -12,8 +12,8 @@ import matlab.unittest.selectors.HasTag
 import matlab.unittest.constraints.IsEqualTo
 import matlab.unittest.plugins.CodeCoveragePlugin
 import matlab.unittest.plugins.codecoverage.CoberturaFormat
-suite = TestSuite.fromPackage('tests', 'IncludingSubpackages', true);
-suite = suite.selectIf(~HasTag(IsEqualTo('RCT')));
+suite = TestSuite.fromPackage('tests', 'IncludingSubpackages', true)
+suite = suite.selectIf(~HasTag(IsEqualTo('RCT')))
 runner = TestRunner.withTextOutput;
 top_path = mfilename('fullpath');
 top_path(end - length(mfilename):end) =  [];
