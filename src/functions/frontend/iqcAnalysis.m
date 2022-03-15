@@ -269,7 +269,7 @@ failed_yalmip = sum(primal_residual < 0);
 primal_satisfied = (failed_yalmip == system_kyp_failed_yalmip)...
                    && (system_kyp_failed_yalmip == system_kyp_neg_def);
 
-valid = all(~isnan(primal_residual), 'all') && ...
+valid = all(all(~isnan(primal_residual))) && ...
         (all(primal_residual >= 0) || primal_satisfied);        
 if valid
     performance = sqrt(cellfun(@double, {mults_perf.objective}));
@@ -436,7 +436,7 @@ for i = 1:total_time
                               (ghost == 1):'Ghost variable == 1';               %#ok<BDSCA>
         end
     lmi_eig = eig(lmi_mat{i});
-    if all(lmi_eig == 0, 'all')
+    if all(all(lmi_eig == 0))
         lmi_eig = lmi_eig + 1e-8;
         lmi_shift = lmi_shift - 1e-8;
     end
