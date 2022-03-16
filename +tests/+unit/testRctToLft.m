@@ -506,7 +506,7 @@ function testUdynConversionUnnormalized(testCase)
 end
 
 function testDisallowedRctConversion(testCase)
-    unc = umargin();
+    unc = ucomplex();
     testCase.verifyError(@() toDelta(unc), 'toDelta:toDelta')
 end
 end
