@@ -84,55 +84,6 @@ function testComparisonToH2Norm(testCase)
     testCase.verifyLessThan(diff_perf, 1e-2)
 end
 
-function testHighPassFilter(testCase)
-    [z, p, k] = butter(5, .5, 'high');
-    g = ss(zpk(z, p, k, -1));
-    g_lft = toLft(g);
-    options = AnalysisOptions('verbose', false, 'lmi_shift', 1e-6);
-    result_no_dis = iqcAnalysis(g_lft, 'analysis_options', options);
-    testCase.assertTrue(result_no_dis.valid)
-    % Performance must drop significantly with white noise characterization
-    g_lft_dis = g_lft.addDisturbance({DisturbanceBandedWhite('d')});
-    % Make poles for multiplier
-    num_poles = 15;
-    poles = linspace(-.9, .9, num_poles);
-    mult = MultiplierBandedWhite(g_lft_dis.disturbance.disturbances{1},...
-                                 size(g_lft, 1),...
-                                 logical(g.Ts),...
-                                 'poles', poles);
-    % Analyze system with disturbance characterization
-    result = iqcAnalysis(g_lft_dis,...
-                         'analysis_options', options,...
-                         'multipliers_disturbance', mult);
-    testCase.assertTrue(result.valid)
-    testCase.verifyLessThan(result.performance, result_no_dis.performance*0.75)
-end
-
-
-function testLowPassFilter(testCase)
-    [z, p, k] = butter(5, .5, 'low');
-    g = ss(zpk(z, p, k, -1));
-    g_lft = toLft(g);
-    options = AnalysisOptions('verbose', false, 'lmi_shift', 1e-6);
-    result_no_dis = iqcAnalysis(g_lft, 'analysis_options', options);
-    testCase.assertTrue(result_no_dis.valid)
-    % Performance must drop significantly with white noise characterization
-    g_lft_dis = g_lft.addDisturbance({DisturbanceBandedWhite('d')});
-    % Make poles for multiplier
-    num_poles = 15;
-    poles = linspace(-.9, .9, num_poles);
-    mult = MultiplierBandedWhite(g_lft_dis.disturbance.disturbances{1},...
-                                 size(g_lft, 1),...
-                                 logical(g.Ts),...
-                                 'poles', poles);
-    % Analyze system with disturbance characterization
-    result = iqcAnalysis(g_lft_dis,...
-                         'analysis_options', options,...
-                         'multipliers_disturbance', mult);
-    testCase.assertTrue(result.valid)
-    testCase.verifyLessThan(result.performance, result_no_dis.performance*0.75)
-end
-
 function testIndependentOfHorizonPeriod(testCase)
     % Analyze any system
     g = drss(3, 1, 1);
@@ -192,6 +143,58 @@ function testNoEffectForMemoryless(testCase)
     testCase.verifyLessThan(diff_perf / result.performance, 1e-3)
 end
 end
+
+methods (Test, TestTags = {'SignalT'})
+function testHighPassFilter(testCase)
+    [z, p, k] = butter(5, .5, 'high');
+    g = ss(zpk(z, p, k, -1));
+    g_lft = toLft(g);
+    options = AnalysisOptions('verbose', false, 'lmi_shift', 1e-6);
+    result_no_dis = iqcAnalysis(g_lft, 'analysis_options', options);
+    testCase.assertTrue(result_no_dis.valid)
+    % Performance must drop significantly with white noise characterization
+    g_lft_dis = g_lft.addDisturbance({DisturbanceBandedWhite('d')});
+    % Make poles for multiplier
+    num_poles = 15;
+    poles = linspace(-.9, .9, num_poles);
+    mult = MultiplierBandedWhite(g_lft_dis.disturbance.disturbances{1},...
+                                 size(g_lft, 1),...
+                                 logical(g.Ts),...
+                                 'poles', poles);
+    % Analyze system with disturbance characterization
+    result = iqcAnalysis(g_lft_dis,...
+                         'analysis_options', options,...
+                         'multipliers_disturbance', mult);
+    testCase.assertTrue(result.valid)
+    testCase.verifyLessThan(result.performance, result_no_dis.performance*0.75)
+end
+
+
+function testLowPassFilter(testCase)
+    [z, p, k] = butter(5, .5, 'low');
+    g = ss(zpk(z, p, k, -1));
+    g_lft = toLft(g);
+    options = AnalysisOptions('verbose', false, 'lmi_shift', 1e-6);
+    result_no_dis = iqcAnalysis(g_lft, 'analysis_options', options);
+    testCase.assertTrue(result_no_dis.valid)
+    % Performance must drop significantly with white noise characterization
+    g_lft_dis = g_lft.addDisturbance({DisturbanceBandedWhite('d')});
+    % Make poles for multiplier
+    num_poles = 15;
+    poles = linspace(-.9, .9, num_poles);
+    mult = MultiplierBandedWhite(g_lft_dis.disturbance.disturbances{1},...
+                                 size(g_lft, 1),...
+                                 logical(g.Ts),...
+                                 'poles', poles);
+    % Analyze system with disturbance characterization
+    result = iqcAnalysis(g_lft_dis,...
+                         'analysis_options', options,...
+                         'multipliers_disturbance', mult);
+    testCase.assertTrue(result.valid)
+    testCase.verifyLessThan(result.performance, result_no_dis.performance*0.75)
+end
+end
+
 end
 
 %%  CHANGELOG

@@ -111,6 +111,7 @@ if ~dependency_installed_yalmip
               '<a href="https://github.com/iqcToolbox/yalmip">YALMIP</a>, ',...
               'Copyright (c) 2012-2021 by Johan Löfberg'])
         install_dir_yalmip = fullfile(top_dir, 'dependencies', 'yalmip');
+        mkdir(install_dir_yalmip)
         tmp_dir = tempname;
         mkdir(tmp_dir);
         websave(fullfile(tmp_dir, 'yalmip.zip'),...
@@ -154,6 +155,7 @@ case 'PCWIN'
               'Copyright (c) 2004 - 2021 by ',...
               'M. Berkelaar, K. Eikland, and P. Notebaert'])
         install_dir_lpsolve = fullfile(top_dir, 'dependencies', 'lpsolve');
+        mkdir(install_dir_lpsolve)
         tmp_dir = tempname;
         mkdir(tmp_dir);
         lpsolve_ex = 'https://github.com/iqcToolbox/lpsolve552/raw/master/lp_solve_5.5.2.0_exe_win64.zip';
@@ -182,6 +184,7 @@ case 'GLNXA'
               'Copyright (c) 2004 - 2021 by ',...
               'M. Berkelaar, K. Eikland, and P. Notebaert'])
         install_dir_lpsolve = fullfile(top_dir, 'dependencies', 'lpsolve');
+        mkdir(install_dir_lpsolve)
         tmp_dir = tempname;
         mkdir(tmp_dir);
         lpsolve_ex = 'https://github.com/iqcToolbox/lpsolve552/raw/master/lp_solve_5.5.2.0_exe_ux64.tar.gz';
@@ -224,6 +227,7 @@ if ~dependency_installed_sdpt3
               'Copyright (c) 1997 by Kim-Chuan Toh, '...
               'Michael J. Todd, and Reha H. Tutuncu'])
         install_dir_sdpt3 = fullfile(top_dir, 'dependencies', 'sdpt3');
+        mkdir(install_dir_sdpt3)
         tmp_dir = tempname;
         mkdir(tmp_dir)
         websave(fullfile(tmp_dir, 'SDPT3.zip'),...

@@ -14,6 +14,7 @@ import matlab.unittest.plugins.CodeCoveragePlugin
 import matlab.unittest.plugins.codecoverage.CoberturaFormat
 suite = TestSuite.fromPackage('tests', 'IncludingSubpackages', true);
 % suite = suite.selectIf(~HasTag(IsEqualTo('RCT'))); % This will skip tests that require Robust Control Toolbox
+% suite = suite.selectIf(~HasTag(IsEqualTo('SignalT'))); % This will skip tests that require Robust Control Toolbox
 runner = TestRunner.withTextOutput;
 top_path = mfilename('fullpath');
 top_path(end - length(mfilename):end) =  [];

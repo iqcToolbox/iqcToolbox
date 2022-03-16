@@ -55,37 +55,6 @@ function testFullWindowIsReducedResult(testCase)
     diff_perf = abs(result.performance - result2.performance);
     testCase.verifyLessThan(diff_perf/result.performance, 1e-3)  
 end
-
-function testPartiallyConstantThroughPeriodIsImprovement(testCase)
-    filter_order = 4;
-    cutoff_freq = 0.8;
-    [z, p, k] = butter(filter_order, cutoff_freq, 'high');
-    high_pass_ss = ss(zpk(z, p, k, -1));
-    high_pass = toLft(high_pass_ss);
-    options = AnalysisOptions('verbose', false, 'lmi_shift', 1e-7);
-    [result_hpf, valid] = iqcAnalysis(high_pass, 'analysis_options', options);
-    testCase.assertTrue(valid)
-    
-    % Add constant disturbance with short window, which should have little impact on upper-bound
-    period = 20;
-    high_pass = matchHorizonPeriod(high_pass, [0, period]);
-    window = 1;
-    d = DisturbanceConstantWindow('d', {[]}, window, high_pass.horizon_period);
-    high_pass = high_pass.addDisturbance({d});
-    result_hpf_fast = iqcAnalysis(high_pass, 'analysis_options', options);
-    testCase.assertTrue(result_hpf_fast.valid)
-    diff_perf = abs(result_hpf.performance - result_hpf_fast.performance);
-    testCase.verifyLessThan(diff_perf / result_hpf.performance, 1e-3);
-    % Now give constant property over large window, which should significantly reduce upper-bound
-    window = 1:(period - 1);
-    d = DisturbanceConstantWindow('d', {[]}, window, high_pass.horizon_period);
-    high_pass = high_pass.removeDisturbance(1).addDisturbance({d});
-    result_hpf_slow = iqcAnalysis(high_pass, 'analysis_options', options);
-    testCase.assertTrue(result_hpf_slow.valid)
-    diff_perf = abs(result_hpf.performance - result_hpf_slow.performance);
-    testCase.verifyLessThan(result_hpf_slow.performance, result_hpf.performance)
-    testCase.verifyGreaterThan(diff_perf / result_hpf.performance, 0.5); % at least 50% reduction
-end
 end
 
 methods (Test, TestTags = {'RCT'})
@@ -104,7 +73,7 @@ function testReachabilityWithConstantSignal(testCase)
     window = 1 : final_time;
     d = DisturbanceConstantWindow('dis',{[]}, window, lft_reach.horizon_period);
     lft_reach = lft_reach.addDisturbance({d});
-    options = AnalysisOptions('verbose', false, 'lmi_shift', 1e-6);
+    options = AnalysisOptions('verbose', false, 'lmi_shift', 1e-7);
     [result, valid] = iqcAnalysis(lft_reach, 'analysis_options', options);
     assertTrue(testCase, valid)
 
@@ -156,6 +125,39 @@ function testReachabilityWithConstantSignal(testCase)
     result2 = iqcAnalysis(lft_reach, 'analysis_options', options);
     testCase.assertTrue(result2.valid)
     testCase.verifyLessThan(result2.performance, result.performance)
+end
+end
+
+methods (Test, TestTags = {'SignalT'})
+function testPartiallyConstantThroughPeriodIsImprovement(testCase)
+    filter_order = 4;
+    cutoff_freq = 0.8;
+    [z, p, k] = butter(filter_order, cutoff_freq, 'high');
+    high_pass_ss = ss(zpk(z, p, k, -1));
+    high_pass = toLft(high_pass_ss);
+    options = AnalysisOptions('verbose', false, 'lmi_shift', 1e-7);
+    [result_hpf, valid] = iqcAnalysis(high_pass, 'analysis_options', options);
+    testCase.assertTrue(valid)
+    
+    % Add constant disturbance with short window, which should have little impact on upper-bound
+    period = 20;
+    high_pass = matchHorizonPeriod(high_pass, [0, period]);
+    window = 1;
+    d = DisturbanceConstantWindow('d', {[]}, window, high_pass.horizon_period);
+    high_pass = high_pass.addDisturbance({d});
+    result_hpf_fast = iqcAnalysis(high_pass, 'analysis_options', options);
+    testCase.assertTrue(result_hpf_fast.valid)
+    diff_perf = abs(result_hpf.performance - result_hpf_fast.performance);
+    testCase.verifyLessThan(diff_perf / result_hpf.performance, 1e-3);
+    % Now give constant property over large window, which should significantly reduce upper-bound
+    window = 1:(period - 1);
+    d = DisturbanceConstantWindow('d', {[]}, window, high_pass.horizon_period);
+    high_pass = high_pass.removeDisturbance(1).addDisturbance({d});
+    result_hpf_slow = iqcAnalysis(high_pass, 'analysis_options', options);
+    testCase.assertTrue(result_hpf_slow.valid)
+    diff_perf = abs(result_hpf.performance - result_hpf_slow.performance);
+    testCase.verifyLessThan(result_hpf_slow.performance, result_hpf.performance)
+    testCase.verifyGreaterThan(diff_perf / result_hpf.performance, 0.5); % at least 50% reduction
 end
 end
 
