@@ -75,14 +75,6 @@ catch
     dependency_installed_sdpt3 = false;
 end
 
-% C/C++ Compiler
-try
-    mex -setup C
-    dependency_installed_ccompiler = true;
-catch
-    dependency_installed_ccompiler = false;
-end
-
 % LPSOLVE
 try
     lp=mxlpsolve('make_lp',0,4);
@@ -102,6 +94,17 @@ catch
 end
 
 %% Install essential packages
+comp = computer;
+comp = comp(1 : end - 2);
+
+if strcmp(comp, 'GLNXA')
+    if ~(dependency_installed_yalmip && dependency_installed_sdpt3...
+                                     && dependency_installed_lpsolve)
+        mkdir(fullfile(top_dir, 'dependencies'))
+    end
+end                        
+
+% YALMIP
 if ~dependency_installed_yalmip
     try
         if interactive
@@ -111,53 +114,38 @@ if ~dependency_installed_yalmip
               '<a href="https://github.com/iqcToolbox/yalmip">YALMIP</a>, ',...
               'Copyright (c) 2012-2021 by Johan Löfberg'])
         install_dir_yalmip = fullfile(top_dir, 'dependencies', 'yalmip');
-        mkdir(install_dir_yalmip)
         tmp_dir = tempname;
         mkdir(tmp_dir);
         websave(fullfile(tmp_dir, 'yalmip.zip'),...
                 'https://github.com/iqcToolbox/yalmip/archive/develop.zip');
         unzip(fullfile(tmp_dir, 'yalmip.zip'), tmp_dir);
-        movefile(fullfile(tmp_dir, 'YALMIP-develop'), install_dir_yalmip)
+        yal_dir = fullfile(tmp_dir, 'YALMIP-develop');
+        switch comp
+        case 'PCWIN'
+            movefile(yal_dir, install_dir_yalmip)
+        case 'GLNXA'
+            system(['mv ', yal_dir, ' ', install_dir_yalmip]);
+        end
         dependency_installed_yalmip = true;
     catch
         install_dir_yalmip = [];
     end
 end
 
-comp = computer;
-comp = comp(1 : end - 2);
-switch comp
-case 'PCWIN'
-    if ~dependency_installed_ccompiler
-        error('installIqcToolbox:installIqcToolbox',...
-              ['In order to compile the SDPT3 dependency, MATLAB ',...
-              'must have access to a C/C++ Compiler. \n',...
-              'Various free compilers are available for different',...
-              ' platforms (Windows, Linux, Mac).',...
-              '\n\nFor Windows machines, MATLAB provides a MinGW C/C++ ',...
-              ' compiler. Visit and follow the instructions on ',...
-              '<a href="https://www.mathworks.com/matlabcentral/fileexchange/52848-matlab-support-for-mingw-w64-c-c-compiler?s_tid=prof_contriblnk">this site</a> \n',...
-              'Or, alternatively, in the main MATLAB',...
-              ' window, go to Environment -> Add-Ons -> Get Add-ons, ',...
-              ' & search for the MinGW C/C++ Compiler Add On.',...
-              '\n\n More information on other compilers and other platforms',...
-              ' may be found ',...
-              '<a href="https://www.mathworks.com/support/requirements/supported-compilers.html">here</a>.',...
-              ])
+% LPSOLVE
+if ~dependency_installed_lpsolve
+    if interactive
+        affirmInstallation('lpsolve')
     end
-    
-    if ~dependency_installed_lpsolve
-        if interactive
-            affirmInstallation('lpsolve')
-        end
-        disp(['Installing ',...
-              '<a href="http://lpsolve.sourceforge.net/">LPSOLVE 5.5</a>, ',...
-              'Copyright (c) 2004 - 2021 by ',...
-              'M. Berkelaar, K. Eikland, and P. Notebaert'])
-        install_dir_lpsolve = fullfile(top_dir, 'dependencies', 'lpsolve');
-        mkdir(install_dir_lpsolve)
-        tmp_dir = tempname;
-        mkdir(tmp_dir);
+    disp(['Installing ',...
+          '<a href="http://lpsolve.sourceforge.net/">LPSOLVE 5.5</a>, ',...
+          'Copyright (c) 2004 - 2021 by ',...
+          'M. Berkelaar, K. Eikland, and P. Notebaert'])
+    install_dir_lpsolve = fullfile(top_dir, 'dependencies', 'lpsolve');
+    tmp_dir = tempname;
+    mkdir(tmp_dir);
+    switch comp
+    case 'PCWIN'
         lpsolve_ex = 'https://github.com/iqcToolbox/lpsolve552/raw/master/lp_solve_5.5.2.0_exe_win64.zip';
         lpsolve_dev = 'https://github.com/iqcToolbox/lpsolve552/raw/master/lp_solve_5.5.2.0_dev_win64.zip';
         lpsolve_mat = 'https://github.com/iqcToolbox/lpsolve552/raw/master/lp_solve_5.5.2.0_MATLAB_exe_win64.zip';
@@ -171,38 +159,13 @@ case 'PCWIN'
         movefile(fullfile(tmp_dir, 'mxlpsolve.m'),...
                  fullfile(tmp_dir, 'mxlpsolve_old.m'))
         movefile(fullfile(tmp_dir), install_dir_lpsolve)
-        dependency_installed_lpsolve = true;
-    end
-    
-case 'GLNXA'
-    if ~dependency_installed_lpsolve
-        if interactive
-            affirmInstallation('lpsolve')
-        end
-        disp(['Installing ',...
-              '<a href="http://lpsolve.sourceforge.net/">LPSOLVE 5.5</a>, ',...
-              'Copyright (c) 2004 - 2021 by ',...
-              'M. Berkelaar, K. Eikland, and P. Notebaert'])
-        install_dir_lpsolve = fullfile(top_dir, 'dependencies', 'lpsolve');
-        mkdir(install_dir_lpsolve)
-        tmp_dir = tempname;
-        mkdir(tmp_dir);
+    case 'GLNXA'
         lpsolve_ex = 'https://github.com/iqcToolbox/lpsolve552/raw/master/lp_solve_5.5.2.0_exe_ux64.tar.gz';
         lpsolve_dev = 'https://github.com/iqcToolbox/lpsolve552/raw/master/lp_solve_5.5.2.0_dev_ux64.tar.gz';
         lpsolve_mat = 'https://github.com/iqcToolbox/lpsolve552/raw/master/lp_solve_5.5.2.0_MATLAB_exe_ux64.tar.gz';
-        fname_ex = fullfile(tmp_dir, 'lpsolve_ex.tar.gz');
-        fname_dev = fullfile(tmp_dir, 'lpsolve_dev.tar.gz');
-        fname_mat = fullfile(tmp_dir, 'lpsolve_mat.tar.gz');
-        opts = weboptions('Timeout', 10);
-        while ~exist(fname_ex, 'file')
-            websave(fname_ex, lpsolve_ex, opts);
-        end
-        while ~exist(fname_dev, 'file')
-            websave(fname_dev, lpsolve_dev, opts);
-        end
-        while ~exist(fname_mat, 'file')
-            websave(fname_mat, lpsolve_mat, opts);
-        end
+        websave(fullfile(tmp_dir, 'lpsolve_ex.tar.gz'), lpsolve_ex);
+        websave(fullfile(tmp_dir, 'lpsolve_dev.tar.gz'), lpsolve_dev);
+        websave(fullfile(tmp_dir, 'lpsolve_mat.tar.gz'), lpsolve_mat);
         gunzip(fullfile(tmp_dir, 'lpsolve_ex.tar.gz'), tmp_dir);
         gunzip(fullfile(tmp_dir, 'lpsolve_dev.tar.gz'), tmp_dir);
         gunzip(fullfile(tmp_dir, 'lpsolve_mat.tar.gz'), tmp_dir);
@@ -212,12 +175,35 @@ case 'GLNXA'
         % Need to rename mxlpsolve file to interface correctly with YALMIP
 %         movefile(fullfile(tmp_dir, 'mxlpsolve.mexa64'),...
 %              fullfile(tmp_dir, 'lp_solve.mexa64'))
-        movefile(fullfile(tmp_dir), install_dir_lpsolve)
-        dependency_installed_lpsolve = true;
+        system(['mv ', tmp_dir, ' ', install_dir_lpsolve]);
+%         movefile(fullfile(tmp_dir), install_dir_lpsolve)
     end
+    dependency_installed_lpsolve = true;
 end
 
+% SDPT3
 if ~dependency_installed_sdpt3
+    % Check if C/C++ Compiler is present
+    try
+        mex -setup C
+    catch
+        error('installIqcToolbox:installIqcToolbox',...
+          ['In order to compile the SDPT3 dependency, MATLAB ',...
+          'must have access to a C/C++ Compiler. \n',...
+          'Various free compilers are available for different',...
+          ' platforms (Windows, Linux, Mac).',...
+          '\n\nFor Windows machines, MATLAB provides a MinGW C/C++ ',...
+          ' compiler. Visit and follow the instructions on ',...
+          '<a href="https://www.mathworks.com/matlabcentral/fileexchange/52848-matlab-support-for-mingw-w64-c-c-compiler?s_tid=prof_contriblnk">this site</a> \n',...
+          'Or, alternatively, in the main MATLAB',...
+          ' window, go to Environment -> Add-Ons -> Get Add-ons, ',...
+          ' & search for the MinGW C/C++ Compiler Add On.',...
+          '\n\n More information on other compilers and other platforms',...
+          ' may be found ',...
+          '<a href="https://www.mathworks.com/support/requirements/supported-compilers.html">here</a>.',...
+          ])
+    end
+    % Compile SDPT3
     try
         if interactive
             affirmInstallation('SDPT3')
@@ -227,7 +213,6 @@ if ~dependency_installed_sdpt3
               'Copyright (c) 1997 by Kim-Chuan Toh, '...
               'Michael J. Todd, and Reha H. Tutuncu'])
         install_dir_sdpt3 = fullfile(top_dir, 'dependencies', 'sdpt3');
-        mkdir(install_dir_sdpt3)
         tmp_dir = tempname;
         mkdir(tmp_dir)
         websave(fullfile(tmp_dir, 'SDPT3.zip'),...
@@ -238,7 +223,12 @@ if ~dependency_installed_sdpt3
                 ~strcmp({dir_res.name}, '.') & ... 
                 ~strcmp({dir_res.name}, '..');
         tmp_move = fullfile(dir_res(index).folder, dir_res(index).name);
-        movefile(tmp_move, install_dir_sdpt3)
+        switch comp
+        case 'PCWIN'
+            movefile(tmp_move, install_dir_sdpt3)
+        case 'GLNXA'
+            system(['mv ', tmp_move, ' ', install_dir_sdpt3]);
+        end
         curr_dir = pwd;
         cd(install_dir_sdpt3)
         Installmex(1)
