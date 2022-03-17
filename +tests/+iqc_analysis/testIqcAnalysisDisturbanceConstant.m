@@ -128,7 +128,7 @@ function testReachabilityWithConstantSignal(testCase)
 end
 end
 
-methods (Test, TestTags = {'SignalT'})
+methods (Test, TestTags = {'SGT'})
 function testPartiallyConstantThroughPeriodIsImprovement(testCase)
     filter_order = 4;
     cutoff_freq = 0.8;

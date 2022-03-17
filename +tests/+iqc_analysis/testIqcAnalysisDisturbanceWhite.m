@@ -144,7 +144,7 @@ function testNoEffectForMemoryless(testCase)
 end
 end
 
-methods (Test, TestTags = {'SignalT'})
+methods (Test, TestTags = {'SGT'})
 function testHighPassFilter(testCase)
     [z, p, k] = butter(5, .5, 'high');
     g = ss(zpk(z, p, k, -1));
