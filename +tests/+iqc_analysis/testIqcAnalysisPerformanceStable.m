@@ -169,7 +169,6 @@ function testPassiveTheorems(testCase)
     result = iqcAnalysis(lft, 'analysis_options', options);
     residual = check(result.debug.constraints);
     valid = result.valid || all(residual > -1.01 * options.lmi_shift);
-    check(result.debug.constraints)
     testCase.verifyTrue(valid)
     % Check that this fails when doing L2 induced performance
     lft = lft.removePerformance(1);
