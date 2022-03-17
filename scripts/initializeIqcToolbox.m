@@ -61,7 +61,6 @@ if ispc
                                  ' ',...
                                  fullfile('C:','Windows')]);
             end
-            ls(fullfile('C:', 'Windows', 'lp*'))
         end
         curr_dir = pwd;
         cd(install_dir_lpsolve)
