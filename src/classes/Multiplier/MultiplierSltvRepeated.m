@@ -37,7 +37,7 @@ properties (Dependent)
     upper_bounds double
     lower_bounds double
     vertices double
-    ellipses double
+%     ellipses double
 end
 
 properties (SetAccess = immutable)
@@ -171,9 +171,6 @@ for i = 1:total_time
         elseif strcmp(this_mult.region_type, 'ellipse')
             error('MultiplierSltvRepeated:MultiplierSltvRepeated',...
                   'region_type does not currently support "ellipse"')
-        else
-            error('MultiplierSltvRepeated:MultiplierSltvRepeated',...
-                  'region_type must be "polytope", "box", or "ellipse"')
         end
         
     end
@@ -241,12 +238,13 @@ function upper_bounds = get.upper_bounds(this_mult)
     end
 end
 
-function ellipses = get.ellipses(this_mult)
-    ellipses = NaN;
-    if strcmp(this_mult.region_type, 'ellipse')
-        ellipses = this_mult.region_data;
-    end
-end
+% This property/method is slated for future development
+% function ellipses = get.ellipses(this_mult)
+%     ellipses = NaN;
+%     if strcmp(this_mult.region_type, 'ellipse')
+%         ellipses = this_mult.region_data;
+%     end
+% end
 
 function vertices = get.vertices(this_mult)
     vertices = NaN;

@@ -55,11 +55,11 @@ function testFullBoxConstructor(testCase)
     horizon_period = [0, 1];
     basis_length = 3;
     del = DeltaSltvRateBndImpl(name,...
-                                         dim_in,...
-                                         region_type,...
-                                         region_data,...
-                                         horizon_period,...
-                                         basis_length);
+                               dim_in,...
+                               region_type,...
+                               region_data,...
+                               horizon_period,...
+                               basis_length);
     verifyEqual(testCase, del.name, name)
     verifyEqual(testCase, del.dim_in, dim_in)
     verifyEqual(testCase, del.dim_out, dim_in * basis_length)
@@ -438,6 +438,8 @@ function testDeltaToMultiplier(testCase)
                             'discrete', is_discrete,...
                             'quad_time_varying', quad_time_varying);
     verifyEqual(testCase, mult.discrete, is_discrete)
+    verifyEqual(testCase, mult.lower_bound, del.lower_bound)
+    verifyEqual(testCase, mult.lower_rate, del.lower_rate)
 end
 
 function testModifyLft(testCase)
@@ -453,6 +455,24 @@ function testTimeVaryingMultiplier(testCase)
     horizon_period = [2, 5];
     del = del.matchHorizonPeriod(horizon_period);
     mult = MultiplierSltvRateBndImpl(del);  % This command would have failed in construction
+end
+
+function testErrorRegionConstructor(testCase)
+	region_type = 'wrong_type';
+    verifyError(testCase,...
+                @() DeltaSltvRateBndImpl('d', 1, region_type, {[-1, 1; -1, 1]}),...
+                'DeltaSltvRateBndImpl:DeltaSltvRateBndImpl');
+end
+
+function testErrorMultiplierEllipseConstructor(testCase)
+    name = 'd';
+    dim_outin = 1;
+	region_type = 'ellipse';
+    region_data = {[1; 1]};
+    d = DeltaSltvRateBndImpl(name, dim_outin, region_type, region_data);
+    verifyError(testCase,...
+                @() MultiplierSltvRateBndImpl(d),...
+                'MultiplierSltvRateBndImpl:set:block_realization');
 end
 
 end

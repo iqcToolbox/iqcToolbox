@@ -179,11 +179,11 @@ else
     if discrete
         assert(all(all(abs(basis_poles) < 1)),...
                'MultiplierSlti:MultiplierSlti',...
-               'basic_poles must be within the unit circle')
+               'basis_poles must be within the unit circle')
     else
         assert(all(all(real(basis_poles) < 0)),...
                'MultiplierSlti:MultiplierSlti',...
-               'basic_poles must be in the left plane')
+               'basis_poles must be in the left plane')
     end
     if size(basis_poles, 1) > 1
         assert(size(basis_poles, 1) == basis_length - 1,...
@@ -210,6 +210,7 @@ else
     k_zpk = ones(basis_length, 1);
     for i = 2:basis_length
         if size(basis_poles, 1) > 1
+        % Size is guaranteed to align with basis_length because of previous assert
             p_zpk{i, 1} = basis_poles(i - 1);
         else
             p_zpk{i, 1} = repmat(basis_poles(1,:), 1, i - 1);

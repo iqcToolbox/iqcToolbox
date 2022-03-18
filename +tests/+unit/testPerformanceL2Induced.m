@@ -42,10 +42,10 @@ function testFullConstructor(testCase)
     verifyEqual(testCase, perf.horizon_period, horizon_period)
 end
 
-function testDisplayDisturbance(testCase)
-    perf = PerformanceL2Induced('test')
-    perf = PerformanceL2Induced('test', {1}, {1}, 3)    
-    perf = PerformanceL2Induced('test', {[1;4]}, {}, 2)    
+function testDisplayPerformance(testCase)
+    perf = SequencePerformance(PerformanceL2Induced('test'))
+    perf = SequencePerformance(PerformanceL2Induced('test', {1}, {1}, 3))    
+    perf = SequencePerformance(PerformanceL2Induced('test', {[1;4]}, {}, 2))    
 end
 
 function testConstructMultiplier(testCase)

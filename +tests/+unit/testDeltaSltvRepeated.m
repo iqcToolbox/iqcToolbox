@@ -361,6 +361,8 @@ function testNormalizationBox(testCase)
             width{j} = upper_bound - lower_bound;
         end
         del = DeltaSltvRepeated(names, dim_outins, 'box', region_data, hp);
+        m = MultiplierSltvRepeated(del);
+        verifyEqual(testCase, del.lower_bounds, m.lower_bounds)
         lft = Ulft.random('num_deltas', 1,...
                           'req_deltas', {del},...
                           'horizon_period', hp);
@@ -414,7 +416,7 @@ function testNormalizationPolytope(testCase)
     normalizeLft(lft);
 end
 
-function testNormalizationEllipse(testCase)
+function testEllipseBad(testCase)
     axes = {[2; 0.1]};
     dim_outins = randi([1, 5], 2, 1);
     hp = [randi([0, 10]), randi([1, 10])];
@@ -426,7 +428,9 @@ function testNormalizationEllipse(testCase)
     warning('error', 'DeltaSltvRepeated:normalizeDelta')
     verifyError(testCase, @() normalizeLft(lft), ?MException)
     warning(warning_state);
-    normalizeLft(lft);
+    verifyError(testCase,...
+                @() MultiplierSltvRepeated(del),...
+                'MultiplierSltvRepeated:MultiplierSltvRepeated')
 end
 
 end
