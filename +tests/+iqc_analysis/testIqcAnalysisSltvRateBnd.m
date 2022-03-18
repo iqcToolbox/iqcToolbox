@@ -223,7 +223,7 @@ function testPolytopeSmallGainRobustlyStableSystem(testCase)
                         'performance', new_lft.performance,...
                         'disturbance', new_lft.disturbance);
     [result, ~] = iqcAnalysis(new_lft_poly, 'analysis_options', opts);
-    is_valid = all(check(result.debug.constraints) >= -1e-8, 'all');
+    is_valid = all(all(check(result.debug.constraints) >= -1e-8));
     assertTrue(testCase, is_valid)
     verifyTrue(testCase, isfinite(double(result.multipliers_performance.gain)));
 

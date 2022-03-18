@@ -36,7 +36,7 @@ if isChar(delta)
                  delta,...
                  ', does not appear in the lft'])
     end
-elseif isa(delta, 'cell') && all(cellfun(isChar, delta), 'all')
+elseif isa(delta, 'cell') && all(all(cellfun(isChar, delta)))
     delta_ind = [];
     for i = 1:length(delta)
         delta_i = delta{i};
@@ -49,7 +49,7 @@ elseif isa(delta, 'cell') && all(cellfun(isChar, delta), 'all')
         end
     end
 elseif isnumeric(delta)
-    validateattributes(delta, 'numeric', {'positive',...
+    validateattributes(delta, {'numeric'}, {'positive',...
                                           'integer',...
                                           'finite',...
                                           'nonnan'})

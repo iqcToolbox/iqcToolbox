@@ -19,7 +19,7 @@ function multipliers = initMultiplierDelta(array_length)
 %  SPDX-License-Identifier: GPL-2.0
 %%
 
-validateattributes(array_length, 'numeric', {'nonempty','integer','positive'})
+validateattributes(array_length, {'numeric'}, {'nonempty','integer','positive'})
 
 multipliers(array_length) = MultiplierDeltaDefault;
 end

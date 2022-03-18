@@ -324,34 +324,6 @@ function testUnstableLtiState(testCase)
 
 end
 
-function testUnstableLtiStateAndUncs(testCase)
-    g = ss(zpk([], [-1.2], 1, -1));
-    lft_atom = toLft(g) + DeltaSlti('d');
-    % Does this balance correctly?
-    lft_big = [lft_atom, lft_atom];
-    lft_true = (toLft(g) + DeltaSlti('d')) * [1, 1];
-    error_red = 1e-8;
-    lft_bal = modelReduction(lft_big, error_red);
-    y_true = step(lftToRct(lft_true));
-    y_bal  = step(lftToRct(lft_bal));
-    sig_diff = @tests.unit.testModelReduction.signal_difference;
-    diff1 = sig_diff(y_true(:, 1, 1), y_bal(:, 1, 1));
-    diff2 = sig_diff(y_true(:, 1, 2), y_bal(:, 1, 2));
-    acceptable_error = 1e-2;
-    verifyLessThan(testCase, max(diff1, diff2), acceptable_error)
-    
-    % Does this reduce correctly?
-    error_red = 2 * 1.4;
-    lft_red = modelReduction(lft_big, error_red);
-    y_red  = step(lftToRct(lft_red));
-    sig_diff = @tests.unit.testModelReduction.signal_difference;
-    diff1 = sig_diff(y_true(:, 1, 1), y_red(:, 1, 1));
-    diff2 = sig_diff(y_true(:, 1, 2), y_red(:, 1, 2));
-    acceptable_error = 1e-2;
-    verifyLessThan(testCase, max(diff1, diff2), acceptable_error)
-    verifyEqual(testCase, lft_red.delta.dim_outs, lft_true.delta.dim_outs)
-end
-
 function testUnstableLtvStateAndUncs(testCase)
     g = ss(zpk([], [-1.2], 1, -1));
     lft_atom = toLft(g) + DeltaSltv('d');
@@ -379,6 +351,37 @@ end
 %     lft_big = [lft_atom; lft_atom];
 % end
 end
+
+methods (Test, TestTags = {'RCT'})
+function testUnstableLtiStateAndUncs(testCase)
+    g = ss(zpk([], [-1.2], 1, -1));
+    lft_atom = toLft(g) + DeltaSlti('d');
+    % Does this balance correctly?
+    lft_big = [lft_atom, lft_atom];
+    lft_true = (toLft(g) + DeltaSlti('d')) * [1, 1];
+    error_red = 1e-8;
+    lft_bal = modelReduction(lft_big, error_red);
+    y_true = step(lftToRct(lft_true));
+    y_bal  = step(lftToRct(lft_bal));
+    sig_diff = @tests.unit.testModelReduction.signal_difference;
+    diff1 = sig_diff(y_true(:, 1, 1), y_bal(:, 1, 1));
+    diff2 = sig_diff(y_true(:, 1, 2), y_bal(:, 1, 2));
+    acceptable_error = 1e-2;
+    verifyLessThan(testCase, max(diff1, diff2), acceptable_error)
+    
+    % Does this reduce correctly?
+    error_red = 2 * 1.4;
+    lft_red = modelReduction(lft_big, error_red);
+    y_red  = step(lftToRct(lft_red));
+    sig_diff = @tests.unit.testModelReduction.signal_difference;
+    diff1 = sig_diff(y_true(:, 1, 1), y_red(:, 1, 1));
+    diff2 = sig_diff(y_true(:, 1, 2), y_red(:, 1, 2));
+    acceptable_error = 1e-2;
+    verifyLessThan(testCase, max(diff1, diff2), acceptable_error)
+    verifyEqual(testCase, lft_red.delta.dim_outs, lft_true.delta.dim_outs)
+end
+end
+
 
 methods (Static)
     function u_diff = signal_difference(u_true, u_approx)

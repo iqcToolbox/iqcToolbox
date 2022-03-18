@@ -30,6 +30,34 @@ end
 end
 
 methods (Test)
+function testFullWindowIsReducedResult(testCase)
+    % Create stable system
+    zero = [];
+    pole = -.5;
+    gain = 1;
+    timestep = -1;
+    g = ss(zpk(zero, pole, gain, timestep));
+%     g = drss(3, 1, 1)
+%     g.a = g.a * 0.9;
+    lft = toLft(g);
+    % Show that performance is significantly reduced is disturbance is constant (and therefore 0)
+    lft = lft.addDisturbance({DisturbanceConstantWindow('d')});
+    options = AnalysisOptions('verbose', false, 'lmi_shift', 1e-7);
+    [result, valid] = iqcAnalysis(lft, 'analysis_options', options);
+    testCase.assertTrue(valid)
+    true_performance = norm(g, 'inf');
+    testCase.verifyLessThan(result.performance, true_performance)  
+    
+    % Show that performance won't change if simply matchingHorizonPeriod
+    lft = lft.matchHorizonPeriod([7, 10]);
+    [result2, valid] = iqcAnalysis(lft, 'analysis_options', options);
+    testCase.assertTrue(valid)
+    diff_perf = abs(result.performance - result2.performance);
+    testCase.verifyLessThan(diff_perf/result.performance, 2e-3)  
+end
+end
+
+methods (Test, TestTags = {'RCT'})
 function testReachabilityWithConstantSignal(testCase)
     % Check analysis result against simulation result
     zero = [];
@@ -45,7 +73,7 @@ function testReachabilityWithConstantSignal(testCase)
     window = 1 : final_time;
     d = DisturbanceConstantWindow('dis',{[]}, window, lft_reach.horizon_period);
     lft_reach = lft_reach.addDisturbance({d});
-    options = AnalysisOptions('verbose', false, 'lmi_shift', 1e-6);
+    options = AnalysisOptions('verbose', false, 'lmi_shift', 1e-7);
     [result, valid] = iqcAnalysis(lft_reach, 'analysis_options', options);
     assertTrue(testCase, valid)
 
@@ -98,33 +126,9 @@ function testReachabilityWithConstantSignal(testCase)
     testCase.assertTrue(result2.valid)
     testCase.verifyLessThan(result2.performance, result.performance)
 end
-
-function testFullWindowIsReducedResult(testCase)
-    % Create stable system
-    zero = [];
-    pole = -.5;
-    gain = 1;
-    timestep = -1;
-    g = ss(zpk(zero, pole, gain, timestep));
-%     g = drss(3, 1, 1)
-%     g.a = g.a * 0.9;
-    lft = toLft(g);
-    % Show that performance is significantly reduced is disturbance is constant (and therefore 0)
-    lft = lft.addDisturbance({DisturbanceConstantWindow('d')});
-    options = AnalysisOptions('verbose', false, 'lmi_shift', 1e-7);
-    [result, valid] = iqcAnalysis(lft, 'analysis_options', options);
-    testCase.assertTrue(valid)
-    true_performance = norm(g, 'inf');
-    testCase.verifyLessThan(result.performance, true_performance)  
-    
-    % Show that performance won't change if simply matchingHorizonPeriod
-    lft = lft.matchHorizonPeriod([7, 10]);
-    [result2, valid] = iqcAnalysis(lft, 'analysis_options', options);
-    testCase.assertTrue(valid)
-    diff_perf = abs(result.performance - result2.performance);
-    testCase.verifyLessThan(diff_perf/result.performance, 1e-3)  
 end
 
+methods (Test, TestTags = {'SGT'})
 function testPartiallyConstantThroughPeriodIsImprovement(testCase)
     filter_order = 4;
     cutoff_freq = 0.8;
@@ -156,6 +160,7 @@ function testPartiallyConstantThroughPeriodIsImprovement(testCase)
     testCase.verifyGreaterThan(diff_perf / result_hpf.performance, 0.5); % at least 50% reduction
 end
 end
+
 end
 
 %%  CHANGELOG

@@ -22,10 +22,10 @@ function mult = combineAllMultipliers(mult_del, mult_dis, mult_perf, dim_out)
 %  SPDX-License-Identifier: GPL-2.0
 %%
 
-validateattributes(mult_del, 'MultiplierDeltaCombined', {'nonempty'}, mfilename)
-validateattributes(mult_dis, 'MultiplierDisturbanceCombined', {}, mfilename)
-validateattributes(mult_perf, 'MultiplierPerformanceCombined', {}, mfilename)
-validateattributes(dim_out, 'numeric', {'integer', 'nonnegative'}, mfilename)
+validateattributes(mult_del, {'MultiplierDeltaCombined'}, {'nonempty'}, mfilename)
+validateattributes(mult_dis, {'MultiplierDisturbanceCombined'}, {}, mfilename)
+validateattributes(mult_perf, {'MultiplierPerformanceCombined'}, {}, mfilename)
+validateattributes(dim_out, {'numeric'}, {'integer', 'nonnegative'}, mfilename)
 
 % Create combined filter, create combined quad
 a_del   = mult_del.filter.a;

@@ -28,7 +28,7 @@ function this_mult = MultiplierDeltaCombined(mults_del)
 %
 %  See also MultiplierDeltaCombined
 
-    validateattributes(mults_del, 'MultiplierDelta', {'nonempty'})
+    validateattributes(mults_del, {'MultiplierDelta'}, {'nonempty'})
 
     horizon_periods = vertcat(mults_del.horizon_period);
     matchingHorizonPeriods = @(hp) all(ismember(hp, hp(end,:), 'rows'));

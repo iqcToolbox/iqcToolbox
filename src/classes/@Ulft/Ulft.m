@@ -161,7 +161,7 @@ addRequired(input_parser, 'delta', validDelta);
 
 % horizon_period
 validHorizonPeriod = @(hp) validateattributes(hp,...
-                                              'numeric',...
+                                              {'numeric'},...
                                               {'size',[1,2],...
                                                'integer',...
                                                'nonnegative'});
@@ -240,10 +240,10 @@ end
 
 % horizon_period against a, b, c, d
 total_time = sum(horizon_period);
-validateattributes(a, 'cell', {'numel', total_time})
-validateattributes(b, 'cell', {'numel', total_time})
-validateattributes(c, 'cell', {'numel', total_time})
-validateattributes(d, 'cell', {'numel', total_time})
+validateattributes(a, {'cell'}, {'numel', total_time})
+validateattributes(b, {'cell'}, {'numel', total_time})
+validateattributes(c, {'cell'}, {'numel', total_time})
+validateattributes(d, {'cell'}, {'numel', total_time})
 
 % horizon_period against delta, performance, disturbance
 delta = matchHorizonPeriod(delta, horizon_period);
@@ -272,7 +272,7 @@ end
 
 % disturbance against b and d
 if ~isempty(disturbance.disturbances)
-allChannelsEmpty = @(chan) all(cellfun(@isempty, chan), 'all');
+allChannelsEmpty = @(chan) all(all(cellfun(@isempty, chan)));
 matInputContainsChannels = @(chan, mat) ...
     all(cellfun('size', mat, 2) >= max(cellfun(@maxEmpty, chan), [], 1));
 bConsistentWithDis = allChannelsEmpty(disturbance.chan_ins)...

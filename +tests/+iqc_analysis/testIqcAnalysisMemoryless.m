@@ -44,7 +44,9 @@ function testErrorFreeAnalysis(testCase)
     no_error = true;
     verifyTrue(testCase, no_error)
 end
+end
 
+methods (Test, TestTags = {'RCT'})
 function testCorrectAnalysis(testCase)
 for j = 1:5
     rct_object = zeros(3);
@@ -66,6 +68,7 @@ for j = 1:5
 end
 end
 end
+
 end
 
 %%  CHANGELOG

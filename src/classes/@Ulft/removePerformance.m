@@ -35,7 +35,7 @@ if isChar(performance)
                  performance,...
                  ', does not appear in the lft'])
     end
-elseif isa(performance, 'cell') && all(cellfun(isChar, performance), 'all')
+elseif isa(performance, 'cell') && all(all(cellfun(isChar, performance)))
     performance_ind = [];
     for i = 1:length(performance)
         performance_i = performance{i};
@@ -48,7 +48,7 @@ elseif isa(performance, 'cell') && all(cellfun(isChar, performance), 'all')
         end
     end
 elseif isnumeric(performance)
-    validateattributes(performance, 'numeric', {'positive',...
+    validateattributes(performance, {'numeric'}, {'positive',...
                                                 'integer',...
                                                 'finite',...
                                                 'nonnan'})

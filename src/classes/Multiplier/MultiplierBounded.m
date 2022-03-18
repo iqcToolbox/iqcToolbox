@@ -34,7 +34,7 @@ function this_mult = MultiplierBounded(delta)
 %
 %  See also MultiplierBounded
 
-    validateattributes(delta, 'DeltaBounded', {'nonempty'}, mfilename)
+    validateattributes(delta, {'DeltaBounded'}, {'nonempty'}, mfilename)
 
     this_mult.name              = delta.name;
     this_mult.horizon_period    = delta.horizon_period;

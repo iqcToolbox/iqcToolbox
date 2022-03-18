@@ -12,7 +12,7 @@
 %%
 
 %% Test class for rctToLft
-classdef testRctToLft < matlab.unittest.TestCase
+classdef (TestTags = {'RCT'}) testRctToLft < matlab.unittest.TestCase
 
 properties (Constant)
     old_warning_state = warning('query')
@@ -506,7 +506,7 @@ function testUdynConversionUnnormalized(testCase)
 end
 
 function testDisallowedRctConversion(testCase)
-    unc = umargin();
+    unc = ucomplex();
     testCase.verifyError(@() toDelta(unc), 'toDelta:toDelta')
 end
 end

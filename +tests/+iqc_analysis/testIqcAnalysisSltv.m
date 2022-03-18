@@ -57,7 +57,7 @@ function testSmallGainRobustlyStableSystem(testCase)
     
     opts = AnalysisOptions('verbose', false,...
                            'solver', 'sdpt3',...
-                           'lmi_shift', 1e-7);
+                           'lmi_shift', 1e-6);
     [result, valid] = iqcAnalysis(lft, 'analysis_options', opts);
     assertTrue(testCase, valid)
     verifyTrue(testCase, isfinite(result.performance));

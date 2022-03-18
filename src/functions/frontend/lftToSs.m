@@ -17,7 +17,7 @@ function ss_out = lftToSs(in)
 %  SPDX-License-Identifier: GPL-2.0
 %%
 
-validateattributes(in, 'Ulft', {'nonempty'})
+validateattributes(in, {'Ulft'}, {'nonempty'})
 good_horizon = @(ulft) isequal(in.horizon_period, [0 1]);
 assert(good_horizon(in),...
        'lftToSs:lftToSs',...

@@ -57,7 +57,7 @@ end
 
 function lft_out = numericToLft(num)
 %% NUMERICTOLFT for converting numeric objects (double, int, etc.) to Ulft
-validateattributes(num, 'numeric', {'nonempty', 'finite'})
+validateattributes(num, {'numeric'}, {'nonempty', 'finite'})
 
 [dim_out, dim_in] = size(num);
 lft_out = Ulft([], zeros(0, dim_in), zeros(dim_out, 0), num, SequenceDelta());
@@ -65,14 +65,14 @@ end
 
 function lft_out = numericCellToLft(sequence, horizon_period)
 %% NUMERICCELLTOLFT for converting sequences of numeric objects to Ulft
-validateattributes(horizon_period, 'numeric', {'size', [1,2],...
+validateattributes(horizon_period, {'numeric'}, {'size', [1,2],...
                                                'integer',...
                                                'nonnegative'});
-validateattributes(horizon_period(2), 'numeric', {'positive'})  
+validateattributes(horizon_period(2), {'numeric'}, {'positive'})  
 total_time = sum(horizon_period);
-validateattributes(sequence, 'cell', {'numel', total_time})
+validateattributes(sequence, {'cell'}, {'numel', total_time})
 for i = 1:total_time
-    validateattributes(sequence{i}, 'numeric', {'nonempty', 'finite', 'nonnan'})
+    validateattributes(sequence{i}, {'numeric'}, {'nonempty', 'finite', 'nonnan'})
 end
 
 dim_out = cellfun(@(c) size(c, 1), sequence);
@@ -95,7 +95,7 @@ end
 
 function lft_out = ssToLft(g)
 %% SSTOLFT for converting ss objects to Ulft
-validateattributes(g, 'ss', {'nonempty'})
+validateattributes(g, {'ss'}, {'nonempty'})
 
 if g.Ts == 0
     lft_out = abcdToLft(g.a, g.b, g.c, g.d);
@@ -106,7 +106,7 @@ end
 
 function lft_out = deltaToLft(del)
 %% DELTATOLFT for converting Delta objects to Ulft
-validateattributes(del, 'Delta', {'nonempty'})
+validateattributes(del, {'Delta'}, {'nonempty'})
 
 dim_in  = del.dim_in;
 dim_out = del.dim_out;
@@ -136,7 +136,7 @@ goodDelta = @(del) isa(del, 'DeltaSlti') || ...
                    isa(del, 'DeltaSltvRepeated');
 for i = 1:4
     varargin{i} = toLft(varargin{i});
-    validateattributes(varargin{i}, 'Ulft', {'nonempty'})
+    validateattributes(varargin{i}, {'Ulft'}, {'nonempty'})
     for j = 1:length(varargin{i}.delta.deltas)
         assert(goodDelta(varargin{i}.delta.deltas{j}),...
                'toLft:toLft',...
