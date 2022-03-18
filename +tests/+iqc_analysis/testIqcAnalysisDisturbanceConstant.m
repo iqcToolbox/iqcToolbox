@@ -53,7 +53,7 @@ function testFullWindowIsReducedResult(testCase)
     [result2, valid] = iqcAnalysis(lft, 'analysis_options', options);
     testCase.assertTrue(valid)
     diff_perf = abs(result.performance - result2.performance);
-    testCase.verifyLessThan(diff_perf/result.performance, 1e-3)  
+    testCase.verifyLessThan(diff_perf/result.performance, 2e-3)  
 end
 end
 
