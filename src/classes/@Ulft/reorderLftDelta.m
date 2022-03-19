@@ -15,7 +15,7 @@ function this_lft = reorderLftDelta(this_lft, new_order)
 %     with the 2nd delta in lft.delta and ensure that the a, b, and c
 %     matrices of lft are appropriately manipulated.
 %
-%     See also Ulft, gatherLft, reorderLftDisturbance, reorderLftPerformance
+%     See also Ulft, gatherLft
 
 %%
 %  Copyright (c) 2021 Massachusetts Institute of Technology 
