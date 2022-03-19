@@ -61,7 +61,7 @@ function testTimeWindowExtended(testCase)
                      'disturbance', dis_odd);
     [result, valid] = iqcAnalysis(lft_g_odd, 'analysis_options', opts);
     assertTrue(testCase, valid)
-    verifyLessThan(testCase, result.performance, perf_complete_window)    
+    verifyLessThan(testCase, result.performance, perf_complete_window)
 end
 
 function testTimeWindowReachability(testCase)
@@ -110,7 +110,10 @@ function testTimeWindowReachability(testCase)
                                   'multipliers_disturbance', dis_mult);
     perf_dis_half = result.performance;
     assertTrue(testCase, valid)
-    verifyLessThan(testCase, perf_dis_half, perf_dis * 1.001)  
+    verifyLessThan(testCase, perf_dis_half, perf_dis * 1.001) 
+    verifyEqual(testCase,...
+                length(result.multipliers_disturbance.decision_vars),...
+                1)
 end
 
 function testTimeWindowSomeChannels(testCase)

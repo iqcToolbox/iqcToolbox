@@ -37,8 +37,10 @@ methods (Test)
                                               MultiplierDisturbanceCombined(m_wh),...
                                               MultiplierPerformanceCombined(m_l2),...
                                               dim_out),...
-                    'combineAllMultipliers:combineAllMultipliers')
-        
+                    'combineAllMultipliers:combineAllMultipliers')        
     end
 end
 end
+
+%%  CHANGELOG
+% Mar. 18, 2022: Added after v0.6.0 - Micah Fry (micah.fry@ll.mit.edu)

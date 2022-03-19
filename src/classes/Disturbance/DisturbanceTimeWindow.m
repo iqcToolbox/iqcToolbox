@@ -219,15 +219,17 @@ methods
                  @(disc) validateattributes(disc, {'logical'}, {'nonempty'}))
 
     parse(input_parser, this_dis, varargin{:})
-    disturbance = input_parser.Results.disturbance;
-    dim_in_lft  = input_parser.Results.dim_in_lft;
+    disturbance       = input_parser.Results.disturbance;
+    dim_in_lft        = input_parser.Results.dim_in_lft;
+    quad_time_varying = input_parser.Results.quad_time_varying;
     if isempty(dim_in_lft)
         error('DisturbanceTimeWindow:disturbanceToMultiplier',...
               ['Input arguments to disturbanceToMultiplier must include',...
                ' a dim_in_lft as a key/value pair. For example: \n',...
                'disturbanceToMultiplier(dis, ''dim_in_lft'', 1,...)'])
     end
-    multiplier = MultiplierTimeWindow(disturbance, dim_in_lft);
+    multiplier = MultiplierTimeWindow(disturbance, dim_in_lft,...
+                                      'quad_time_varying', quad_time_varying);
     end
 end
 end
