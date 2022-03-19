@@ -150,7 +150,8 @@ function testOneArgConstructor(testCase)
     verifyEqual(testCase, del.region_data, {[-1, 1]})
     verifyEqual(testCase, del.lower_bounds, {-1.0})
     verifyEqual(testCase, del.upper_bounds, {1.0})
-    
+    m = MultiplierSltvRepeated(del);
+    verifyEqual(testCase, del.lower_bounds, m.lower_bounds)    
 end
 
 function testTwoArgConstructor(testCase)
@@ -361,8 +362,6 @@ function testNormalizationBox(testCase)
             width{j} = upper_bound - lower_bound;
         end
         del = DeltaSltvRepeated(names, dim_outins, 'box', region_data, hp);
-        m = MultiplierSltvRepeated(del);
-        verifyEqual(testCase, del.lower_bounds, m.lower_bounds)
         lft = Ulft.random('num_deltas', 1,...
                           'req_deltas', {del},...
                           'horizon_period', hp);
@@ -413,7 +412,6 @@ function testNormalizationPolytope(testCase)
     warning('error', 'DeltaSltvRepeated:normalizeDelta')
     verifyError(testCase, @() normalizeLft(lft), ?MException)
     warning(warning_state);
-    normalizeLft(lft);
 end
 
 function testEllipseBad(testCase)
