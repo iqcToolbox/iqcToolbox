@@ -12,7 +12,7 @@ function mult = combineAllMultipliers(mult_del, mult_dis, mult_perf, dim_out)
 %      mult_perf : MultiplierPerformanceCombined :: MultiplierPerformance subclass representing all combined Performance multipliers
 %      dim_out : arry of naturals :: output dimensions of Ulft (i.e., (size(lft, 1)))
 %    Output:
-%      mult : MultiplierDeltaCombined :: Representation of combined multiplier. The fact that it is a MultiplierPerformance object
+%      mult : MultiplierPerformanceCombined :: Representation of combined multiplier. The fact that it is a MultiplierPerformance object
 %                                        has no intrinsic meaning, it is simply an available class 
 %
 %  See also iqcAnalysis, MultiplierDeltaCombined, MultiplierDisturbanceCombined, MultiplierPerformanceCombined
