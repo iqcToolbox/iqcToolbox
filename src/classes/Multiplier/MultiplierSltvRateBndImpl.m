@@ -42,8 +42,6 @@ properties
     region_data cell
     basis_length double
     basis_poles double
-    basis_function tf
-    basis_realization ss    
 end
 
 properties (Dependent)
@@ -60,6 +58,8 @@ properties (SetAccess = immutable)
 end
 
 properties (SetAccess = private)
+    basis_function tf
+    basis_realization ss   
     block_realization struct
 end
 

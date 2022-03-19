@@ -309,8 +309,10 @@ function testAnalysisWithBasisPolesModification(testCase)
     m_len(2) = MultiplierSltvRateBndImpl(d_impl4);
     lft4 = interconnect(toLft(d4), lft_g);
     res_len = iqcAnalysis(lft4,...
-                           'multipliers_delta', m_len,...
-                           'analysis_options', opts);
+                          'multipliers_delta', m_len,...
+                          'analysis_options', opts);
+    diff_res = abs(res_orig.performance - res_len.performance);
+    verifyLessThan(testCase, diff_res/res_orig.performance, 1e-3)
     
     % Results for multiplier with pole specification
     basis_len3 = 3;
@@ -326,6 +328,8 @@ function testAnalysisWithBasisPolesModification(testCase)
     res_pole = iqcAnalysis(lft3,...
                            'multipliers_delta', m_pole,...
                            'analysis_options', opts);
+    diff_res = abs(res_orig.performance - res_pole.performance);
+    verifyLessThan(testCase, diff_res/res_orig.performance, 1e-3)
                        
     % Error out when trying complex poles
     poles = [-.25 + .25i, -.25 - .25i;
