@@ -44,6 +44,9 @@ function testDefaultConstructor(testCase)
 
     % Check defaults
     verifyTrue(testCase, m.quad_time_varying)
+    
+    % Check filter
+    verifyEqual(testCase, lftToSs(m.filter_lft), ss(eye(2)))
 end
 
 function testUnequalBoundsError(testCase)

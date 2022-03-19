@@ -259,6 +259,9 @@ function testSetBasisFunction(testCase)
                 ['When independently setting basis_function, ',...
                  'basis_poles should set empty (continuous-time)']);
     verifyEqual(testCase, mult.basis_function, basis_function)
+    diff_norm = norm(lftToSs(mult.filter_lft) - blkdiag(basis_ss, basis_ss),...
+                     'inf');
+    verifyLessThan(testCase, diff_norm, 1e-3)
 
     basis_ss = drss(4, 6, 1);
     basis_function = tf(basis_ss);
@@ -277,6 +280,9 @@ function testSetBasisFunction(testCase)
                 ['When independently setting basis_function, ',...
                  'basis_poles should set empty (discrete-time)']);
     verifyEqual(testCase, mult.basis_function, basis_function)
+    diff_norm = norm(lftToSs(mult.filter_lft) - blkdiag(basis_ss, basis_ss),...
+                     'inf');
+    verifyLessThan(testCase, diff_norm, 1e-3)
 end
 
 function testBasisFunctionErrors(testCase)
