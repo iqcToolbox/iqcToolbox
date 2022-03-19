@@ -11,7 +11,7 @@ function this_lft = gatherLft(this_lft)
 %       Output:
 %         this_lft : Ulft object :: the lft with gathered sets of Deltas/Disturbance/Performances
 %
-%     See also Ulft, reorderLftDelta, reorderLftDisturbance, reorderLftPerformance.
+%     See also Ulft, reorderLftDelta
 
 %%
 %  Copyright (c) 2021 Massachusetts Institute of Technology 

@@ -25,8 +25,6 @@ classdef (InferiorClasses = {?ss}) Ulft
 %       lft = removeDisturbance(lft, disturbance) :: Remove specified disturbances from lft
 %       lft = removePerformance(lft, performance) :: Remove specified performances from lft
 %       lft = reorderLftDelta(lft, new_order) :: Reordering deltas within lft
-%       lft = reorderLftDisturbance(lft, new_order) :: Reordering disturbances within lft
-%       lft = reorderLftPerformance(lft, new_order) :: Reordering performances within lft
 %       lft = sampleDeltas(lft, deltas, values, varargin) :: realizes the specified deltas of lft to specified or random values
 %       [output, time, state] = simulate(lft, input, time, initial_state)
 %       [dim_out, dim_in] = size(lft) :: Provide input/output dimensions of lft
@@ -82,8 +80,6 @@ methods
 this_lft = gatherLft(this_lft)
 this_lft = matchHorizonPeriod(this_lft, new_horizon_period)
 this_lft = reorderLftDelta(this_lft, new_order)
-this_lft = reorderLftDisturbance(this_lft, new_order)
-this_lft = reorderLftPerformance(this_lft, new_order)
 this_lft = interconnect(upper_lft, lower_lft)
 this_lft = addDisturbance(this_lft, disturbance)
 this_lft = addPerformance(this_lft, performance)
