@@ -166,6 +166,7 @@ end
 methods (Test, TestTags = {'RCT'})
 function testReachabilityMemoryless(testCase)
     % Reachability analysis should be the same for memoryless systems
+    rng(1, 'twister')
     dim_outin = 2;
     rct_object = zeros(dim_outin);
     for i = 1:3

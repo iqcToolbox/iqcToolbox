@@ -130,7 +130,7 @@ catch
     disp(s2)
 end
 
-disp('iqcToolbox initialized, try running tests.run_tests_script to test tbx.')
+disp('iqcToolbox initialized, try running tests.run_quick_tests to test tbx.')
 
 %%  CHANGELOG
 % Sep. 28, 2021 (v0.6.0): Added incorporation of lpsolve - Micah Fry

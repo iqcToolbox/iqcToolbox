@@ -295,6 +295,7 @@ function testFailedHorizonPeriod(testCase)
 end
 
 function testNormalization(testCase)
+    rng(1647891347) 
     % 10 randomly generated LFTs
     for i = 1:10
         dim_outin = randi([1, 10]);
@@ -344,7 +345,7 @@ function testNormalization(testCase)
                              lft_n.b{k};
                 verifyLessThan(testCase,...
                                max(abs(lft_samp - lft_n_samp)),...
-                               1e-5)
+                               1e-4)
             end
         end
     end

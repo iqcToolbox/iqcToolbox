@@ -276,6 +276,10 @@ methods (Sealed)
         varargin{del_ind} = toLft(varargin{del_ind});
         lft_out = blkdiag(varargin{:});
     end
+    
+    function lft_out = interconnect(this_delta, lower_lft)
+        lft_out = interconnect(toLft(this_delta), lower_lft);
+    end
 
     function lft_out = uminus(this_delta)
         lft_out = uminus(toLft(this_delta));
