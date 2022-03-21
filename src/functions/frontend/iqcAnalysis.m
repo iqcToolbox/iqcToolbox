@@ -461,9 +461,10 @@ elseif ~isempty(filt_lft_eye.timestep) && any(filt_lft_eye.timestep)
         ellipse = sdpvar(size(ellipse, 1)); 
         state_amplification = 1;
         ellipse_eigenvalues = sdpvar(size(ellipse,1),1);
-        kyp_constraints = kyp_constraints + (ellipse_eigenvalues >= 0);
+        objective_state = sum(ellipse_eigenvalues'*ellipse_eigenvalues);
         ellipse = diag(ellipse_eigenvalues);
-        objective_state = sum(ellipse_eigenvalues'*ellipse_eigenvalues);            
+        kyp_constraints = kyp_constraints + (ellipse_eigenvalues >= 0);
+        kyp_constraints = kyp_constraints + (p0_state <= ellipse);
     else
         objective_state = sdpvar(1);
         state_amplification = sqrt(objective_state);
