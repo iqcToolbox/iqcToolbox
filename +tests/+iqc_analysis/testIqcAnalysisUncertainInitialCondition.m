@@ -67,40 +67,35 @@ function testReachabilityWithUncertainInitialCondition(testCase)
     bound_l2_norm_in = 1e4;
     % Make reachability LFT and analyze
     N = 10;
-    for i = 1:N
-        lft_reach = generateReachabilityLft(lft, i);
-        [dim_out, dim_in] = size(lft_reach);
-        mult_perf = MultiplierL2Induced(lft_reach.performance.performances{1},...
-                                        dim_out, dim_in,...
-                                        'objective_scaling', bound_l2_norm_in^2);
-        result = iqcAnalysis(lft_reach,...
-                             'analysis_options', options,...
-                             'multipliers_performance', mult_perf);
-        final_state_bound = result.state_amplification;
-        % final_state_bound should be 1. Checking against inflated bound in case
-        % platforms have poor solver performance
-        verifyLessThan(testCase, final_state_bound, 1.01)        
-    end   
+    lft_reach = generateReachabilityLft(lft, N);
+    [dim_out, dim_in] = size(lft_reach);
+    mult_perf = MultiplierL2Induced(lft_reach.performance.performances{1},...
+                                    dim_out, dim_in,...
+                                    'objective_scaling', bound_l2_norm_in^2);
+    result = iqcAnalysis(lft_reach,...
+                         'analysis_options', options,...
+                         'multipliers_performance', mult_perf);
+    final_state_bound = result.state_amplification;
+    % final_state_bound should be 1. Checking against inflated bound in case
+    % platforms have poor solver performance
+    verifyLessThan(testCase, final_state_bound, 1.01)        
     
     % Understating disturbance input to drive state_amplification object as low a possible
     % (regardless, state_amplification should never be less than 1)
     bound_l2_norm_in = 1e-4;
     % Make reachability LFT and analyze
-    N = 10;
-    for i = 1:N
-        lft_reach = generateReachabilityLft(lft, i);
-        [dim_out, dim_in] = size(lft_reach);
-        mult_perf = MultiplierL2Induced(lft_reach.performance.performances{1},...
-                                        dim_out, dim_in,...
-                                        'objective_scaling', bound_l2_norm_in^2);
-        result = iqcAnalysis(lft_reach,...
-                             'analysis_options', options,...
-                             'multipliers_performance', mult_perf);
-        final_state_bound = result.state_amplification;
-        % final_state_bound should be 1. Checking against inflated bound in case
-        % platforms have poor solver performance
-        verifyGreaterThan(testCase, final_state_bound, 1)        
-    end        
+    lft_reach = generateReachabilityLft(lft, N);
+    [dim_out, dim_in] = size(lft_reach);
+    mult_perf = MultiplierL2Induced(lft_reach.performance.performances{1},...
+                                    dim_out, dim_in,...
+                                    'objective_scaling', bound_l2_norm_in^2);
+    result = iqcAnalysis(lft_reach,...
+                         'analysis_options', options,...
+                         'multipliers_performance', mult_perf);
+    final_state_bound = result.state_amplification;
+    % final_state_bound should be 1. Checking against inflated bound in case
+    % platforms have poor solver performance
+    verifyGreaterThan(testCase, final_state_bound, 1)        
     
     % Now try to make the initial ellipse an decision variable, should be close to eye(3)
     options = AnalysisOptions('verbose', false,...
