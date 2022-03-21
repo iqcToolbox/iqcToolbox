@@ -48,7 +48,8 @@ end
 
 methods (Test, TestTags = {'RCT'})
 function testCorrectAnalysis(testCase)
-for j = 1:5
+rng(1, 'twister')
+for j = 1:1
     rct_object = zeros(3);
     for i = 1:3
         var = randatom('ureal');

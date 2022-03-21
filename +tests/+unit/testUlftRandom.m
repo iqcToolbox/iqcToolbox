@@ -308,7 +308,8 @@ end
 function testNominalStability(testCase)
 
 % Discrete-time (possibly LTV) tests
-sample_size = 10;
+sample_size = 1;
+rng(1, 'twister')
 opts = AnalysisOptions('lmi_shift', 1e-6, 'verbose', false);
 nominally_stable = true;
 for i = 1:sample_size
@@ -324,7 +325,7 @@ end
 verifyTrue(testCase, nominally_stable)
 
 % Continuous-time (always LTI) tests
-sample_size = 1000;
+sample_size = 100;
 nominally_stable = true;
 for i = 1:sample_size
     del_time = DeltaIntegrator(randi([1, 10]));
