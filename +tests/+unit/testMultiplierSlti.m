@@ -240,7 +240,7 @@ end
 
 function testSetBasisFunction(testCase)
     del = DeltaSlti('test');
-    rng(1, 'twister')
+    rng(10, 'twister')
     basis_ss = rss(4, 6, 1);
     basis_function = tf(basis_ss);
     while (~isstable(basis_function))
