@@ -1,8 +1,8 @@
 ![GitHub](https://img.shields.io/github/license/iqcToolbox/iqcToolbox?color=green)
 [![Tests](https://github.com/iqcToolbox/iqcToolbox/actions/workflows/ci.yml/badge.svg)](https://github.com/iqcToolbox/iqcToolbox/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/iqcToolbox/iqcToolbox/branch/master/graph/badge.svg?token=IFVoWciLew)](https://codecov.io/gh/iqcToolbox/iqcToolbox)
-![PRs Welcome](https://img.shields.io/badge/PRs-welcome-green)
 ![GitHub commits since latest release (by date)](https://img.shields.io/github/commits-since/iqcToolbox/iqcToolbox/latest)
+[![View iqcToolbox on File Exchange](https://www.mathworks.com/matlabcentral/images/matlab-file-exchange.svg)](https://www.mathworks.com/matlabcentral/fileexchange/108614-iqctoolbox)
 
 # iqcToolbox
 
@@ -10,10 +10,13 @@ MATLAB toolbox for modeling uncertain/nonlinear systems and using integral quadr
 
 ## Installation
 
-Either clone this repository (`git clone https://github.com/iqcToolbox/iqcToolbox.git`)
-or download and unzip the [zipball](https://github.com/iqcToolbox/iqcToolbox/zipball/master) into a directory.
+Either clone this repository (`git clone https://github.com/iqcToolbox/iqcToolbox.git`), download and unzip the [zipball](https://github.com/iqcToolbox/iqcToolbox/zipball/master) into a directory, or get the MATLAB Add-On posted to the [MATLAB File Exchange](https://www.mathworks.com/matlabcentral/fileexchange/108614-iqctoolbox).
 
-In MATLAB simply run the function `installIqcToolbox` located in `name_of_toolbox_directory/scripts/`.
+In MATLAB simply run:
+```
+installIqcToolbox
+```
+located in `name_of_toolbox_directory/scripts/`.
 
 This function will request permission to download and install the required dependencies [yalmip](https://yalmip.github.io/), [SDPT3](https://github.com/Kim-ChuanToh/SDPT3/), and [LPSOLVE](http://lpsolve.sourceforge.net/5.5/).  You may benefit from having other SDP solvers besides `sdpt3`.  This might include [SeDuMi](https://github.com/sqlp/sedumi), [mosek](https://www.mosek.com/), or [csdp](https://github.com/coin-or/Csdp).  The latter two solvers are capable of leveraging parallel computing resources; MOSEK is free for academic use, CSDP is free for general use (EPL 2.0 license).
 
