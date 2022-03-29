@@ -75,7 +75,8 @@ function delta_out = udynToDelta(udyn_in, del_map)
            ['The container "del_map" does not have a key-value pair for the',...
             ' given udyn uncertainty: ', name, '. Note that the name should',...
             ' not be preceded with the string "Normalized"'])
-    delta_out = toLft(del_map(name)).delta.deltas{1};
+    lft_in = toLft(del_map(name));
+    delta_out = lft_in.delta.deltas{1};
 end
 %%  CHANGELOG
 % Sep. 28, 2021 (v0.6.0)

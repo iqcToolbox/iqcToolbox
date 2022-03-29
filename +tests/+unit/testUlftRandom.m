@@ -75,8 +75,7 @@ for i = 1:sample_size
     horizon_of_lfts(i) = lft.horizon_period(1);
     period_of_lfts(i) = lft.horizon_period(2);
     [dim_out, dim_in] = size(lft);
-    if all(dim_out(1) == dim_out, 'all') ...
-       && all(dim_in(1) == dim_in, 'all')
+    if all(all(dim_out(1) == dim_out)) && all(all(dim_in(1) == dim_in))
         size_is_constant(i) = true;
         dim_out_of_lfts(i) = dim_out(1);
         dim_in_of_lfts(i) = dim_in(1);
@@ -309,7 +308,8 @@ end
 function testNominalStability(testCase)
 
 % Discrete-time (possibly LTV) tests
-sample_size = 10;
+sample_size = 1;
+rng(1, 'twister')
 opts = AnalysisOptions('lmi_shift', 1e-6, 'verbose', false);
 nominally_stable = true;
 for i = 1:sample_size
@@ -325,7 +325,7 @@ end
 verifyTrue(testCase, nominally_stable)
 
 % Continuous-time (always LTI) tests
-sample_size = 1000;
+sample_size = 100;
 nominally_stable = true;
 for i = 1:sample_size
     del_time = DeltaIntegrator(randi([1, 10]));
@@ -439,7 +439,7 @@ function verifyContinuousImpliesLti(lft_generator, sample_size, testCase)
     continuous_implies_lti = true;
     for i = 1:sample_size
         lft = lft_generator;
-        if any(strcmp(lft.delta.types, 'DeltaIntegrator'), 'all')
+        if any(any(strcmp(lft.delta.types, 'DeltaIntegrator')))
             if ~isequal(lft.horizon_period, [0, 1])
                 continuous_implies_lti = false;
                 break

@@ -16,8 +16,8 @@ function true_false = ifAndOnlyIf(bool1, bool2)
 %  SPDX-License-Identifier: GPL-2.0
 %%
 
-validateattributes(bool1, 'logical', {'nonempty'})
-validateattributes(bool2, 'logical', {'nonempty'})
+validateattributes(bool1, {'logical'}, {'nonempty'})
+validateattributes(bool2, {'logical'}, {'nonempty'})
 
 true_false = (~bool1 || bool2) && (~bool2 || bool1);
 end

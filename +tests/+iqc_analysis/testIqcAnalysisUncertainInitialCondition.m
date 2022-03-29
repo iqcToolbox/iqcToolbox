@@ -44,6 +44,85 @@ function testReachabilityPureDelay(testCase)
                    abs(result10.state_amplification - gain^final_time),...
                    1e-2)      
 end
+
+function testReachabilityWithUncertainInitialCondition(testCase)
+    % Create a pure state-delay system (inputs make no impact)
+    dim_state = 3;
+    dim_out = dim_state;
+    dim_in = 1;
+    a = eye(dim_state);
+    b = zeros(dim_state, dim_in);
+    c = eye(dim_out);
+    d = zeros(dim_out, dim_in);
+    lft = Ulft(a, b, c, d, DeltaDelayZ(3));
+    % Uncertain initial conditions within unit ball
+    ellipse = eye(dim_state);
+    uncertain_states = true(dim_state, 1);
+    options = AnalysisOptions('verbose', false,...
+                              'lmi_shift', 1e-6,...
+                              'init_cond_ellipse', ellipse,...
+                              'init_cond_states', uncertain_states);
+    % Exagerating disturbance input to try and inflate state_amplification objective
+    % (regardless of the inflation, it should still be minimally larger than 1)
+    bound_l2_norm_in = 1e4;
+    % Make reachability LFT and analyze
+    N = 10;
+    lft_reach = generateReachabilityLft(lft, N);
+    [dim_out, dim_in] = size(lft_reach);
+    mult_perf = MultiplierL2Induced(lft_reach.performance.performances{1},...
+                                    dim_out, dim_in,...
+                                    'objective_scaling', bound_l2_norm_in^2);
+    result = iqcAnalysis(lft_reach,...
+                         'analysis_options', options,...
+                         'multipliers_performance', mult_perf);
+    final_state_bound = result.state_amplification;
+    % final_state_bound should be 1. Checking against inflated bound in case
+    % platforms have poor solver performance
+    verifyLessThan(testCase, final_state_bound, 1.01)        
+    
+    % Understating disturbance input to drive state_amplification object as low a possible
+    % (regardless, state_amplification should never be less than 1)
+    bound_l2_norm_in = 1e-4;
+    % Make reachability LFT and analyze
+    lft_reach = generateReachabilityLft(lft, N);
+    [dim_out, dim_in] = size(lft_reach);
+    mult_perf = MultiplierL2Induced(lft_reach.performance.performances{1},...
+                                    dim_out, dim_in,...
+                                    'objective_scaling', bound_l2_norm_in^2);
+    result = iqcAnalysis(lft_reach,...
+                         'analysis_options', options,...
+                         'multipliers_performance', mult_perf);
+    final_state_bound = result.state_amplification;
+    % final_state_bound should be 1. Checking against inflated bound in case
+    % platforms have poor solver performance
+    verifyGreaterThan(testCase, final_state_bound, 1)        
+    
+    % Now try to make the initial ellipse an decision variable, should be close to eye(3)
+    options = AnalysisOptions('verbose', false,...
+                              'lmi_shift', 1e-6,...
+                              'init_cond_ellipse', inf(3),...
+                              'init_cond_states', uncertain_states);
+    result = iqcAnalysis(lft_reach,...
+                             'analysis_options', options,...
+                             'multipliers_performance', mult_perf);
+    init_cond_ellipse = value(result.kyp_variables{1});
+    diff_ellipse = norm(init_cond_ellipse - eye(3), 2);
+    verifyLessThan(testCase, diff_ellipse, 1e-2)       
+end
+
+function testErrorUncertainInitialConditions(testCase)
+    lft = toLft(rss);
+    dim_state = lft.delta.deltas{1}.dim_out;
+    ellipse = eye(dim_state);
+    uncertain_states = true(dim_state, 1);
+    options = AnalysisOptions('verbose', false,...
+                              'init_cond_ellipse', ellipse,...
+                              'init_cond_states', uncertain_states);
+    verifyError(testCase,...
+                @() iqcAnalysis(lft, 'analysis_options', options),...
+                'iqcAnalysis:kypLmi')
+end
+
 end
 end
 

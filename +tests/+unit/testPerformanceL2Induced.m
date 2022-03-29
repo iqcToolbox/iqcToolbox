@@ -42,10 +42,10 @@ function testFullConstructor(testCase)
     verifyEqual(testCase, perf.horizon_period, horizon_period)
 end
 
-function testDisplayDisturbance(testCase)
-    perf = PerformanceL2Induced('test')
-    perf = PerformanceL2Induced('test', {1}, {1}, 3)    
-    perf = PerformanceL2Induced('test', {[1;4]}, {}, 2)    
+function testDisplayPerformance(testCase)
+    perf = SequencePerformance(PerformanceL2Induced('test'))
+    perf = SequencePerformance(PerformanceL2Induced('test', {1}, {1}, 3))    
+    perf = SequencePerformance(PerformanceL2Induced('test', {[1;4]}, {}, 2))    
 end
 
 function testConstructMultiplier(testCase)
@@ -68,10 +68,18 @@ function testConstructMultiplier(testCase)
     verifyClass(testCase, mult.gain, 'sdpvar')
     verifyEqual(testCase, mult.horizon_period, horizon_period) 
 
+    name = 'test';
+    chan_out = {[1; 2]};
+    chan_in = {};
+    gain = [];
+    horizon_period = [0, 1];
+    dim_out = 4;
+    dim_in = 4;
+    perf = PerformanceL2Induced(name, chan_out, chan_in, gain, horizon_period);
     mult = MultiplierL2Induced(perf, dim_out, dim_in);
     verifyEqual(testCase, mult.name, name)
-    verifyEqual(testCase, mult.chan_in, chan_in)
-    verifyEqual(testCase, mult.chan_out, {[]})
+    verifyEqual(testCase, mult.chan_in, {[]})
+    verifyEqual(testCase, mult.chan_out, chan_out)
     verifyEqual(testCase, mult.dim_in, dim_in)
     verifyEqual(testCase, mult.dim_out, dim_out)
     verifyClass(testCase, mult.gain, 'sdpvar')

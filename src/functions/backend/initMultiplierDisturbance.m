@@ -18,7 +18,7 @@ function multipliers = initMultiplierDisturbance(array_length)
 %  SPDX-License-Identifier: GPL-2.0
 %%
 
-validateattributes(array_length, 'numeric', {'nonempty','integer','nonnegative'})
+validateattributes(array_length, {'numeric'}, {'nonempty','integer','nonnegative'})
 if array_length > 0
     multipliers(array_length) = MultiplierDisturbanceDefault;
 else

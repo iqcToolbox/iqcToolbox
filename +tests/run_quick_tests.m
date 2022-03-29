@@ -17,12 +17,16 @@ runner = TestRunner.withTextOutput;
 top_path = mfilename('fullpath');
 top_path(end - length(mfilename):end) =  [];
 top_path = fullfile(top_path,'..','src');
-
-cov = CodeCoveragePlugin.forFolder(top_path,...
-                                   'IncludingSubfolders', true,...
-                                   'Producing', CoberturaFormat('+tests/coverage.xml'));
-runner.addPlugin(cov)
-suite = TestSuite.fromPackage('tests', 'IncludingSubpackages', true);
+quick_tests = {'tests.iqc_analysis.testIqcAnalysisDlti',...
+               'tests.iqc_analysis.testIqcAnalysisPassive',...
+               'tests.iqc_analysis.testIqcAnalysisSectorBounded',...
+               'tests.iqc_analysis.testIqcAnalysisSltv',...
+               'tests.iqc_analysis.testIqcAnalysisSltvRateBnd',...
+               'tests.iqc_analysis.testIqcAnalysisUncertainInitialCondition',...
+               'tests.iqc_analysis.testIqcAnalysisDisturbanceConstant',...
+               'tests.iqc_analysis.testIqcAnalysisPerformanceStable/testPassiveTheorems',...
+               'tests.iqc_analysis.testIqcAnalysisReachability'};
+suite = testsuite(quick_tests);
 % Check if user has Robust Control Toolbox, skip RCT-dependent tests if not
 try
     ureal;
@@ -47,15 +51,7 @@ end
 %% Run all tests in suite, save results                  
 result = runner.run(suite);
 dtime = datetime;
-save('+tests/test_results', 'result', 'dtime')
-
-%% To run a test from a specific class
-% result = runner.run(TestSuite.fromClass(?tests.unit.testDeltaSltvRateBndImpl));
-% result = runner.run(TestSuite.fromClass(?tests.iqc_analysis.testIqcAnalysisSltv));
-
-%% To begin interactive testing
-% testCase = matlab.unittest.TestCase.forInteractiveUse
+save('+tests/quick_test_results', 'result', 'dtime')
 
 %%  CHANGELOG
-% Sep. 28, 2021 (v0.6.0)
-% Aug. 26, 2021 (v.0.5.0): Initial release - Micah Fry (micah.fry@ll.mit.edu)
+% Mar. 21, 2021: Added after v0.6.0 - Micah Fry (micah.fry@ll.mit.edu)

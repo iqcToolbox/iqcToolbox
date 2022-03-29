@@ -150,7 +150,8 @@ function testOneArgConstructor(testCase)
     verifyEqual(testCase, del.region_data, {[-1, 1]})
     verifyEqual(testCase, del.lower_bounds, {-1.0})
     verifyEqual(testCase, del.upper_bounds, {1.0})
-    
+    m = MultiplierSltvRepeated(del);
+    verifyEqual(testCase, del.lower_bounds, m.lower_bounds)    
 end
 
 function testTwoArgConstructor(testCase)
@@ -411,10 +412,9 @@ function testNormalizationPolytope(testCase)
     warning('error', 'DeltaSltvRepeated:normalizeDelta')
     verifyError(testCase, @() normalizeLft(lft), ?MException)
     warning(warning_state);
-    normalizeLft(lft);
 end
 
-function testNormalizationEllipse(testCase)
+function testEllipseBad(testCase)
     axes = {[2; 0.1]};
     dim_outins = randi([1, 5], 2, 1);
     hp = [randi([0, 10]), randi([1, 10])];
@@ -426,7 +426,9 @@ function testNormalizationEllipse(testCase)
     warning('error', 'DeltaSltvRepeated:normalizeDelta')
     verifyError(testCase, @() normalizeLft(lft), ?MException)
     warning(warning_state);
-    normalizeLft(lft);
+    verifyError(testCase,...
+                @() MultiplierSltvRepeated(del),...
+                'MultiplierSltvRepeated:MultiplierSltvRepeated')
 end
 
 end

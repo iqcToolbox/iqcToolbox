@@ -42,8 +42,6 @@ properties
     region_data cell
     basis_length double
     basis_poles double
-    basis_function tf
-    basis_realization ss    
 end
 
 properties (Dependent)
@@ -52,7 +50,7 @@ properties (Dependent)
     upper_rate double
     lower_rate double
     vertices double
-    ellipses double
+%     ellipses double
 end
 
 properties (SetAccess = immutable)
@@ -60,6 +58,8 @@ properties (SetAccess = immutable)
 end
 
 properties (SetAccess = private)
+    basis_function tf
+    basis_realization ss   
     block_realization struct
 end
 
@@ -105,27 +105,19 @@ function this_mult = MultiplierSltvRateBndImpl(delta, varargin)
 input_parser = inputParser;
 addRequired(input_parser,...
             'delta',...
-            @(del) validateattributes(del, 'DeltaSltvRateBndImpl', {'nonempty'}))
+            @(del) validateattributes(del, {'DeltaSltvRateBndImpl'}, {'nonempty'}))
 addParameter(input_parser,...
              'quad_time_varying',...
              true,...
-             @(quad) validateattributes(quad, 'logical', {'nonempty'}))
+             @(quad) validateattributes(quad, {'logical'}, {'nonempty'}))
 addParameter(input_parser,...
              'discrete',...
              true,...
-             @(disc) validateattributes(disc, 'logical', {'nonempty'}))
+             @(disc) validateattributes(disc, {'logical'}, {'nonempty'}))
 addParameter(input_parser,...
              'basis_poles',...
              -0.5,...
              @(bp) isnumeric(bp))
-addParameter(input_parser,...
-             'basis_function',...
-             [],...
-             @(bf) isa(bf, 'tf'))
-addParameter(input_parser,...
-             'basis_realization',...
-             [],...
-             @(br) isa(br, 'ss'))
 
 % Parsing inputs
 parse(input_parser, delta, varargin{:})
@@ -133,19 +125,17 @@ delta               = input_parser.Results.delta;
 quad_time_varying   = input_parser.Results.quad_time_varying;
 discrete            = input_parser.Results.discrete;
 basis_poles         = input_parser.Results.basis_poles;
-basis_function      = input_parser.Results.basis_function;
-basis_realization   = input_parser.Results.basis_realization;
 for i = 1 : sum(delta.horizon_period)
     if strcmp(delta.region_type, 'box')
-assert(all(abs(delta.upper_bound + delta.lower_bound) < 1e-8,'all'),...
+assert(all(all(abs(delta.upper_bound + delta.lower_bound) < 1e-8)),...
        'MultiplierSltvRateBndImpl:MultiplierSltvRateBndImpl',...
        ['MultiplierSltvRateBndImpl currently does not support',...
-       ' asymetric bounds for DeltaSltvRateBndImpl',...
+       ' asymmetric bounds for DeltaSltvRateBndImpl',...
        ' (i.e., lower_bound must equal -upper_bound). Normalize'])
-assert(all(abs(delta.upper_rate + delta.lower_rate) < 1e-8,'all'),...
+assert(all(all(abs(delta.upper_rate + delta.lower_rate) < 1e-8)),...
        'MultiplierSltvRateBndImpl:MultiplierSltvRateBndImpl',...
        ['MultiplierSltvRateBndImpl currently does not support',...
-        ' asymetric rate-bounds for DeltaSltvRateBndImpl',...
+        ' asymmetric rate-bounds for DeltaSltvRateBndImpl',...
         ' (i.e., lower_rate must equal upper_rate). Normalize'])
     end
 end
@@ -161,66 +151,42 @@ this_mult.region_data        = delta.region_data;
 this_mult.quad_time_varying  = quad_time_varying;
 this_mult.basis_length       = basis_length;
 
-if ~isempty(basis_realization)
-    this_mult.basis_realization = basis_realization;
-    [this_mult.basis_function,...
-     this_mult.basis_poles,...
-     this_mult.basis_length] = deal([]);
-elseif ~isempty(basis_function)
-    this_mult.basis_function = basis_function;
-    [this_mult.basis_poles,...
-     this_mult.basis_length] = deal([]);
+assert(all(all(isreal(basis_poles))),...
+       'MultiplierSltvRateBndImpl:MultiplierSltvRateBndImpl',...
+       'basis_poles must be real for DeltaSltvRateBnd uncertainties')
+if discrete
+    assert(all(all(abs(basis_poles) < 1)),...
+           'MultiplierSltvRateBndImpl:MultiplierSltvRateBndImpl',...
+           'basis_poles must be within the unit circle')
 else
-    if basis_length == 1
-        basis_poles = [];
-    end
-    if isempty(basis_poles)
-        basis_length = 1;
-    end
-    if discrete
-        assert(all(abs(basis_poles) < 1, 'all'),...
-               'MultiplierSltvRateBndImpl:MultiplierSltvRateBndImpl',...
-               'basic_poles must be within the unit circle')
-    else
-        assert(all(real(basis_poles) < 0, 'all'),...
-               'MultiplierSltvRateBndImpl:MultiplierSltvRateBndImpl',...
-               'basic_poles must be in the left plane')
-    end
+    assert(all(all(real(basis_poles) < 0)),...
+           'MultiplierSltvRateBndImpl:MultiplierSltvRateBndImpl',...
+           'basis_poles must be in the left plane')
+end
+if size(basis_poles, 1) > 1
+    assert(size(basis_poles, 1) == basis_length - 1,...
+           'MultiplierSltvRateBndImpl:MultiplierSltvRateBndImpl',...
+           ['if number of rows in basis_poles is more than one, ',...
+            '(i.e., not following repeated pole scheme) ',...
+            'its number of rows must be one less than basis_length'])
+end
+this_mult.basis_poles  = basis_poles;
+this_mult.basis_length = basis_length;
+z_zpk = cell(basis_length, 1);
+p_zpk = cell(basis_length, 1);
+k_zpk = ones(basis_length, 1);
+for i = 2:basis_length
     if size(basis_poles, 1) > 1
-        assert(size(basis_poles, 1) == basis_length - 1,...
-               'MultiplierSltvRateBndImpl:MultiplierSltvRateBndImpl',...
-               ['if number of rows in basis_poles is more than one, ',...
-                '(i.e., not following repeated pole scheme) ',...
-                'its number of rows must be one less than basis_length'])
-    end
-    if any(~isreal(basis_poles), 'all')
-        try 
-            cplxpair(basis_poles);
-        catch ME
-            if strcmp(ME.identifier, 'MATLAB:cplxpair:ComplexValuesPaired')
-                assert(false,...
-                       'MultiplierSltvRateBndImpl:MultiplierSltvRateBndImpl',...
-                       'complex poles must be in conjugate pairs')
-            end
-        end
-    end
-    this_mult.basis_poles  = basis_poles;
-    this_mult.basis_length = basis_length;
-    z_zpk = cell(basis_length, 1);
-    p_zpk = cell(basis_length, 1);
-    k_zpk = ones(basis_length, 1);
-    for i = 2:basis_length
-        if size(basis_poles, 1) > 1
-            p_zpk{i, 1} = basis_poles(i - 1);
-        else
-            p_zpk{i, 1} = repmat(basis_poles(1,:), 1, i - 1);
-        end
-    end
-    if discrete
-        this_mult.basis_function = zpk(z_zpk, p_zpk, k_zpk, []);
+    % Size is guaranteed to align with basis_length because of previous assert
+        p_zpk{i, 1} = basis_poles(i - 1);
     else
-        this_mult.basis_function = zpk(z_zpk, p_zpk, k_zpk);
+        p_zpk{i, 1} = repmat(basis_poles(1,:), 1, i - 1);
     end
+end
+if discrete
+    this_mult.basis_function = zpk(z_zpk, p_zpk, k_zpk, []);
+else
+    this_mult.basis_function = zpk(z_zpk, p_zpk, k_zpk);
 end
 end
 
@@ -360,9 +326,6 @@ function this_mult = set.block_realization(this_mult, block_realization)
             elseif strcmp(this_mult.region_type, 'ellipse')
                 error('MultiplierSltvRateBndImpl:set:block_realization',...
                       'region_type does not currently support "ellipse"')
-            else
-                error('MultiplierSltvRateBndImpl:set:block_realization',...
-                      'region_type must be "polytope", "box", or "ellipse"')
             end
 
         end
@@ -439,12 +402,13 @@ function upper_rate = get.upper_rate(this_mult)
     end
 end
 
-function ellipses = get.ellipses(this_mult)
-    ellipses = NaN;
-    if strcmp(this_mult.region_type, 'ellipse')
-        ellipses = this_mult.region_data;
-    end
-end
+% This property/method to be developed in a future release
+% function ellipses = get.ellipses(this_mult)
+%     ellipses = NaN;
+%     if strcmp(this_mult.region_type, 'ellipse')
+%         ellipses = this_mult.region_data;
+%     end
+% end
 
 function vertices = get.vertices(this_mult)
     vertices = NaN;

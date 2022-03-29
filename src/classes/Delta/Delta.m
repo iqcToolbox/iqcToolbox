@@ -62,20 +62,20 @@ methods
     %          this_delta : Delta object :: the base class Delta
     %
     %    See also Delta.
-    validateattributes(name, 'char', {'nonempty'});
+    validateattributes(name, {'char'}, {'nonempty'});
     notAllZeroDim = @(dim) any(dim > 0);
-    validateattributes(dim_out, 'numeric', {'integer', 'nonnegative'});
+    validateattributes(dim_out, {'numeric'}, {'integer', 'nonnegative'});
     assert(notAllZeroDim(dim_out),...
            'Delta:Delta',...
            'Delta must have at least one non-zero output dimension')
-    validateattributes(dim_in, 'numeric', {'integer', 'nonnegative'});
+    validateattributes(dim_in, {'numeric'}, {'integer', 'nonnegative'});
     assert(notAllZeroDim(dim_in),...
            'Delta:Delta',...
            'Delta must have at least one non-zero input dimension')
-    validateattributes(horizon_period, 'numeric', {'size', [1,2],...
+    validateattributes(horizon_period, {'numeric'}, {'size', [1,2],...
                                                    'integer',...
                                                    'nonnegative'});
-    validateattributes(horizon_period(2), 'numeric', {'positive'})                                               
+    validateattributes(horizon_period(2), {'numeric'}, {'positive'})                                               
 
     % Setting properties of Delta
     this_delta.name           = name;
@@ -275,6 +275,10 @@ methods (Sealed)
         del_ind =  find(cellfun(@(a) isa(a, 'Delta'), varargin), 1, 'first');
         varargin{del_ind} = toLft(varargin{del_ind});
         lft_out = blkdiag(varargin{:});
+    end
+    
+    function lft_out = interconnect(this_delta, lower_lft)
+        lft_out = interconnect(toLft(this_delta), lower_lft);
     end
 
     function lft_out = uminus(this_delta)

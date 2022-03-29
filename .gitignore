@@ -4,4 +4,5 @@ configuration/install_configuration.mat
 *.asv
 +tests/coverage.xml
 +tests/test_results.mat
++tests/quick_test_results.mat
 docs/build

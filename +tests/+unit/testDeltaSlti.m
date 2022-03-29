@@ -135,6 +135,28 @@ classdef testDeltaSlti < matlab.unittest.TestCase
     verifyTrue(testCase, no_errors)
     end
     
+    function testMatchHorizonPeriodNoArgument(testCase)
+    % This tests correctness of matchHorizonPeriod when given no argument
+        d = DeltaSlti('d');
+        horizon_period2 = [2, 3];
+        d2 = d;
+        d2.horizon_period = horizon_period2;
+        d2 = d2.matchHorizonPeriod();
+        total_time = sum(horizon_period2);
+        verifyEqual(testCase, d2.dim_out, ones(1, total_time))
+        verifyEqual(testCase, d2.dim_in, ones(1, total_time))
+        verifyEqual(testCase, d2.lower_bound, -ones(1, total_time))
+        verifyEqual(testCase, d2.upper_bound, ones(1, total_time))
+        compareObjects(d, d2)
+        
+        horizon_period3 = [3, 6];
+        d3 = d2;
+        d3.horizon_period = horizon_period3;
+        verifyError(testCase,...
+                    @() d3.matchHorizonPeriod(),...
+                    'DeltaSlti:matchHorizonPeriod')
+    end
+    
     function testNormalization(testCase)
         % 10 randomly generated LFTs
         for i = 1:10

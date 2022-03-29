@@ -27,7 +27,7 @@ function this_mult = MultiplierPassive(delta)
 %      this_mult : MultiplierPassive object
 
 % Inputs
-validateattributes(delta, 'DeltaPassive', {'nonempty'}, mfilename)
+validateattributes(delta, {'DeltaPassive'}, {'nonempty'}, mfilename)
 
 
 this_mult.name           = delta.name;

@@ -16,9 +16,9 @@ methods (Test)
     function testPassiveComponentsMakePassiveInterconnection(testCase)
     % Interconnection of two passive components makes a passive interconnection
         dim_outin = 1;
-        horizon_period = [0, 1];
+        horizon_period = [0, 2];
         lower_lft = [-toLft(DeltaPassive('del_low', dim_outin)), 1; 1, 0];
-        upper_lft = toLft(DeltaPassive('del_up', dim_outin, horizon_period));
+        upper_lft = DeltaPassive('del_up', dim_outin, horizon_period);
         lft = interconnect(upper_lft, lower_lft);
         lft = lft.addPerformance({PerformancePassive('pass')});
         options = AnalysisOptions('lmi_shift', 0, 'verbose', false);

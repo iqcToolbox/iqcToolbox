@@ -44,9 +44,12 @@ function testErrorFreeAnalysis(testCase)
     no_error = true;
     verifyTrue(testCase, no_error)
 end
+end
 
+methods (Test, TestTags = {'RCT'})
 function testCorrectAnalysis(testCase)
-for j = 1:5
+rng(1, 'twister')
+for j = 1:1
     rct_object = zeros(3);
     for i = 1:3
         var = randatom('ureal');
@@ -66,6 +69,7 @@ for j = 1:5
 end
 end
 end
+
 end
 
 %%  CHANGELOG

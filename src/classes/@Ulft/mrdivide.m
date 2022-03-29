@@ -27,8 +27,8 @@ end
 if ~isa(right_lft, 'Ulft')
     right_lft = toLft(right_lft); 
 end
-validateattributes(left_lft, 'Ulft', {'nonempty'}, mfilename)
-validateattributes(right_lft, 'Ulft', {'nonempty'}, mfilename)
+validateattributes(left_lft, {'Ulft'}, {'nonempty'}, mfilename)
+validateattributes(right_lft, {'Ulft'}, {'nonempty'}, mfilename)
 
 if ~isequal(left_lft.horizon_period, right_lft.horizon_period)
     horizon_period = commonHorizonPeriod([left_lft.horizon_period;

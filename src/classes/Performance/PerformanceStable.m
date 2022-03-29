@@ -162,4 +162,4 @@ end
 end
 
 %%  CHANGELOG
-% Feb. 16, 2021: Added after v0.6.0 - Micah Fry (micah.fry@ll.mit.edu)
+% Feb. 16, 2022: Added after v0.6.0 - Micah Fry (micah.fry@ll.mit.edu)

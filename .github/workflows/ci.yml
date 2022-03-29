@@ -27,19 +27,19 @@ jobs:
 
       # Sets up MATLAB on the GitHub Actions runner
       - name: Setup MATLAB
-        uses: matlab-actions/setup-matlab@v0
+        uses: matlab-actions/setup-matlab@v1
 #        with:
 #          release: ${{ R2021a }}
 
       # Install iqcToolbox
       - name: Install iqcToolbox
-        uses: matlab-actions/run-command@v0
+        uses: matlab-actions/run-command@v1
         with:
           command: addpath('scripts'); installIqcToolbox(true, false);
 
       # Run tests script
       - name: Run all tests
-        uses: matlab-actions/run-command@v0
+        uses: matlab-actions/run-command@v1
 #        continue-on-error: true
         with:
           command: addpath('scripts'); initializeIqcToolbox; tests.run_tests_script
@@ -53,6 +53,6 @@ jobs:
 
       # Throw error if tests failed
       - name: Check if tests failed
-        uses: matlab-actions/run-command@v0
+        uses: matlab-actions/run-command@v1
         with:
           command: load('+tests/test_results', 'result'); assertSuccess(result);

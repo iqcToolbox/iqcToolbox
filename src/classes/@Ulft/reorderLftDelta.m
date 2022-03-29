@@ -15,7 +15,7 @@ function this_lft = reorderLftDelta(this_lft, new_order)
 %     with the 2nd delta in lft.delta and ensure that the a, b, and c
 %     matrices of lft are appropriately manipulated.
 %
-%     See also Ulft, gatherLft, reorderLftDisturbance, reorderLftPerformance
+%     See also Ulft, gatherLft
 
 %%
 %  Copyright (c) 2021 Massachusetts Institute of Technology 
@@ -27,7 +27,7 @@ assert(isa(this_lft, 'Ulft'), 'Ulft:reorderLftDelta',...
        'First argument must be a Ulft object');
    
 number_of_deltas = length(this_lft.delta.names);
-validateattributes(new_order, 'numeric',...
+validateattributes(new_order, {'numeric'},...
                    {'integer', 'positive', 'numel', number_of_deltas});
 assert(length(unique(new_order)) == number_of_deltas,...
        'Ulft:reorderLftDelta',...

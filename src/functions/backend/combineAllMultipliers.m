@@ -12,7 +12,7 @@ function mult = combineAllMultipliers(mult_del, mult_dis, mult_perf, dim_out)
 %      mult_perf : MultiplierPerformanceCombined :: MultiplierPerformance subclass representing all combined Performance multipliers
 %      dim_out : arry of naturals :: output dimensions of Ulft (i.e., (size(lft, 1)))
 %    Output:
-%      mult : MultiplierDeltaCombined :: Representation of combined multiplier. The fact that it is a MultiplierPerformance object
+%      mult : MultiplierPerformanceCombined :: Representation of combined multiplier. The fact that it is a MultiplierPerformance object
 %                                        has no intrinsic meaning, it is simply an available class 
 %
 %  See also iqcAnalysis, MultiplierDeltaCombined, MultiplierDisturbanceCombined, MultiplierPerformanceCombined
@@ -22,10 +22,10 @@ function mult = combineAllMultipliers(mult_del, mult_dis, mult_perf, dim_out)
 %  SPDX-License-Identifier: GPL-2.0
 %%
 
-validateattributes(mult_del, 'MultiplierDeltaCombined', {'nonempty'}, mfilename)
-validateattributes(mult_dis, 'MultiplierDisturbanceCombined', {}, mfilename)
-validateattributes(mult_perf, 'MultiplierPerformanceCombined', {}, mfilename)
-validateattributes(dim_out, 'numeric', {'integer', 'nonnegative'}, mfilename)
+validateattributes(mult_del, {'MultiplierDeltaCombined'}, {'nonempty'}, mfilename)
+validateattributes(mult_dis, {'MultiplierDisturbanceCombined'}, {}, mfilename)
+validateattributes(mult_perf, {'MultiplierPerformanceCombined'}, {}, mfilename)
+validateattributes(dim_out, {'numeric'}, {'integer', 'nonnegative'}, mfilename)
 
 % Create combined filter, create combined quad
 a_del   = mult_del.filter.a;

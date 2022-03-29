@@ -21,8 +21,8 @@ function lft_out = generateReachabilityLft(lft_in, final_time)
 %  SPDX-License-Identifier: GPL-2.0
 %%
 
-validateattributes(lft_in, 'Ulft', {'nonempty'})
-validateattributes(final_time, 'numeric', {'nonnegative', 'nonempty'})
+validateattributes(lft_in, {'Ulft'}, {'nonempty'})
+validateattributes(final_time, {'numeric'}, {'nonnegative', 'nonempty'})
 
 % Find the right horizon_period
 common_hp = commonHorizonPeriod([lft_in.horizon_period; [final_time + 1, 1]]);
