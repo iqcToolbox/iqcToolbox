@@ -4,7 +4,7 @@ classdef DeltaSectorBounded < Delta
 %  Extends the base class Delta.
 %
 %   extended methods:
-%     DeltaSectorBounded(name, dim_outin, horizon_period) :: Constructor
+%     DeltaSectorBounded(name, dim_outin, lower_bound, upper_bound, horizon_period) :: Constructor
 %     disp(this_delta) :: Display method
 %     matchHorizonPeriod(this_delta, new_horizon_period) 
 %                        :: Matches delta properties to new horizon_period
@@ -62,7 +62,7 @@ methods
             case 5
             otherwise
                 error('DeltaSectorBounded:DeltaSectorBounded',...
-                      ['Must provide 1, 2, or 4 arguments to construct',...
+                      ['Must provide 1, 2, 4, or 5 arguments to construct',...
                        'DeltaSectorBounded objects'])
         end
         % Calling Delta constructor

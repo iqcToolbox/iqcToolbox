@@ -152,6 +152,12 @@ function this_mult = shiftMultiplier(this_mult, exponential)
                         'UniformOutput', false);
     end
     this_mult.filter.a = a_mat;
+    % Shift B-matrices of filter
+    if this_mult.discrete
+        b_mat = cellfun(@(b) b / exponential, this_mult.filter.b,...
+                        'UniformOutput', false);
+        this_mult.filter.b = b_mat;
+    end
     % Check that filter remains stable
     if sum(this_mult.horizon_period) == 1
     % Time-invariant systems
