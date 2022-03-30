@@ -185,7 +185,7 @@ methods
     %        multiplier : MultiplierSectorBounded object
     %
     %  See also DeltaSectorBounded.
-        multiplier = MultiplierSectorBounded(this_del);
+        multiplier = MultiplierSectorBounded(this_del, varargin{:});
     end
     
     function value = sample(this_del, ~)

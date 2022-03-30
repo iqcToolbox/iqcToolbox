@@ -132,7 +132,7 @@ methods
             this_del.dim_in = this_del.dim_in * ones(1, total_time);
         end
         if length(this_del.delay_max) ~= total_time
-            assert(length(this_del.lower_bound) == 1,...
+            assert(length(this_del.delay_max) == 1,...
                    'DeltaConstantDelay:matchHorizonPeriod',...
                    'delay_max of %s is not compatible w/ horizon_period',...
                    this_del.name)
@@ -168,7 +168,7 @@ methods
     %        multiplier : MultiplierConstantDelay object
     %
     %  See also DeltaConstantDelay.
-        multiplier = MultiplierConstantDelay(this_del, varargin);
+        multiplier = MultiplierConstantDelay(this_del, varargin{:});
     end
     
     function value = sample(this_delta, timestep)
@@ -213,7 +213,7 @@ methods
         input = ones(dim_out, 1) * [1:100];
         output = value.simulate(input);
         first_match = all(abs(output(1, :) - ones(dim_out, 1))...
-                           < 1e-8 * ones(dim_out, 1)); 
+                           < 1e-8 * ones(dim_out, 1), 1); 
         delay = find(first_match, 1, 'first') - 1;
         assert(~isempty(delay),...
                'DeltaConstantDelay:validateSample',...

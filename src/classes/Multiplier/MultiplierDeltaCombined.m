@@ -37,6 +37,18 @@ function this_mult = MultiplierDeltaCombined(mults_del)
                'MultiplierDeltaCombined:MultiplierDeltaCombined',...
                'All input multipliers must have the same horizon_period')
     end
+    exponentials = vertcat(mults_del.exponential);
+    if ~isempty(exponentials)
+        assert(all(exponentials(1) == exponentials),...
+               'MultiplierDeltaCombined:MultiplierDeltaCombined',...
+               ['Exponential factor is not consistent across all multipliers.',...
+                ' Each MultiplierDelta much have an unspecificed exponential',...
+                ' factor (i.e., [], which signifies the exponential IQC holds',...
+                ' for any exponential factor), or have the same exponential',...
+                ' factor as any other specified exponential factor for any',...
+                ' other MultiplierDelta'])
+        exponentials = exponentials(1);
+    end
 
     % Combine filters
     filters = horzcat(mults_del.filter);
@@ -108,6 +120,7 @@ function this_mult = MultiplierDeltaCombined(mults_del)
     this_mult.quad           = quad;
     this_mult.horizon_period = horizon_period;
     this_mult.discrete       = discrete;
+    this_mult.exponential    = exponentials;
 end
 end
 end

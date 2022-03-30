@@ -112,9 +112,9 @@ methods
                  @(in) validateattributes(in, {'numeric'}, {'finite'}))                                 
     % Other potential inputs: [matrix] which is used as the first lyapunov matrix in an attempt to satisfy the IQC KYP LMIs
     addParameter(input_parser,...
-                 {'exponential'},...
+                 'exponential',...
                  [],...  % [] corresponds to the "default" value for exponential rates (1 for discrete-time, 0 for continuous-time)
-                 @(in) validateattributes(in, 'numeric', {'finite'}, mfilename))
+                 @(in) validateattributes(in, 'numeric', {'finite', 'nonnan'}))
     
     parse(input_parser, varargin{:})
     

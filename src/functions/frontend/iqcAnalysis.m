@@ -121,6 +121,7 @@ end
 lft_analyzed = modifyLft(lft_in);
 
 %% Define joint Delta/Disturbance multiplier
+exponential = options.exponential;
 total_time = sum(lft_analyzed.horizon_period);
 delta = lft_analyzed.delta;
 num_dels = length(delta.names);
@@ -148,7 +149,8 @@ for i=1:num_dels
                 'match w/ its Delta'])
     else
         mults_del(i) = deltaToMultiplier(delta.deltas{i},...
-                                         'discrete', is_discrete);
+                                         'discrete', is_discrete,...
+                                         'exponential', exponential);
     end
 end
 
@@ -223,6 +225,7 @@ end
 mult_del  = MultiplierDeltaCombined(mults_del);
 mult_dis  = MultiplierDisturbanceCombined(mults_dis);
 mult_perf = MultiplierPerformanceCombined(mults_perf); 
+exponential = mult_del.exponential;
 
 dim_out = size(lft_analyzed, 1);
 mult = combineAllMultipliers(mult_del, mult_dis, mult_perf, dim_out);
