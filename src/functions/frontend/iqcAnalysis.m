@@ -230,11 +230,16 @@ exponential = mult_del.exponential;
 dim_out = size(lft_analyzed, 1);
 mult = combineAllMultipliers(mult_del, mult_dis, mult_perf, dim_out);
 
-%% Check that exponential rate is amenable with lft_analyzed and mult
-
+%% Check that exponential rate is amenable with lft_analyzed and mult_del (might be done in stability analysis)
+if ~isempty(exponential) && ~isempty(options.exponential)
+    assert(exponential == options.exponential,...
+           'iqcAnalysis:iqcAnalysis',...
+           ['The exponential factor of every multiplier must match the ',...
+            'exponential factor specified in analysis_options'])
+end
 
 %% Formulate KYP lmis
-[objective, kyp_constraints, state_amplification, ellipse, kyp_variables] = ...
+[objective, kyp_constraints, state_amplification, ellipse, kyp_variables, exponential] = ...
                                     kypLmi(lft_analyzed, mult, options);
 
 %% Gather constraints, set yalmip options, solve
@@ -305,18 +310,46 @@ result.kyp_variables           = kyp_variables;
 result.valid                   = valid;
 result.debug.constraints       = constraints;
 result.debug.yalmip_report     = yalmip_report;
+result.exponential             = exponential;
 end
 
 function [objective,...
           kyp_constraints,...
           state_amplification,...
           ellipse,...
-          kyp_variables] = kypLmi(lft_in, mult, options)
+          kyp_variables,...
+          expo] = kypLmi(lft_in, mult, options)
 %% KYPLMI function for generating variables and constraints associated with
 %  the Kalman-yakubovich-popov lemma. 
 %  Variables:
 %     lft_in : Ulft object
 %     mult : MultiplierPerformanceCombined object
+
+% Set up exponential rate and check for consistency
+expo = options.exponential
+
+if ~isempty(lft_in.timestep)
+% LFT has dynamics
+    if isempty(options.exponential)
+    % Exponential rate is unspecified
+        if lft_in.timestep
+        % LFT is discrete-time
+            expo = 1;
+        else
+        % LFT is continuous-time
+            expo = 0;
+        end
+    end
+    if    (lft_in.timestep && expo ~= 1)...
+       || (~lft_in.timestep && expo ~= 0)
+    % Non-default exponential rate is specified
+    % for either discrete- or continuous-time system
+        assert(isequal(lft_in.horizon_period, [0, 1]),...
+               'iqcAnalysis:kypLmi',...
+               'Cannot have non-default exponential rate for time-varying LFTs')
+    end
+end
+
 
 total_time = sum(lft_in.horizon_period);
 
@@ -418,7 +451,7 @@ elseif any(filt_lft_eye.timestep)
                     mult.quad.q21{i}, mult.quad.q22{i}];
         p_next = p{time_indices(i + 1)};
         lmi_mat{i} = [eye(state_in(i), size(abcd{i}, 2)); abcd{i}]' * ...
-                     blkdiag(-p_now, p_next, quad_now) * ...
+                     blkdiag(-expo^2 * p_now, p_next, quad_now) * ...
                      [eye(state_in(i), size(abcd{i}, 2)); abcd{i}];
     end
 elseif ~(all(filt_lft_eye.timestep))
@@ -426,8 +459,8 @@ elseif ~(all(filt_lft_eye.timestep))
     assert(isequal(filt_lft_eye.horizon_period, [0, 1]),...
            'iqcAnalysis:kypLmi',...
            'Can only conduct IQC analysis on time-invariant continuous-time systems')
-    p_mat    = [zeros(size(p{1})),  p{1};
-                p{1},               zeros(size(p{1}))];
+    p_mat    = [2 * expo * eye(size(p{1})),  p{1};
+                p{1},                        zeros(size(p{1}))];
     quad_mat = [mult.quad.q11{1}, mult.quad.q12{1};
                 mult.quad.q21{1}, mult.quad.q22{1}];
     lmi_mat{i} = [eye(state_in(1), size(abcd{1}, 2)); abcd{1}]' * ...
