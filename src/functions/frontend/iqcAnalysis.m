@@ -103,7 +103,8 @@ if lft_in.uncertain && ~isempty(lft_in.timestep)
                                        lft_normalized.delta.names(2:end));
     op = AnalysisOptions('verbose', options.yalmip_settings.verbose,...
                          'solver', options.yalmip_settings.solver,...
-                         'lmi_shift', options.lmi_shift);
+                         'lmi_shift', options.lmi_shift,...
+                         'exponential', options.exponential);
     [res, valid_nominal, yr, sys] = iqcAnalysis(nominal_system,...
                                                 'analysis_options', op);
     if ~valid_nominal
@@ -300,17 +301,17 @@ else
 end
 
 result.performance             = performance;
-result.ellipse                 = double(ellipse);
 result.state_amplification     = double(state_amplification);
+result.ellipse                 = double(ellipse);
 result.multiplier_combined     = mult;
 result.multipliers_delta       = mults_del;
 result.multipliers_disturbance = mults_dis;
 result.multipliers_performance = mults_perf;
 result.kyp_variables           = kyp_variables;
-result.valid                   = valid;
+result.exponential             = exponential;
 result.debug.constraints       = constraints;
 result.debug.yalmip_report     = yalmip_report;
-result.exponential             = exponential;
+result.valid                   = valid;
 end
 
 function [objective,...
@@ -324,32 +325,6 @@ function [objective,...
 %  Variables:
 %     lft_in : Ulft object
 %     mult : MultiplierPerformanceCombined object
-
-% Set up exponential rate and check for consistency
-expo = options.exponential
-
-if ~isempty(lft_in.timestep)
-% LFT has dynamics
-    if isempty(options.exponential)
-    % Exponential rate is unspecified
-        if lft_in.timestep
-        % LFT is discrete-time
-            expo = 1;
-        else
-        % LFT is continuous-time
-            expo = 0;
-        end
-    end
-    if    (lft_in.timestep && expo ~= 1)...
-       || (~lft_in.timestep && expo ~= 0)
-    % Non-default exponential rate is specified
-    % for either discrete- or continuous-time system
-        assert(isequal(lft_in.horizon_period, [0, 1]),...
-               'iqcAnalysis:kypLmi',...
-               'Cannot have non-default exponential rate for time-varying LFTs')
-    end
-end
-
 
 total_time = sum(lft_in.horizon_period);
 
@@ -395,6 +370,30 @@ if all(cellfun(@isempty, identity_cell))
 else
     identity_lft = toLft(identity_cell, lft_in.horizon_period);
     filt_lft_eye = mult.filter_lft * [lft_in_state; identity_lft];
+end
+
+% Set up exponential rate and check for consistency
+expo = options.exponential;
+if ~isempty(filt_lft_eye.timestep)
+% LFT has dynamics
+    if isempty(options.exponential)
+    % Exponential rate is unspecified
+        if filt_lft_eye.timestep
+        % LFT is discrete-time
+            expo = 1;
+        else
+        % LFT is continuous-time
+            expo = 0;
+        end
+    end
+    if    (all(logical(filt_lft_eye.timestep)) && expo ~= 1)...
+       || (all(~logical(filt_lft_eye.timestep)) && expo ~= 0)
+    % Non-default exponential rate is specified
+    % for either discrete- or continuous-time system
+        assert(isequal(filt_lft_eye.horizon_period, [0, 1]),...
+               'iqcAnalysis:kypLmi',...
+               'Cannot have non-default exponential rate for time-varying LFTs')
+    end
 end
 
 % Reset state_in dimensions to pertain to filt_lft_eye, rather than lft_in
