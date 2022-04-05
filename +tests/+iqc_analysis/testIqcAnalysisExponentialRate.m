@@ -30,6 +30,7 @@ end
 
 methods (Test)
 function testNominalSystems(testCase)
+    % Discrete-time
     g = drss;
     g.a = g.a * 0.95;
     exponential = max(abs(eig(g.a)));
@@ -44,9 +45,8 @@ function testNominalSystems(testCase)
     options.exponential = exponential * 0.99; 
     result = iqcAnalysis(g_lft, 'analysis_options', options);
     testCase.verifyFalse(result.valid)
-    
-    
-    %% I'm not getting correct results here...I need to figure out why...
+
+    % Continuous-time
     g = rss;
     g.a = g.a - 0.05 * eye(size(g.a));
     exponential = -max(real(eig(g.a)));
@@ -58,42 +58,213 @@ function testNominalSystems(testCase)
     result = iqcAnalysis(g_lft, 'analysis_options', options);
     testCase.verifyTrue(result.valid)
     % Check if decay rate may be slightly faster than known rate
-    options.exponential = exponential * 10; 
-    [result, ~, ~, lft_analyzed] = iqcAnalysis(g_lft, 'analysis_options', options);
-    p = value(result.kyp_variables{1});
-    a = lft_analyzed.a{1}; 
-    p * a + a' * p + 2 * options.exponential * eye(size(a)) + options.lmi_shift * eye(size(a)) + ...
-    value(result.debug.constraints(2));
+    options.exponential = exponential * 1.1;
+    result = iqcAnalysis(g_lft, 'analysis_options', options);
     testCase.verifyFalse(result.valid)
-%     exponential = logspace(-1, 4, 6);
-%     valid = [];
-%     for expo = exponential
-%         options.exponential = expo;
-%         result = iqcAnalysis(g_lft, 'analysis_options', options);
-%         valid(end + 1) = result.valid;
-%     end
-    expo_test = exponential * 10;
-    N = 100;
-    u = zeros(size(g.b, 2), N);
-    if ~g.Ts
-        t = linspace(0, 10, N);
-    else
-        t = 0:(N-1);
-    end
-    x0 = ones(size(g.a, 1), 1);
-    [~, ~, x] = lsim(g, u, t, x0);
-    x_norm = vecnorm(x');
-    figure
-    plot(t, x_norm);
-    if ~g.Ts
-        decay_bound = x_norm(1) * exp(-expo_test * t);
-    else
-        decay_bound = x_norm(1) * exponential .^ (t);
-    end
-    hold on
-    plot(t, decay_bound)
-    legend('x norm', 'decay bound')
 end
+   
+
+function testUncertainSystemsExpoIndependent(testCase)
+  % These tests fail with some Slti, unless I make P > 0 (rather than indefinite)
+    deltas = {'DeltaSlti','DeltaSltv','DeltaSltvRateBnd','DeltaSectorBounded'};
+    del_ind = randi([1, length(deltas)]);
+    del_type = deltas{del_ind};
+
+    % Discrete-time
+    g = drss(randi([1,5]));
+    g.a = g.a * 0.95;
+%     g.a = g.a * 0.7 / max(abs(eig(g.a)));
+    exponential = max(abs(eig(g.a)));
+    margin = (1 - exponential) / exponential;
+    del_bnd = 1 + margin / 2; % Guaranteed to be greater than 1, will not destabilize
+    switch del_type
+        case 'DeltaSlti'
+            del = DeltaSlti('del', size(g.a, 1), -del_bnd, del_bnd);
+        case 'DeltaSltv'
+            del = DeltaSltv('del', size(g.a, 1), -del_bnd, del_bnd);
+        case 'DeltaSltvRateBnd'
+            del = DeltaSltvRateBnd('del', size(g.a, 1), -del_bnd, del_bnd);
+        case 'DeltaSectorBounded'
+            del = DeltaSectorBounded('del', size(g.a, 1), -del_bnd, del_bnd);
+    end
+    a_del = g.a * del;
+    g_lft_del = toLft(a_del, g.b, g.c, g.d, -1);
+    g_lft_del = g_lft_del.addPerformance({PerformanceStable()});
+    options = AnalysisOptions('verbose', false, 'lmi_shift', 1e-6);
+    options.exponential = exponential * (1 + 2 * margin / 3);
+    testCase.assertGreaterThan(options.exponential, del_bnd * exponential)
+    result = iqcAnalysis(g_lft_del, 'analysis_options', options);
+    testCase.verifyTrue(result.valid)
+    options.exponential = exponential;% * (1 + margin / 3);
+    testCase.assertLessThan(options.exponential, del_bnd * exponential)
+    result = iqcAnalysis(g_lft_del, 'analysis_options', options);
+    testCase.verifyFalse(result.valid)
+    
+%     g_samp_nom = g_lft_del.removePerformance(1).sampleDeltas({'expo'}, {toLft(eye(size(g.a)))});
+%     g_samp_max = g_lft_del.removePerformance(1).sampleDeltas({'expo'}, {toLft(del_bnd * eye(size(g.a)))});
+%     
+%     result = iqcAnalysis(g_samp_nom.addPerformance({PerformanceStable()}), 'analysis_options', options);
+%     testCase.verifyTrue(result.valid)
+%     result = iqcAnalysis(g_samp_max, 'analysis_options', options);
+%     testCase.verifyFalse(result.valid)
+
+    % Continuous-time
+    g = rss;
+    g.a = g.a - 0.05 * eye(size(g.a));
+    exponential = -max(real(eig(g.a)));
+    del_bnd = exponential * 0.9;
+    switch del_type
+        case 'DeltaSlti'
+            del = DeltaSlti('del', size(g.a, 1), -del_bnd, del_bnd);
+        case 'DeltaSltv'
+            del = DeltaSltv('del', size(g.a, 1), -del_bnd, del_bnd);
+        case 'DeltaSltvRateBnd'
+            del = DeltaSltvRateBnd('del', size(g.a, 1), -del_bnd, del_bnd);
+        case 'DeltaSectorBounded'
+            del = DeltaSectorBounded('del', size(g.a, 1), -del_bnd, del_bnd);        
+    end
+    a_del = g.a + del;
+    g_lft_del = toLft(a_del, g.b, g.c, g.d);
+    g_lft_del = g_lft_del.addPerformance({PerformanceStable()});
+    options = AnalysisOptions('verbose', false, 'lmi_shift', 1e-6);
+    options.exponential = exponential - 1.1 * del_bnd;
+    testCase.assertLessThan(options.exponential, exponential - del_bnd)
+    result = iqcAnalysis(g_lft_del, 'analysis_options', options);
+    testCase.verifyTrue(result.valid)
+    options.exponential = exponential - 0.9 * del_bnd;
+    testCase.assertLessThan(exponential - del_bnd, options.exponential)
+    result = iqcAnalysis(g_lft_del, 'analysis_options', options);
+    testCase.verifyFalse(result.valid)
+    
+%     g_samp_nom = g_lft_del.sampleDeltas({'expo'}, {toLft(0 * eye(size(g.a)))});
+%     g_samp_max = g_lft_del.sampleDeltas({'expo'}, {toLft(del_bnd * eye(size(g.a)))});
+%     
+%     result = iqcAnalysis(g_samp_nom, 'analysis_options', options);
+%     testCase.verifyTrue(result.valid)
+%     result = iqcAnalysis(g_samp_max, 'analysis_options', options);
+%     testCase.verifyFalse(result.valid)
+%     
+%     g_nom_ss = lftToSs(g_samp_nom);
+%     g_max_ss = lftToSs(g_samp_max);
+%     expo_test = options.exponential;
+%     N = 100;
+%     u = zeros(size(g_max_ss.b, 2), N);
+%     if ~g.Ts
+%         t = linspace(0, 10, N);
+%     else
+%         t = 0:(N-1);
+%     end
+%     [v, d] = eig(g_max_ss.a);
+%     ind = find(real(diag(d)) == max(real(diag(d))), 1, 'first');
+%     x0 = v(:, ind);
+%     [~, ~, x] = lsim(g_max_ss, u, t, x0);
+%     x_norm = vecnorm(x');
+%     figure
+%     plot(t, x_norm);
+%     if ~g.Ts
+%         decay_bound = x_norm(1) * exp(-expo_test * t);
+%     else
+%         decay_bound = x_norm(1) * expo_test .^ (t);
+%     end
+%     hold on
+%     plot(t, decay_bound)
+%     legend('x norm', 'decay bound')
+end
+
+ 
+% %     [result, ~, ~, lft_analyzed] = iqcAnalysis(g_lft, 'analysis_options', options);
+% %     mult = result.multiplier_combined;
+% %     h = mult.filter_lft * [lft_analyzed; eye(size(lft_analyzed, 2))];
+% %     p = value(result.kyp_variables{1});
+% %     quad = result.multiplier_combined.quad;
+% %     q = value([quad.q11{1}, quad.q12{1};
+% %                quad.q21{1}, quad.q22{1}]);
+% %     a = h.a{1}; 
+% %     b = h.b{1};
+% %     c = h.c{1};
+% %     d = h.d{1};
+% %     [p * a + a' * p + 2 * options.exponential * eye(size(a)), p * b;
+% %         b' * p,                                               zeros(size(b, 2))] ...
+% %     + [c'; d'] * q * [c, d] + ...
+% %     + options.lmi_shift * eye(size(a, 1) + size(b, 2)) ...
+% %     + value(result.debug.constraints(2))
+
+% %     exponential = logspace(-1, 4, 6);
+% %     valid = [];
+% %     for expo = exponential
+% %         options.exponential = expo;
+% %         result = iqcAnalysis(g_lft, 'analysis_options', options);
+% %         valid(end + 1) = result.valid;
+% %     end
+%%
+% % % Check if the exponential rate bound is actually satisfactory (it isn't...why doesn't analysis pick that up?)
+% %     expo_test = options.exponential;
+% %     N = 100;
+% %     u = zeros(size(g.b, 2), N);
+% %     if ~g.Ts
+% %         t = linspace(0, 10, N);
+% %     else
+% %         t = 0:(N-1);
+% %     end
+% %     x0 = ones(size(g.a, 1), 1);
+% %     [~, ~, x] = lsim(g, u, t, x0);
+% %     x_norm = vecnorm(x');
+% %     figure
+% %     plot(t, x_norm);
+% %     if ~g.Ts
+% %         decay_bound = x_norm(1) * exp(-expo_test * t);
+% %     else
+% %         decay_bound = x_norm(1) * exponential .^ (t);
+% %     end
+% %     hold on
+% %     plot(t, decay_bound)
+% %     legend('x norm', 'decay bound')
+% % %%    
+% % % This should also fail. I'm even adding a DeltaSlti to try and change the problem.  Still says its expo stable at an incorrect rate
+% %     expo_del = exponential * .9;
+% %     del = DeltaSlti('expo', size(g.a, 1), -expo_del, expo_del);
+% %     a_del = g.a + del;
+% %     g_lft_del = toLft(a_del, g.b, g.c, g.d);
+% %     options = AnalysisOptions('exponential', exponential - .9 * expo_del);
+% %     result = iqcAnalysis(g_lft_del, 'analysis_options', options);
+% %     testCase.verifyFalse(result.valid);
+% % %%
+% % % Making lmi_shift should be equivalent to checking expo stability
+% %     g = rss;
+% %     g.a = g.a - 0.05 * eye(size(g.a));
+% %     exponential = -max(real(eig(g.a)));
+% %     g_lft = toLft(g);
+% %     g_lft = g_lft.addPerformance({PerformanceStable()});
+% %     % Exponential stability
+% %     options_expo = AnalysisOptions('lmi_shift', 0, 'exponential', 1/2, 'verbose', true);
+% %     [result_expo, ~, ~, lft_expo] = iqcAnalysis(g_lft, 'analysis_options', options_expo);
+% %     % LMI shift
+% %     options_lmi = AnalysisOptions('lmi_shift', 1, 'exponential', 0, 'verbose', true);
+% %     [result_lmi, ~, ~, lft_lmi] = iqcAnalysis(g_lft, 'analysis_options', options_lmi);
+% %     if 1
+% %         lft = lft_lmi;
+% %         result = result_lmi;
+% %         options = options_lmi;
+% %     else
+% %         lft = lft_expo;
+% %         result = result_expo;
+% %         options = options_expo;
+% %     end
+% %     a = lft.a{1};
+% %     p = value(result.kyp_variables{1});
+% %     p * a + a' * p + 2 * options.exponential * eye(size(a)) + options.lmi_shift * eye(size(a)) + ...
+% %     value(result.debug.constraints(2))
+% %     %%
+% %     
+% %     % Check if decay rate may be slightly faster than known rate
+% %     options.exponential = exponential * 10; 
+% %     [result, ~, ~, lft_analyzed] = iqcAnalysis(g_lft, 'analysis_options', options);
+% %     p = value(result.kyp_variables{1});
+% %     a = lft_analyzed.a{1}; 
+% %     p * a + a' * p + 2 * options.exponential * eye(size(a)) + options.lmi_shift * eye(size(a)) + ...
+% %     value(result.debug.constraints(2));
+% %     testCase.verifyFalse(result.valid)
+% % end
 
 function testDelayDestabilizes(testCase)
     testCase.verifyTrue(true)

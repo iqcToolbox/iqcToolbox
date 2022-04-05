@@ -386,8 +386,9 @@ if ~isempty(filt_lft_eye.timestep)
             expo = 0;
         end
     end
-    if    (all(logical(filt_lft_eye.timestep)) && expo ~= 1)...
-       || (all(~logical(filt_lft_eye.timestep)) && expo ~= 0)
+    default_exponential =    (all(logical(filt_lft_eye.timestep)) && expo == 1)...
+                          || (all(~logical(filt_lft_eye.timestep)) && expo == 0);
+    if ~default_exponential    
     % Non-default exponential rate is specified
     % for either discrete- or continuous-time system
         assert(isequal(filt_lft_eye.horizon_period, [0, 1]),...
@@ -418,10 +419,11 @@ end
 lmi_shift         = options.lmi_shift;
 kyp_constraints   = [];
 
-% Force P to be positive definite for nominal systems
-if ~lft_in.uncertain %&& ~isempty(lft_in.timestep)
+% Force P to be positive definite for nominal systems or non-default exponential rates
+if ~lft_in.uncertain || ~default_exponential %&& ~isempty(lft_in.timestep)
     for i = 1:total_time
     mat_shift = lmi_shift * eye(size(p{i}, 2));
+
     if ~isempty(p{i})
     kyp_constraints = kyp_constraints ...
                       + ((p{i} >= mat_shift):['KYP matrix PD, ' num2str(i)]);   %#ok<BDSCA>
@@ -458,8 +460,8 @@ elseif ~(all(filt_lft_eye.timestep))
     assert(isequal(filt_lft_eye.horizon_period, [0, 1]),...
            'iqcAnalysis:kypLmi',...
            'Can only conduct IQC analysis on time-invariant continuous-time systems')
-    p_mat    = [2 * expo * eye(size(p{1})),  p{1};
-                p{1},                        zeros(size(p{1}))];
+    p_mat    = [2 * expo * p{1},  p{1};
+                p{1},             zeros(size(p{1}))];
     quad_mat = [mult.quad.q11{1}, mult.quad.q12{1};
                 mult.quad.q21{1}, mult.quad.q22{1}];
     lmi_mat{i} = [eye(state_in(1), size(abcd{1}, 2)); abcd{1}]' * ...
