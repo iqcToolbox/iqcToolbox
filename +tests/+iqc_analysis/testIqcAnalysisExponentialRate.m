@@ -266,11 +266,102 @@ end
 % %     testCase.verifyFalse(result.valid)
 % % end
 
-function testDelayDestabilizes(testCase)
-    testCase.verifyTrue(true)
+function testDiscreteTimeUncertainSystems(testCase) 
+% Drawn from Bozcar, Ross. "Performance Guarantees in Learning and Robust Control," (2019)
+    z = tf('z');
+    num = -(z + 1) * (10 * z + 9);
+    den = (2 * z - 1) * (5 * z - 1) * (10 * z - 1);
+    g = toLft(ss(num / den));
+    dim_outin = 1;
+    bnd = 0.75;
+    del_bnd = DeltaBounded('bnd', dim_outin, dim_outin, bnd);
+    g_del = interconnect(toLft(del_bnd), g);
+    g_del = g_del.addPerformance({PerformanceStable()});
+    options = AnalysisOptions('verbose', false);
+    options.exponential = 0.95;
+    result = iqcAnalysis(g_del, 'analysis_options', options);
+    testCase.verifyTrue(result.valid)
+    options.exponential = 0.93;
+    result = iqcAnalysis(g_del, 'analysis_options', options);
+    testCase.verifyFalse(result.valid)
+    
+    bnd = 2;
+    del_sb = DeltaSectorBounded('sb', dim_outin, 0, bnd);
+    g_del = interconnect(toLft(del_sb), g);
+    g_del = g_del.addPerformance({PerformanceStable()});
+    options.exponential = 0.95;
+    result = iqcAnalysis(g_del, 'analysis_options', options);
+    testCase.verifyTrue(result.valid)
+    options.exponential = 0.9;
+    result = iqcAnalysis(g_del, 'analysis_options', options);
+    testCase.verifyFalse(result.valid)
 end
 
-function testExponentialStabilityRate(testCase)
+function testConstantDelayContinuousTime(testCase)
+    wn = 10; % natural freq rad/s
+    zeta = 0.5; % damping coefficient
+    s = tf('s');
+    g = wn^2 / (s^2 + 2 * zeta * wn * s + wn^2);
+    g = ss(g);
+    delay_max = 0.1;
+    del = DeltaConstantDelay('del', 1, delay_max); % 0.1 second delay
+    g_del = del * g;
+    options = AnalysisOptions('verbose', false, 'lmi_shift', 1e-6);
+    expo = 0.4;
+    options.exponential = expo;
+%     delay = exp(-s * delay_max);
+%     g_expo = g;
+%     g_expo.a = g_expo.a + expo * eye(2);
+%     margin(delay * g_expo)
+    result = iqcAnalysis(g_del, 'analysis_options', options);
+    testCase.verifyTrue(result.valid);    
+    expo = 1.4;
+    options.exponential = expo;
+    result = iqcAnalysis(g_del, 'analysis_options', options);
+    testCase.verifyFalse(result.valid);
+end
+
+function testConstantDelayDiscreteTime(testCase)
+    n = 4;
+    dt = 2;
+    a = zeros(n);
+    b = [];
+    for i = 1:n
+        term = dt ^ (i - 1) / factorial(i - 1);
+        a = a + diag(term * ones(n - (i - 1), 1), (i - 1));
+        b = [dt^i / factorial(i); b];
+    end
+    gam = 0.025;
+%     F = -[gam^4 / dt^4, (8-3
+    
+    
+    
+    z = tf('z');
+    dt = 0.001;
+    gd = c2d(g, dt);
+    delay_max_d = delay_max / dt; % delay in discrete timesteps
+    del = DeltaConstantDelay('del', 1, delay_max); 
+    expo = .9;
+    options.exponential = expo;
+    delay = z^(-delay_max_d);
+    g_expo = gd;
+    g_expo.a = g_expo.a / expo; 
+    g_expo.b = g_expo.b / expo;
+    gd_tf = tf(gd);
+    expo_vec = [expo^2, expo, 1];
+    num = gd_tf.numerator; num{1} = num{1} .* expo_vec;
+    den = gd_tf.denominator; den{1} = den{1} .* expo_vec;
+    gd_tf_expo = tf(num, den, dt);
+    margin(delay * g_expo)
+    g_del = del * gd;
+    result = iqcAnalysis(g_del, 'analysis_options', options);
+    testCase.verifyTrue(result.valid);    
+    expo = 1.4;
+    options.exponential = expo;
+    delay = exp(-s * delay_max_d);
+    result = iqcAnalysis(g_del, 'analysis_options', options);
+    testCase.verifyFalse(result.valid);
+    
 end
 end
 end
