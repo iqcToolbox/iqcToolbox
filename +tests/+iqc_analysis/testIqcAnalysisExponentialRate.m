@@ -310,8 +310,8 @@ function testConstantDelayContinuousTime(testCase)
     expo = 0.4;
     options.exponential = expo;
 %     delay = exp(-s * delay_max);
-%     g_expo = g;
-%     g_expo.a = g_expo.a + expo * eye(2);
+    g_expo = g;
+    g_expo.a = g_expo.a + expo * eye(2);
 %     margin(delay * g_expo)
     result = iqcAnalysis(g_del, 'analysis_options', options);
     testCase.verifyTrue(result.valid);    
@@ -323,7 +323,7 @@ end
 
 function testConstantDelayDiscreteTime(testCase)
     n = 4;
-    dt = 2;
+    dt = 0.1;
     a = zeros(n);
     b = [];
     for i = 1:n
@@ -331,13 +331,26 @@ function testConstantDelayDiscreteTime(testCase)
         a = a + diag(term * ones(n - (i - 1), 1), (i - 1));
         b = [dt^i / factorial(i); b];
     end
+    g_ol = toLft(a, b, eye(n), zeros(n, 1), -1);
+    g_aug = [eye(n); eye(n)] * g_ol * [1, 1];
     gam = 0.025;
-%     F = -[gam^4 / dt^4, (8-3
+    f = -[gam^4 / dt^4;
+          (8 - 3 * gam) * gam^3 / 2 / dt^3;
+          (11 * gam^2 - 48 * gam + 72) * gam^2 / 12 / dt^2;
+          (48 - 36 * gam - 3 * gam^3 + 16 * gam^2) * gam / 12 / dt]';
+    delay_max = 4;
+    del = DeltaConstantDelay('del', size(b, 2), delay_max);
+    g_cl = interconnect(del * f, g_aug);
     
     
-    
+    wn = 10; % natural freq rad/s
+    zeta = 0.5; % damping coefficient
+    s = tf('s');
+    g = wn^2 / (s^2 + 2 * zeta * wn * s + wn^2);
+    delay_max = 0.1;
+    g = ss(g);
     z = tf('z');
-    dt = 0.001;
+    dt = 0.01;
     gd = c2d(g, dt);
     delay_max_d = delay_max / dt; % delay in discrete timesteps
     del = DeltaConstantDelay('del', 1, delay_max); 
