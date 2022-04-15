@@ -1,4 +1,4 @@
-function lmi_mat = kypLmiLti(filter, quad, kyp_var)
+function lmi_mat = kypLmiLti(filter, quad, kyp_var, exponential)
 %% KYPLMILTI function for generating the KYP-based LMI of LTI systems
 %  Typically "kyp_var" and "quad" will be an sdpvar object, and the returned
 %  LMI matrix will be in terms of those sdpvars.
@@ -34,19 +34,32 @@ assert(isa(quad, 'sdpvar') || isa(quad, 'numeric'),...
 assert(isa(kyp_var, 'sdpvar') || isa(kyp_var, 'numeric'),...
        'kypLmiLti:kypLmiLti',...
        'quad must be either an sdpvar or numeric')
+if nargin < 4
+    exponential = [];
+end
+validateattributes(exponential, {'numeric'}, {'nonnegative'})
+
+% Set default exponential rate for continuous- or discrete-time systems
+if isempty(exponential)
+    if filter.Ts == 0
+        exponential = 0;
+    else
+        exponential = 1;
+    end
+end
 
 abcd = [filter.a, filter.b;
         filter.c, filter.d];
 [dim_state, dim_in] = size(filter.b);
 if filter.Ts == 0
-    kyp_mat = [zeros(dim_state), kyp_var;
-               kyp_var,          zeros(dim_state)];
+    kyp_mat = [2 * exponential * kyp_var, kyp_var;
+               kyp_var,                   zeros(dim_state)];
     lmi_mat = [eye(dim_state), zeros(dim_state, dim_in); abcd]' * ...
               blkdiag(kyp_mat, quad) * ...
               [eye(dim_state), zeros(dim_state, dim_in); abcd];
 else
     lmi_mat = abcd' * blkdiag(kyp_var, quad) * abcd - ...
-              blkdiag(kyp_var, zeros(dim_in));
+              blkdiag(exponential ^ 2 * kyp_var, zeros(dim_in));
 end
 end
 

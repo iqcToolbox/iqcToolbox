@@ -54,7 +54,7 @@ function testNominalSystems(testCase)
     g_lft = g_lft.addPerformance({PerformanceStable()});
     options = AnalysisOptions('verbose', false);
     % Check if decay rate may be slightly slower than known rate
-    options.exponential = exponential * 0.99; 
+    options.exponential = exponential * 0.99;
     result = iqcAnalysis(g_lft, 'analysis_options', options);
     testCase.verifyTrue(result.valid)
     % Check if decay rate may be slightly faster than known rate
@@ -65,10 +65,13 @@ end
    
 
 function testUncertainSystemsExpoIndependent(testCase)
+    rng(1649681707) % Makes discrete system fail when P indefinite (even though G and Psi have small enough eigs)
+                    % Also makes continuous system fail when P indefinite (even though G and Psi have "left enough" eigs)
   % These tests fail with some Slti, unless I make P > 0 (rather than indefinite)
     deltas = {'DeltaSlti','DeltaSltv','DeltaSltvRateBnd','DeltaSectorBounded'};
     del_ind = randi([1, length(deltas)]);
     del_type = deltas{del_ind};
+    del_type = 'DeltaSlti';
 
     % Discrete-time
     g = drss(randi([1,5]));
@@ -95,7 +98,7 @@ function testUncertainSystemsExpoIndependent(testCase)
     testCase.assertGreaterThan(options.exponential, del_bnd * exponential)
     result = iqcAnalysis(g_lft_del, 'analysis_options', options);
     testCase.verifyTrue(result.valid)
-    options.exponential = exponential;% * (1 + margin / 3);
+    options.exponential = exponential * (1 + margin / 3);
     testCase.assertLessThan(options.exponential, del_bnd * exponential)
     result = iqcAnalysis(g_lft_del, 'analysis_options', options);
     testCase.verifyFalse(result.valid)
@@ -297,28 +300,49 @@ function testDiscreteTimeUncertainSystems(testCase)
     testCase.verifyFalse(result.valid)
 end
 
+% function testConstantDelayContinuousTime(testCase)
+%     wn = 10; % natural freq rad/s
+%     zeta = 0.5; % damping coefficient
+%     s = tf('s');
+%     g = wn^2 / (s^2 + 2 * zeta * wn * s + wn^2);
+%     g = ss(g);
+%     delay_max = 0.1;
+%     del = DeltaConstantDelay('del', 1, delay_max); % 0.1 second delay
+%     g_del = del * g;
+%     options = AnalysisOptions('verbose', false, 'lmi_shift', 1e-6);
+%     expo = 0.4;
+%     options.exponential = expo;
+% %     delay = exp(-s * delay_max);
+%     g_expo = g;
+%     g_expo.a = g_expo.a + expo * eye(2);
+% %     margin(delay * g_expo)
+%     result = iqcAnalysis(g_del, 'analysis_options', options);
+%     testCase.verifyTrue(result.valid);    
+%     expo = 1.4;
+%     options.exponential = expo;
+%     result = iqcAnalysis(g_del, 'analysis_options', options);
+%     testCase.verifyFalse(result.valid);
+% end
+
 function testConstantDelayContinuousTime(testCase)
     wn = 10; % natural freq rad/s
     zeta = 0.5; % damping coefficient
     s = tf('s');
     g = wn^2 / (s^2 + 2 * zeta * wn * s + wn^2);
+%     g = 4/(s+4)/s;
     g = ss(g);
     delay_max = 0.1;
-    del = DeltaConstantDelay('del', 1, delay_max); % 0.1 second delay
-    g_del = del * g;
+    del = DeltaConstantDelay2('del', 1, delay_max); % 0.1 second delay
+    g_del = interconnect(-(1 + del), [1; 1] * g * [1, 1]);
     options = AnalysisOptions('verbose', false, 'lmi_shift', 1e-6);
-    expo = 0.4;
+    expo = 0.1;
     options.exponential = expo;
-%     delay = exp(-s * delay_max);
-    g_expo = g;
-    g_expo.a = g_expo.a + expo * eye(2);
-%     margin(delay * g_expo)
     result = iqcAnalysis(g_del, 'analysis_options', options);
     testCase.verifyTrue(result.valid);    
-    expo = 1.4;
-    options.exponential = expo;
-    result = iqcAnalysis(g_del, 'analysis_options', options);
-    testCase.verifyFalse(result.valid);
+%     expo = 1.4;
+%     options.exponential = expo;
+%     result = iqcAnalysis(g_del, 'analysis_options', options);
+%     testCase.verifyFalse(result.valid);
 end
 
 function testConstantDelayDiscreteTime(testCase)
@@ -376,5 +400,7 @@ function testConstantDelayDiscreteTime(testCase)
     testCase.verifyFalse(result.valid);
     
 end
+
+% Need a test that checks that multipliers (not just nominal G) are alpha-/rho-stable before doing IQC analysis
 end
 end

@@ -19,6 +19,8 @@ classdef MultiplierConstantDelay < MultiplierDelta
 %     dim_outin : double :: dimensions of uncertainty
 %     constraint_q11_kyp : logical :: true if a kyp-based constraint for
 %                                     quad.q11 is desired
+%     delay_max : double :: maximum allowed delay. informs constraints for
+%                           generalized, exponential IQCs
 %
 %  See also MultiplierConstantDelay.MultiplierConstantDelay
 
@@ -73,7 +75,9 @@ function this_mult = MultiplierConstantDelay(delta, varargin)
 %       basis_realization : ss :: the ss realization of basis_function
 %       block_realization : ss :: the ss of the upper-left/lower-right block defining
 %                                 filter = [blk_realzation, 0;
-%                                                  0      , blk_realization];    
+%                                                  0      , blk_realization];
+%       exponential : double :: exponential rate bound used to define
+%                               exponential IQCs
 %
 %  A MultiplierConstantDelay can be constructed by providing inputs with varying levels of granularity:
 %     least granular --------------------------------------------------- most granular
@@ -343,7 +347,7 @@ function this_mult = set.block_realization(this_mult, block_realization)
                                    ', q11 >= 0'];                               %#ok<BDSCA>
     else
         kyp_var_q11 = sdpvar(dim_state1);
-        lmi_mat_q11 = kypLmiLti(br, q11, kyp_var_q11);
+        lmi_mat_q11 = kypLmiLti(br, q11, kyp_var_q11, this_mult.exponential);
         c_q11 = (lmi_mat_q11 >= 0):['Constant Delay Multiplier, ',...
                                     this_mult.name,...
                                     ', kyp(filter11, q11) >= 0'];               %#ok<BDSCA>

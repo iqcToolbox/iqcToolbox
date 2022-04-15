@@ -337,7 +337,7 @@ function this_mult = set.block_realization(this_mult, block_realization)
                             ', q11 >= 0'];                                      %#ok<BDSCA>
     else
         kyp_var_q11 = sdpvar(dim_state1);
-        lmi_mat_q11 = kypLmiLti(br, q11, kyp_var_q11);
+        lmi_mat_q11 = kypLmiLti(br, q11, kyp_var_q11, this_mult.exponential);
         c_q11 = (lmi_mat_q11 >= 0):['SLTI Multiplier, ',...
                                     this_mult.name,...
                                     ', kyp(filter11, q11) >= 0'];               %#ok<BDSCA>
