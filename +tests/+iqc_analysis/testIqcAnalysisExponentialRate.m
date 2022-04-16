@@ -401,6 +401,47 @@ function testConstantDelayDiscreteTime(testCase)
     
 end
 
+function testExponentiallyStableMultipliers(testCase)
+    del_slti = DeltaSlti('slti');
+    del_sltvrb = DeltaSltvRateBnd('sltvrb');
+    del_delay = DeltaConstantDelay2('delay');
+    
+    % Check that multipliers with conforming convergence rate pass (continuous time)
+    gc = toLft(ss(-100, 1, 1, 0)) * del_slti * del_sltvrb;% * (1 + del_delay);
+    expo = 0.49;
+    options = AnalysisOptions('verbose', false,...
+                              'exponential', expo,...
+                              'lmi_shift', 1e-5);
+    result = iqcAnalysis(gc, 'analysis_options', options);
+    m_del = MultiplierDeltaCombined(result.multipliers_delta);
+    m_shifted = lftToSs(m_del.shiftMultiplier(expo).filter_lft);
+    testCase.assertTrue(isstable(m_shifted))
+    testCase.verifyTrue(result.valid)
+    
+    % Check that multipliers with slower convergence rate fail (continuous time)
+    expo = 0.51;
+    options.exponential = expo;
+    testCase.verifyError(@() iqcAnalysis(gc, 'analysis_options', options),...
+                         'iqcAnalysis:iqcAnalysis')
+    
+    % Check that multipliers with conforming convergence rate pass (discrete time)
+    del_z = DeltaDelayZ();
+    gd = del_z * del_slti * del_sltvrb;% * (1 + del_delay);
+    expo = 0.51;
+    options.exponential = expo;
+    result = iqcAnalysis(gd, 'analysis_options', options);
+    m_del = MultiplierDeltaCombined(result.multipliers_delta);
+    m_shifted = lftToSs(m_del.shiftMultiplier(expo).filter_lft);
+    testCase.assertTrue(isstable(m_shifted))
+    testCase.verifyTrue(result.valid)
+    
+    % Check that multipliers with slower convergence rate fail (continuous time)
+    expo = 0.49;
+    options.exponential = expo;
+    testCase.verifyError(@() iqcAnalysis(gd, 'analysis_options', options),...
+                         'iqcAnalysis:iqcAnalysis')
+end
+
 % Need a test that checks that multipliers (not just nominal G) are alpha-/rho-stable before doing IQC analysis
 end
 end

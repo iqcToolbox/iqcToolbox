@@ -295,18 +295,18 @@ function this_mult = set.basis_realization(this_mult, basis_realization)
     den = s^2 - pi * cos(pi^2 / 4) / dmax * s + pi^2 / dmax^2 / 4;
     if this_mult.discrete
         alpha = -log(expo);
-        num = (s + 4/dmax/pi) * (s + this_mult.delay_filter_eps/dmax + alpha);
-        basis_delay = ss(num / den);
+        num = (s + 4/dmax/pi) * (s + this_mult.delay_filter_eps/dmax + alpha);        
         gain = (1 + expo ^ dmax);
-        shifted_basis = c2d(gain * basis_delay + sqrt(rho ^ (2 * tau) - 1, 1);
+        basis_delay = ss(gain * num / den);
+        shifted_basis = c2d(basis_delay + sqrt(rho ^ (2 * tau) - 1), 1);
         shifted_basis.a = expo * shifted_basis.a;
         shifted_basis.b = expo * shifted_basis.b;
         this_mult.basis_delay = shifted_basis;
     else
         num = (s + 4/dmax/pi) * (s + this_mult.delay_filter_eps/dmax + expo);
-        basis_delay = ss(num / den);
         gain = (1 + exp(expo * dmax));
-        shifted_ss = ss(gain * num / den + sqrt(exp(2 * expo * tau) - 1));
+        basis_delay = ss(gain * num / den);
+        shifted_ss = ss(basis_delay + sqrt(exp(2 * expo * dmax) - 1));
         shifted_ss.a = shifted_ss.a - expo * eye(size(shifted_ss.a));
 
         this_mult.basis_delay = shifted_ss;

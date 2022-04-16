@@ -154,9 +154,12 @@ function this_mult = shiftMultiplier(this_mult, exponential)
     this_mult.filter.a = a_mat;
     % Shift B-matrices of filter
     if this_mult.discrete
-        b_mat = cellfun(@(b) b / exponential, this_mult.filter.b,...
+        b1_mat = cellfun(@(b) b / exponential, this_mult.filter.b1,...
                         'UniformOutput', false);
-        this_mult.filter.b = b_mat;
+        b2_mat = cellfun(@(b) b / exponential, this_mult.filter.b2,...
+                        'UniformOutput', false);
+        this_mult.filter.b1 = b1_mat;
+        this_mult.filter.b2 = b2_mat;
     end
     % Check that filter remains stable
     if sum(this_mult.horizon_period) == 1
