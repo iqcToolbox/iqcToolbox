@@ -466,7 +466,7 @@ lmi_shift         = options.lmi_shift;
 kyp_constraints   = [];
 
 % Force P to be positive definite for nominal systems or non-default exponential rates
-if ~lft_in.uncertain || ~default_exponential %&& ~isempty(lft_in.timestep)
+if ~lft_in.uncertain || (~isempty(lft_in.timestep) && ~default_exponential)
     for i = 1:total_time
     mat_shift = lmi_shift * eye(size(p{i}, 2));
 

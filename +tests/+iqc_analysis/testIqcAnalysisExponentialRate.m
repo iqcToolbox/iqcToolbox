@@ -12,7 +12,7 @@
 %  SPDX-License-Identifier: GPL-2.0
 %%
 
-%% Test class for IQC analysis with Sector-Bounded operators
+%% Test class for IQC analysis identifying Exponential Rate of Convergence
 classdef testIqcAnalysisExponentialRate < matlab.unittest.TestCase
 
 methods (TestMethodSetup)
@@ -65,18 +65,17 @@ end
    
 
 function testUncertainSystemsExpoIndependent(testCase)
-    rng(1649681707) % Makes discrete system fail when P indefinite (even though G and Psi have small enough eigs)
+%     rng(1649681707) % Makes discrete system fail when P indefinite (even though G and Psi have small enough eigs)
                     % Also makes continuous system fail when P indefinite (even though G and Psi have "left enough" eigs)
   % These tests fail with some Slti, unless I make P > 0 (rather than indefinite)
     deltas = {'DeltaSlti','DeltaSltv','DeltaSltvRateBnd','DeltaSectorBounded'};
     del_ind = randi([1, length(deltas)]);
     del_type = deltas{del_ind};
-    del_type = 'DeltaSlti';
+%     del_type = 'DeltaSlti'; % Uncomment this is topline rng is uncommented
 
     % Discrete-time
     g = drss(randi([1,5]));
     g.a = g.a * 0.95;
-%     g.a = g.a * 0.7 / max(abs(eig(g.a)));
     exponential = max(abs(eig(g.a)));
     margin = (1 - exponential) / exponential;
     del_bnd = 1 + margin / 2; % Guaranteed to be greater than 1, will not destabilize
@@ -103,14 +102,6 @@ function testUncertainSystemsExpoIndependent(testCase)
     result = iqcAnalysis(g_lft_del, 'analysis_options', options);
     testCase.verifyFalse(result.valid)
     
-%     g_samp_nom = g_lft_del.removePerformance(1).sampleDeltas({'expo'}, {toLft(eye(size(g.a)))});
-%     g_samp_max = g_lft_del.removePerformance(1).sampleDeltas({'expo'}, {toLft(del_bnd * eye(size(g.a)))});
-%     
-%     result = iqcAnalysis(g_samp_nom.addPerformance({PerformanceStable()}), 'analysis_options', options);
-%     testCase.verifyTrue(result.valid)
-%     result = iqcAnalysis(g_samp_max, 'analysis_options', options);
-%     testCase.verifyFalse(result.valid)
-
     % Continuous-time
     g = rss;
     g.a = g.a - 0.05 * eye(size(g.a));
@@ -138,136 +129,7 @@ function testUncertainSystemsExpoIndependent(testCase)
     testCase.assertLessThan(exponential - del_bnd, options.exponential)
     result = iqcAnalysis(g_lft_del, 'analysis_options', options);
     testCase.verifyFalse(result.valid)
-    
-%     g_samp_nom = g_lft_del.sampleDeltas({'expo'}, {toLft(0 * eye(size(g.a)))});
-%     g_samp_max = g_lft_del.sampleDeltas({'expo'}, {toLft(del_bnd * eye(size(g.a)))});
-%     
-%     result = iqcAnalysis(g_samp_nom, 'analysis_options', options);
-%     testCase.verifyTrue(result.valid)
-%     result = iqcAnalysis(g_samp_max, 'analysis_options', options);
-%     testCase.verifyFalse(result.valid)
-%     
-%     g_nom_ss = lftToSs(g_samp_nom);
-%     g_max_ss = lftToSs(g_samp_max);
-%     expo_test = options.exponential;
-%     N = 100;
-%     u = zeros(size(g_max_ss.b, 2), N);
-%     if ~g.Ts
-%         t = linspace(0, 10, N);
-%     else
-%         t = 0:(N-1);
-%     end
-%     [v, d] = eig(g_max_ss.a);
-%     ind = find(real(diag(d)) == max(real(diag(d))), 1, 'first');
-%     x0 = v(:, ind);
-%     [~, ~, x] = lsim(g_max_ss, u, t, x0);
-%     x_norm = vecnorm(x');
-%     figure
-%     plot(t, x_norm);
-%     if ~g.Ts
-%         decay_bound = x_norm(1) * exp(-expo_test * t);
-%     else
-%         decay_bound = x_norm(1) * expo_test .^ (t);
-%     end
-%     hold on
-%     plot(t, decay_bound)
-%     legend('x norm', 'decay bound')
 end
-
- 
-% %     [result, ~, ~, lft_analyzed] = iqcAnalysis(g_lft, 'analysis_options', options);
-% %     mult = result.multiplier_combined;
-% %     h = mult.filter_lft * [lft_analyzed; eye(size(lft_analyzed, 2))];
-% %     p = value(result.kyp_variables{1});
-% %     quad = result.multiplier_combined.quad;
-% %     q = value([quad.q11{1}, quad.q12{1};
-% %                quad.q21{1}, quad.q22{1}]);
-% %     a = h.a{1}; 
-% %     b = h.b{1};
-% %     c = h.c{1};
-% %     d = h.d{1};
-% %     [p * a + a' * p + 2 * options.exponential * eye(size(a)), p * b;
-% %         b' * p,                                               zeros(size(b, 2))] ...
-% %     + [c'; d'] * q * [c, d] + ...
-% %     + options.lmi_shift * eye(size(a, 1) + size(b, 2)) ...
-% %     + value(result.debug.constraints(2))
-
-% %     exponential = logspace(-1, 4, 6);
-% %     valid = [];
-% %     for expo = exponential
-% %         options.exponential = expo;
-% %         result = iqcAnalysis(g_lft, 'analysis_options', options);
-% %         valid(end + 1) = result.valid;
-% %     end
-%%
-% % % Check if the exponential rate bound is actually satisfactory (it isn't...why doesn't analysis pick that up?)
-% %     expo_test = options.exponential;
-% %     N = 100;
-% %     u = zeros(size(g.b, 2), N);
-% %     if ~g.Ts
-% %         t = linspace(0, 10, N);
-% %     else
-% %         t = 0:(N-1);
-% %     end
-% %     x0 = ones(size(g.a, 1), 1);
-% %     [~, ~, x] = lsim(g, u, t, x0);
-% %     x_norm = vecnorm(x');
-% %     figure
-% %     plot(t, x_norm);
-% %     if ~g.Ts
-% %         decay_bound = x_norm(1) * exp(-expo_test * t);
-% %     else
-% %         decay_bound = x_norm(1) * exponential .^ (t);
-% %     end
-% %     hold on
-% %     plot(t, decay_bound)
-% %     legend('x norm', 'decay bound')
-% % %%    
-% % % This should also fail. I'm even adding a DeltaSlti to try and change the problem.  Still says its expo stable at an incorrect rate
-% %     expo_del = exponential * .9;
-% %     del = DeltaSlti('expo', size(g.a, 1), -expo_del, expo_del);
-% %     a_del = g.a + del;
-% %     g_lft_del = toLft(a_del, g.b, g.c, g.d);
-% %     options = AnalysisOptions('exponential', exponential - .9 * expo_del);
-% %     result = iqcAnalysis(g_lft_del, 'analysis_options', options);
-% %     testCase.verifyFalse(result.valid);
-% % %%
-% % % Making lmi_shift should be equivalent to checking expo stability
-% %     g = rss;
-% %     g.a = g.a - 0.05 * eye(size(g.a));
-% %     exponential = -max(real(eig(g.a)));
-% %     g_lft = toLft(g);
-% %     g_lft = g_lft.addPerformance({PerformanceStable()});
-% %     % Exponential stability
-% %     options_expo = AnalysisOptions('lmi_shift', 0, 'exponential', 1/2, 'verbose', true);
-% %     [result_expo, ~, ~, lft_expo] = iqcAnalysis(g_lft, 'analysis_options', options_expo);
-% %     % LMI shift
-% %     options_lmi = AnalysisOptions('lmi_shift', 1, 'exponential', 0, 'verbose', true);
-% %     [result_lmi, ~, ~, lft_lmi] = iqcAnalysis(g_lft, 'analysis_options', options_lmi);
-% %     if 1
-% %         lft = lft_lmi;
-% %         result = result_lmi;
-% %         options = options_lmi;
-% %     else
-% %         lft = lft_expo;
-% %         result = result_expo;
-% %         options = options_expo;
-% %     end
-% %     a = lft.a{1};
-% %     p = value(result.kyp_variables{1});
-% %     p * a + a' * p + 2 * options.exponential * eye(size(a)) + options.lmi_shift * eye(size(a)) + ...
-% %     value(result.debug.constraints(2))
-% %     %%
-% %     
-% %     % Check if decay rate may be slightly faster than known rate
-% %     options.exponential = exponential * 10; 
-% %     [result, ~, ~, lft_analyzed] = iqcAnalysis(g_lft, 'analysis_options', options);
-% %     p = value(result.kyp_variables{1});
-% %     a = lft_analyzed.a{1}; 
-% %     p * a + a' * p + 2 * options.exponential * eye(size(a)) + options.lmi_shift * eye(size(a)) + ...
-% %     value(result.debug.constraints(2));
-% %     testCase.verifyFalse(result.valid)
-% % end
 
 function testDiscreteTimeUncertainSystems(testCase) 
 % Drawn from Bozcar, Ross. "Performance Guarantees in Learning and Robust Control," (2019)
@@ -325,86 +187,166 @@ end
 % end
 
 function testConstantDelayContinuousTime(testCase)
+    % Check that robust stability is correctly concluded (no exponential rate bound)
     wn = 10; % natural freq rad/s
     zeta = 0.5; % damping coefficient
     s = tf('s');
     g = wn^2 / (s^2 + 2 * zeta * wn * s + wn^2);
-%     g = 4/(s+4)/s;
     g = ss(g);
     delay_max = 0.1;
     del = DeltaConstantDelay2('del', 1, delay_max); % 0.1 second delay
-    g_del = interconnect(-(1 + del), [1; 1] * g * [1, 1]);
+    g_del = (1 + del) * g;
+    g_del_cl = interconnect(-1, [1; 1] * g_del * [1, 1]);
     options = AnalysisOptions('verbose', false, 'lmi_shift', 1e-6);
-    expo = 0.1;
+    result = iqcAnalysis(g_del_cl, 'analysis_options', options);
+    testCase.verifyTrue(result.valid); 
+    % Include exponential rate bound
+    expo = 0.1; % Should extend out to 0.7
     options.exponential = expo;
-    result = iqcAnalysis(g_del, 'analysis_options', options);
-    testCase.verifyTrue(result.valid);    
-%     expo = 1.4;
-%     options.exponential = expo;
-%     result = iqcAnalysis(g_del, 'analysis_options', options);
-%     testCase.verifyFalse(result.valid);
+    m(2) = MultiplierConstantDelay2(del,...
+                                    'discrete', false,...
+                                    'basis_poles', -expo * 1.1,...
+                                    'exponential', expo);
+    result = iqcAnalysis(g_del_cl,...
+                         'analysis_options', options,...
+                         'multipliers_delta', m);
+    testCase.verifyTrue(result.valid); 
+    % Set exponential rate bound too fast, check that it correctly fails
+    expo = 0.8; 
+    options.exponential = expo;
+    m(2) = MultiplierConstantDelay2(del,...
+                                    'discrete', false,...
+                                    'basis_poles', -expo * 1.1,...
+                                    'exponential', expo);
+    result = iqcAnalysis(g_del_cl,...
+                         'analysis_options', options,...
+                         'multipliers_delta', m);
+    testCase.verifyFalse(result.valid); 
+    % These tests can be verified with checking the gain/phase margins of delayed plant
+    
+    
+    % Check that robust stability correctly fails (with big enough delay, no exponential specification)
+    delay_max = 0.2;
+    del = DeltaConstantDelay2('del', 1, delay_max); 
+    g_del = (1 + del) * g;
+    g_del_cl = interconnect(-1, [1; 1] * g_del * [1, 1]);
+    options.exponential = 0;
+    result = iqcAnalysis(g_del_cl, 'analysis_options', options);
+    testCase.verifyFalse(result.valid); 
 end
 
 function testConstantDelayDiscreteTime(testCase)
-    n = 4;
-    dt = 0.1;
-    a = zeros(n);
-    b = [];
-    for i = 1:n
-        term = dt ^ (i - 1) / factorial(i - 1);
-        a = a + diag(term * ones(n - (i - 1), 1), (i - 1));
-        b = [dt^i / factorial(i); b];
-    end
-    g_ol = toLft(a, b, eye(n), zeros(n, 1), -1);
-    g_aug = [eye(n); eye(n)] * g_ol * [1, 1];
-    gam = 0.025;
-    f = -[gam^4 / dt^4;
-          (8 - 3 * gam) * gam^3 / 2 / dt^3;
-          (11 * gam^2 - 48 * gam + 72) * gam^2 / 12 / dt^2;
-          (48 - 36 * gam - 3 * gam^3 + 16 * gam^2) * gam / 12 / dt]';
-    delay_max = 4;
-    del = DeltaConstantDelay('del', size(b, 2), delay_max);
-    g_cl = interconnect(del * f, g_aug);
-    
-    
+    % Check that robust stability is correctly concluded (no exponential rate bound)
     wn = 10; % natural freq rad/s
     zeta = 0.5; % damping coefficient
     s = tf('s');
-    g = wn^2 / (s^2 + 2 * zeta * wn * s + wn^2);
-    delay_max = 0.1;
-    g = ss(g);
-    z = tf('z');
-    dt = 0.01;
+    g = ss(wn^2 / (s^2 + 2 * zeta * wn * s + wn^2));
+    delay_max_c = 0.1; % 0.1 sec delay
+    dt = 0.01; % 100 Hz frequency
     gd = c2d(g, dt);
-    delay_max_d = delay_max / dt; % delay in discrete timesteps
-    del = DeltaConstantDelay('del', 1, delay_max); 
-    expo = .9;
+    gd.Ts = -1;
+    delay_max = delay_max_c / dt;
+    del = DeltaConstantDelay2('del', 1, delay_max); % 10 step delay
+    g_del = (1 + del) * gd;
+    g_del_cl = interconnect(-1, [1; 1] * g_del * [1, 1]);
+    options = AnalysisOptions('verbose', true, 'lmi_shift', 1e-6);
+    result = iqcAnalysis(g_del_cl, 'analysis_options', options);
+    testCase.verifyTrue(result.valid); 
+    
+    % Check that robust stability correctly fails (with big enough delay, no exponential specification)
+    delay_max = 20;
+    del = DeltaConstantDelay2('del', 1, delay_max); 
+    g_del = (1 + del) * gd;
+    g_del_cl = interconnect(-1, [1; 1] * g_del * [1, 1]);
+    result = iqcAnalysis(g_del_cl, 'analysis_options', options);
+    testCase.verifyFalse(result.valid); 
+    
+    % Check that robustly stable system passes conforming exponential rate bound
+    delay_max = 5;
+    del = DeltaConstantDelay2('del', 1, delay_max); 
+    g_del = (1 + del) * gd;
+    g_del_cl = interconnect(-1, [1; 1] * g_del * [1, 1]);
+    expo = 0.9; % Should extend down to 0.8
     options.exponential = expo;
-    delay = z^(-delay_max_d);
-    g_expo = gd;
-    g_expo.a = g_expo.a / expo; 
-    g_expo.b = g_expo.b / expo;
-    gd_tf = tf(gd);
-    expo_vec = [expo^2, expo, 1];
-    num = gd_tf.numerator; num{1} = num{1} .* expo_vec;
-    den = gd_tf.denominator; den{1} = den{1} .* expo_vec;
-    gd_tf_expo = tf(num, den, dt);
-    margin(delay * g_expo)
-    g_del = del * gd;
-    result = iqcAnalysis(g_del, 'analysis_options', options);
-    testCase.verifyTrue(result.valid);    
-    expo = 1.4;
+    result = iqcAnalysis(g_del_cl, 'analysis_options', options);
+    testCase.verifyTrue(result.valid); 
+    % Set exponential rate bound too fast, check that it correctly fails
+    expo = 0.8; 
     options.exponential = expo;
-    delay = exp(-s * delay_max_d);
-    result = iqcAnalysis(g_del, 'analysis_options', options);
-    testCase.verifyFalse(result.valid);
+    m(2) = MultiplierConstantDelay2(del,...
+                                    'discrete', false,...
+                                    'basis_poles', -expo * 1.1,...
+                                    'exponential', expo);
+    result = iqcAnalysis(g_del_cl,...
+                         'analysis_options', options,...
+                         'multipliers_delta', m);
+    testCase.verifyFalse(result.valid); 
+    % These tests can be verified with checking the gain/phase margins of delayed plant
+    
+    
     
 end
+
+% function testConstantDelayDiscreteTime(testCase)
+%     n = 4;
+%     dt = 0.1;
+%     a = zeros(n);
+%     b = [];
+%     for i = 1:n
+%         term = dt ^ (i - 1) / factorial(i - 1);
+%         a = a + diag(term * ones(n - (i - 1), 1), (i - 1));
+%         b = [dt^i / factorial(i); b];
+%     end
+%     g_ol = toLft(a, b, eye(n), zeros(n, 1), -1);
+%     g_aug = [eye(n); eye(n)] * g_ol * [1, 1];
+%     gam = 0.025;
+%     f = -[gam^4 / dt^4;
+%           (8 - 3 * gam) * gam^3 / 2 / dt^3;
+%           (11 * gam^2 - 48 * gam + 72) * gam^2 / 12 / dt^2;
+%           (48 - 36 * gam - 3 * gam^3 + 16 * gam^2) * gam / 12 / dt]';
+%     delay_max = 4;
+%     del = DeltaConstantDelay('del', size(b, 2), delay_max);
+%     g_cl = interconnect(del * f, g_aug);
+    
+    
+%     wn = 10; % natural freq rad/s
+%     zeta = 0.5; % damping coefficient
+%     s = tf('s');
+%     g = wn^2 / (s^2 + 2 * zeta * wn * s + wn^2);
+%     delay_max = 0.1;
+%     g = ss(g);
+%     z = tf('z');
+%     dt = 0.01;
+%     gd = c2d(g, dt);
+%     delay_max_d = delay_max / dt; % delay in discrete timesteps
+%     del = DeltaConstantDelay('del', 1, delay_max); 
+%     expo = .9;
+%     options.exponential = expo;
+%     delay = z^(-delay_max_d);
+%     g_expo = gd;
+%     g_expo.a = g_expo.a / expo; 
+%     g_expo.b = g_expo.b / expo;
+%     gd_tf = tf(gd);
+%     expo_vec = [expo^2, expo, 1];
+%     num = gd_tf.numerator; num{1} = num{1} .* expo_vec;
+%     den = gd_tf.denominator; den{1} = den{1} .* expo_vec;
+%     gd_tf_expo = tf(num, den, dt);
+%     margin(delay * g_expo)
+%     g_del = del * gd;
+%     result = iqcAnalysis(g_del, 'analysis_options', options);
+%     testCase.verifyTrue(result.valid);    
+%     expo = 1.4;
+%     options.exponential = expo;
+%     delay = exp(-s * delay_max_d);
+%     result = iqcAnalysis(g_del, 'analysis_options', options);
+%     testCase.verifyFalse(result.valid);
+    
+% end
 
 function testExponentiallyStableMultipliers(testCase)
     del_slti = DeltaSlti('slti');
     del_sltvrb = DeltaSltvRateBnd('sltvrb');
-    del_delay = DeltaConstantDelay2('delay');
+%     del_delay = DeltaConstantDelay2('delay');
     
     % Check that multipliers with conforming convergence rate pass (continuous time)
     gc = toLft(ss(-100, 1, 1, 0)) * del_slti * del_sltvrb;% * (1 + del_delay);
@@ -441,7 +383,5 @@ function testExponentiallyStableMultipliers(testCase)
     testCase.verifyError(@() iqcAnalysis(gd, 'analysis_options', options),...
                          'iqcAnalysis:iqcAnalysis')
 end
-
-% Need a test that checks that multipliers (not just nominal G) are alpha-/rho-stable before doing IQC analysis
 end
 end

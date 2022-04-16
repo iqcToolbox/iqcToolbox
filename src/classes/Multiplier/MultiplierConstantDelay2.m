@@ -291,29 +291,36 @@ function this_mult = set.basis_realization(this_mult, basis_realization)
     % Set basis_delay
     dmax = this_mult.delay_max;
     expo = this_mult.exponential;
-    s = tf('s');
-    den = s^2 - pi * cos(pi^2 / 4) / dmax * s + pi^2 / dmax^2 / 4;
     if this_mult.discrete
-        alpha = -log(expo);
-        num = (s + 4/dmax/pi) * (s + this_mult.delay_filter_eps/dmax + alpha);        
-        gain = (1 + expo ^ dmax);
-        basis_delay = ss(gain * num / den);
-        shifted_basis = c2d(basis_delay + sqrt(rho ^ (2 * tau) - 1), 1);
-        shifted_basis.a = expo * shifted_basis.a;
-        shifted_basis.b = expo * shifted_basis.b;
-        this_mult.basis_delay = shifted_basis;
+        omega = logspace(-4, log10(pi), 100);
+        upper_bound = zeros(1, length(omega));
+        z = tf('z');
+        for delay = 1:dmax
+            sys = 1/ expo ^ delay / z^delay - 1;
+            sys_fr = frd(sys, omega);
+            upper_bound = max([upper_bound;abs(squeeze(sys_fr.ResponseData))']);
+        end
+        upper_bound = upper_bound + sqrt(expo ^(-2 * dmax) - 1);
+        ubnd_fr = frd(upper_bound, omega, sys.Ts);
+        n_states = 4;
+%         basis_delay = fitfrd(ubnd_fr, n_states);
+        mag_constraint.UpperBound = [];
+        mag_constraint.LowerBound = ubnd_fr;
+        basis_delay = fitmagfrd(ubnd_fr, n_states, [], [], mag_constraint);
+        shifted_delay = basis_delay;
+        shifted_delay.a = expo * shifted_delay.a;
+        shifted_delay.b = expo * shifted_delay.b;
+        this_mult.basis_delay = shifted_delay;
     else
+        s = tf('s');
         num = (s + 4/dmax/pi) * (s + this_mult.delay_filter_eps/dmax + expo);
+        den = s^2 - pi * cos(pi^2 / 4) / dmax * s + pi^2 / dmax^2 / 4;
         gain = (1 + exp(expo * dmax));
         basis_delay = ss(gain * num / den);
-        shifted_ss = ss(basis_delay + sqrt(exp(2 * expo * dmax) - 1));
-        shifted_ss.a = shifted_ss.a - expo * eye(size(shifted_ss.a));
-
-        this_mult.basis_delay = shifted_ss;
+        shifted_delay = ss(basis_delay + sqrt(exp(2 * expo * dmax) - 1));
+        shifted_delay.a = shifted_delay.a - expo * eye(size(shifted_delay.a));
+        this_mult.basis_delay = shifted_delay;
     end
-%     num = 2 * (s + 4 / dmax / pi) * (s + this_mult.delay_filter_eps / dmax);
-%     this_mult.basis_delay = ss(gain * num / den);
-    
     
     % Set filter blocks
     blk1 = [this_mult.basis_delay * this_mult.basis_realization;
