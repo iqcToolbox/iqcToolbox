@@ -322,6 +322,7 @@ function testDefaultExponentialRateForMemoryless(testCase)
     delay_max = randi([1, 10]);
     d_delay = DeltaConstantDelay('delay', dim_outin, delay_max);
     g = randn(dim_outin, dim_outin);
+    g = g * 0.99 / norm(g, 2);
     eye_mat = eye(dim_outin);
     g = [eye_mat; eye_mat] * g * [eye_mat, eye_mat];
 %         if isempty(g.a)
