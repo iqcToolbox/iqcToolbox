@@ -62,10 +62,6 @@ function testUpperBoundBetweenSltiAndDlti(testCase)
         lft_slti  = interconnect(toLft(d_slti), g);
         lft_dlti  = interconnect(toLft(d_dlti), g);
         lft_delay = interconnect(toLft(d_delay), g);
-%         lft_slti  = Ulft.random('num_deltas', length(req_del),...
-%                                 'req_deltas', req_del);
-%         lft_dlti  = lft_slti; lft_dlti.delta.deltas{1} = d_dlti;
-%         lft_delay = lft_slti; lft_delay.delta.deltas{1} = d_delay;
 
         options = AnalysisOptions('lmi_shift', 1e-6, 'verbose', false);
         result_slti = iqcAnalysis(lft_slti, 'analysis_options', options);
@@ -88,13 +84,6 @@ function testUpperBoundBetweenSltiAndDlti(testCase)
             
         end
     end
-end
-
-function testDelayDestabilizes(testCase)
-    testCase.verifyTrue(true)
-end
-
-function testExponentialStabilityRate(testCase)
 end
 end
 end

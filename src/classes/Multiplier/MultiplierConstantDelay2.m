@@ -13,6 +13,8 @@ classdef MultiplierConstantDelay2 < MultiplierDelta
 %     basis_function : tf :: a (basis_length+1 x 1) stable transfer
 %                            function for defining filter
 %     basis_realization : ss :: the ss realization of basis_function
+%     basis_delay : ss :: the ss realization of a basis function whose magnitude
+%                         is greater than any permissible delay
 %     dim_outin : double :: dimensions of uncertainty
 %     constraint_q11_kyp : logical :: true if a kyp-based constraint for
 %                                     quad.q11 is desired
