@@ -572,6 +572,47 @@ function testTimeVaryingMultiplier(testCase)
     del = del.matchHorizonPeriod(horizon_period);
     mult = MultiplierSlti(del); % This command would have failed in construction
 end
+
+function testShiftMultiplierForExponential(testCase)
+    del = DeltaSlti('test');
+    m_discrete = MultiplierSlti(del);
+    expo = 0.6;
+    filt = m_discrete.filter_lft;
+    m_shifted = m_discrete.shiftMultiplier(expo);
+    filt_shifted = m_shifted.filter_lft;
+    testCase.verifyEqual(filt_shifted.a{1}, filt.a{1} / expo);    
+    testCase.verifyEqual(filt_shifted.b{1}, filt.b{1} / expo);
+    testCase.verifyEqual(filt_shifted.c{1}, filt.c{1});
+    testCase.verifyEqual(filt_shifted.d{1}, filt.d{1});
+    % Correct shfiting with default exponential rate (no shift)
+    m_discrete = MultiplierSlti(del);
+    filt = m_discrete.filter_lft;
+    m_shifted = m_discrete.shiftMultiplier();
+    filt_shifted = m_shifted.filter_lft;
+    testCase.verifyEqual(filt_shifted.a{1}, filt.a{1});    
+    testCase.verifyEqual(filt_shifted.b{1}, filt.b{1});
+    testCase.verifyEqual(filt_shifted.c{1}, filt.c{1});
+    testCase.verifyEqual(filt_shifted.d{1}, filt.d{1});
+    
+    expo = 0.4;
+    m_continuous = MultiplierSlti(del, 'discrete', false);
+    filt = m_continuous.filter_lft;
+    m_shifted = m_continuous.shiftMultiplier(expo);
+    filt_shifted = m_shifted.filter_lft;
+    testCase.verifyEqual(filt_shifted.a{1}, filt.a{1} + expo * eye(size(filt.a{1})));        
+    testCase.verifyEqual(filt_shifted.b{1}, filt.b{1});
+    testCase.verifyEqual(filt_shifted.c{1}, filt.c{1});
+    testCase.verifyEqual(filt_shifted.d{1}, filt.d{1});
+    % Correct shifting with default exponential rate (no shift)
+    m_continuous = MultiplierSlti(del, 'discrete', false);
+    filt = m_continuous.filter_lft;
+    m_shifted = m_continuous.shiftMultiplier();
+    filt_shifted = m_shifted.filter_lft;
+    testCase.verifyEqual(filt_shifted.a{1}, filt.a{1});        
+    testCase.verifyEqual(filt_shifted.b{1}, filt.b{1});
+    testCase.verifyEqual(filt_shifted.c{1}, filt.c{1});
+    testCase.verifyEqual(filt_shifted.d{1}, filt.d{1});
+end
 end
 end
 
