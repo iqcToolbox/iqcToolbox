@@ -480,7 +480,65 @@ function testBasisRealizationErrors(testCase)
                 ?MException,...
                 ['Exception should be thrown for providing a ',...
                  'continuous-time tf to a discrete-time multiplier'])                      
-end         
+end
+
+function testShiftingMultiplier(testCase)
+    del = DeltaConstantDelay2('test');
+    % Correct shifting with specified exponential rate (discrete-time)
+    expo = 0.6;
+    m_discrete = MultiplierConstantDelay2(del, 'exponential', expo);
+    filt = m_discrete.filter_lft;
+    m_shifted = m_discrete.shiftMultiplier();
+    filt_shifted = m_shifted.filter_lft;
+    testCase.verifyEqual(filt_shifted.a{1}, filt.a{1} / expo);    
+    testCase.verifyEqual(filt_shifted.b{1}, filt.b{1} / expo);
+    testCase.verifyEqual(filt_shifted.c{1}, filt.c{1});
+    testCase.verifyEqual(filt_shifted.d{1}, filt.d{1});
+    % Correct shfiting with default exponential rate (no shift)
+    m_discrete = MultiplierConstantDelay2(del);
+    filt = m_discrete.filter_lft;
+    m_shifted = m_discrete.shiftMultiplier();
+    filt_shifted = m_shifted.filter_lft;
+    testCase.verifyEqual(filt_shifted.a{1}, filt.a{1});    
+    testCase.verifyEqual(filt_shifted.b{1}, filt.b{1});
+    testCase.verifyEqual(filt_shifted.c{1}, filt.c{1});
+    testCase.verifyEqual(filt_shifted.d{1}, filt.d{1});
+    
+    % Correct shifting with specified exponential rate (continuous-time)
+    expo = 0.4;
+    m_continuous = MultiplierConstantDelay2(del,...
+                                            'exponential', expo,...
+                                            'discrete', false);
+    filt = m_continuous.filter_lft;
+    m_shifted = m_continuous.shiftMultiplier();
+    filt_shifted = m_shifted.filter_lft;
+    testCase.verifyEqual(filt_shifted.a{1}, filt.a{1} + expo * eye(size(filt.a{1})));        
+    testCase.verifyEqual(filt_shifted.b{1}, filt.b{1});
+    testCase.verifyEqual(filt_shifted.c{1}, filt.c{1});
+    testCase.verifyEqual(filt_shifted.d{1}, filt.d{1});
+    % Correct shifting with default exponential rate (no shift)
+    m_continuous = MultiplierConstantDelay2(del, 'discrete', false);
+    filt = m_continuous.filter_lft;
+    m_shifted = m_continuous.shiftMultiplier();
+    filt_shifted = m_shifted.filter_lft;
+    testCase.verifyEqual(filt_shifted.a{1}, filt.a{1});        
+    testCase.verifyEqual(filt_shifted.b{1}, filt.b{1});
+    testCase.verifyEqual(filt_shifted.c{1}, filt.c{1});
+    testCase.verifyEqual(filt_shifted.d{1}, filt.d{1});
+    
+    % No shift when multiplier is memoryless
+    del = DeltaSltv('test');
+    expo = -1.5;
+    m = MultiplierSltv(del);
+    filt = m.filter_lft;
+    m_shift = m.shiftMultiplier(expo);
+    filt_shifted = m_shift.filter_lft;
+    testCase.verifyEqual(filt_shifted.a{1}, filt.a{1});        
+    testCase.verifyEqual(filt_shifted.b{1}, filt.b{1});
+    testCase.verifyEqual(filt_shifted.c{1}, filt.c{1});
+    testCase.verifyEqual(filt_shifted.d{1}, filt.d{1});
+    
+end
 end
 end
 

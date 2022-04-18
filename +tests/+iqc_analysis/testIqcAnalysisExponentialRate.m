@@ -317,6 +317,24 @@ function testExponentiallyStableMultipliers(testCase)
                          'iqcAnalysis:iqcAnalysis')
 end
 
+function testDefaultExponentialRateForMemoryless(testCase)
+    dim_outin = randi([1, 10]);
+    delay_max = randi([1, 10]);
+    d_delay = DeltaConstantDelay('delay', dim_outin, delay_max);
+    g = randn(dim_outin, dim_outin);
+    eye_mat = eye(dim_outin);
+    g = [eye_mat; eye_mat] * g * [eye_mat, eye_mat];
+%         if isempty(g.a)
+%             g = g.d;
+%         end
+    lft_delay = interconnect(toLft(d_delay), g);
+    m = MultiplierConstantDelay(d_delay, 'discrete', true);
+    options = AnalysisOptions('lmi_shift', 1e-6, 'verbose', false);
+    result = iqcAnalysis(lft_delay,...
+                         'analysis_options', options,...
+                         'multipliers_delta', m);
+    testCase.verifyTrue(result.valid);
+end
 % function testConstantDelayDiscreteTime(testCase)
 % Derived from Stabilization of Discrete-Time Systems with Input Delays - Bin Zhou
 %     n = 4;

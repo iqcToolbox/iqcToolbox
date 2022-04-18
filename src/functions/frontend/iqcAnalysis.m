@@ -260,29 +260,6 @@ if lft_analyzed.uncertain && ~isempty(mult_filt.timestep)
                 ' convergence \n(for discrete time, closer to 1; for',...
                 ' continuous time, closer to 0)',])
     end    
-%     mult_filt = lftToSs(mult_filt);
-%         p_expo = sdpvar(size(mult_filt.a, 1));
-%         p_constraint = [];%p_expo >= options.lmi_shift * eye(size(p_expo));
-%         mult_quad = eye(size(mult_filt, 1));
-%         lmi_expo = kypLmiLti(mult_filt, mult_quad, p_expo, options.exponential);
-%         lmi_expo = kypLmiLti(mult_filt, mult_quad, p_expo, 0);
-%         lmi_constraint = lmi_expo <= -options.lmi_shift * eye(size(lmi_expo));
-%         mult_constraint = p_constraint + lmi_constraint;
-%         mult_objective = 0;
-%         mult_settings = sdpsettings(options.yalmip_settings);
-%         mult_report = optimize(lmi_constraint, mult_objective, mult_settings);
-%         mult_residual = check(mult_constraint);
-%         valid_solution = all(mult_residual >= -options.lmi_shift);
-%         assert(valid_solution,...
-%                'iqcAnalysis:iqcAnalysis',...
-%                ['The multiplier filters are not exponentially stable to the',...
-%                 ' specified rate: options.exponential = ',...
-%                 num2str(options.exponential),'\nEither specify multipliers',...
-%                 ' whose filters have the given rate of convergence, \nor',...
-%                 ' specify options.exponential to be a slower rate of',...
-%                 ' convergence \n(for discrete time, closer to 1; for',...
-%                 ' continuous time, closer to 0)',])
-%     end
 end
 
 %% Formulate KYP lmis
@@ -421,14 +398,14 @@ end
 % Set up exponential rate and check for consistency
 expo = options.exponential;
 if ~isempty(filt_lft_eye.timestep)
-% LFT has dynamics
+% Filter * [G; I] has dynamics
     if isempty(options.exponential)
     % Exponential rate is unspecified
         if filt_lft_eye.timestep
-        % LFT is discrete-time
+        % is discrete-time
             expo = 1;
         else
-        % LFT is continuous-time
+        % is continuous-time
             expo = 0;
         end
     end
