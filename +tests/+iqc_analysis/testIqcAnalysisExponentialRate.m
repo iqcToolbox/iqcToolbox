@@ -162,30 +162,6 @@ function testDiscreteTimeUncertainSystems(testCase)
     testCase.verifyFalse(result.valid)
 end
 
-% function testConstantDelayContinuousTime(testCase)
-%     wn = 10; % natural freq rad/s
-%     zeta = 0.5; % damping coefficient
-%     s = tf('s');
-%     g = wn^2 / (s^2 + 2 * zeta * wn * s + wn^2);
-%     g = ss(g);
-%     delay_max = 0.1;
-%     del = DeltaConstantDelay('del', 1, delay_max); % 0.1 second delay
-%     g_del = del * g;
-%     options = AnalysisOptions('verbose', false, 'lmi_shift', 1e-6);
-%     expo = 0.4;
-%     options.exponential = expo;
-% %     delay = exp(-s * delay_max);
-%     g_expo = g;
-%     g_expo.a = g_expo.a + expo * eye(2);
-% %     margin(delay * g_expo)
-%     result = iqcAnalysis(g_del, 'analysis_options', options);
-%     testCase.verifyTrue(result.valid);    
-%     expo = 1.4;
-%     options.exponential = expo;
-%     result = iqcAnalysis(g_del, 'analysis_options', options);
-%     testCase.verifyFalse(result.valid);
-% end
-
 function testConstantDelayContinuousTime(testCase)
     % Check that robust stability is correctly concluded (no exponential rate bound)
     wn = 10; % natural freq rad/s
@@ -232,7 +208,17 @@ function testConstantDelayContinuousTime(testCase)
     g_del_cl = interconnect(-1, [1; 1] * g_del * [1, 1]);
     options.exponential = 0;
     result = iqcAnalysis(g_del_cl, 'analysis_options', options);
-    testCase.verifyFalse(result.valid); 
+    testCase.verifyFalse(result.valid);
+% These tests can be verified with checking the gain/phase margins of delayed plant:
+% %     delay_max = 0.1;
+% %     s = tf('s');
+% %     delay = exp(-s * delay_max);
+% %     margin(delay * g)
+% %     expo = 0.8; % 0.7 shows a positive gain/phase margin
+% %     g_expo = g;
+% %     g_expo.a = g_expo.a + expo * eye(size(g_expo.a));
+% %     delay_expo = exp(delay_max * expo) * exp(-s * delay_max);
+% %     margin(delay_expo * g_expo)
 end
 
 function testConstantDelayDiscreteTime(testCase)
@@ -244,12 +230,11 @@ function testConstantDelayDiscreteTime(testCase)
     delay_max_c = 0.1; % 0.1 sec delay
     dt = 0.01; % 100 Hz frequency
     gd = c2d(g, dt);
-    gd.Ts = -1;
     delay_max = delay_max_c / dt;
     del = DeltaConstantDelay2('del', 1, delay_max); % 10 step delay
     g_del = (1 + del) * gd;
     g_del_cl = interconnect(-1, [1; 1] * g_del * [1, 1]);
-    options = AnalysisOptions('verbose', true, 'lmi_shift', 1e-6);
+    options = AnalysisOptions('verbose', false, 'lmi_shift', 1e-6);
     result = iqcAnalysis(g_del_cl, 'analysis_options', options);
     testCase.verifyTrue(result.valid); 
     
@@ -262,32 +247,78 @@ function testConstantDelayDiscreteTime(testCase)
     testCase.verifyFalse(result.valid); 
     
     % Check that robustly stable system passes conforming exponential rate bound
-    delay_max = 5;
+    delay_max = 10;
     del = DeltaConstantDelay2('del', 1, delay_max); 
     g_del = (1 + del) * gd;
+%     g_del = toLft(gd);
     g_del_cl = interconnect(-1, [1; 1] * g_del * [1, 1]);
-    expo = 0.9; % Should extend down to 0.8
+    expo = 0.999; % Should extend down to 0.994
     options.exponential = expo;
     result = iqcAnalysis(g_del_cl, 'analysis_options', options);
     testCase.verifyTrue(result.valid); 
     % Set exponential rate bound too fast, check that it correctly fails
-    expo = 0.8; 
+    expo = 0.993; 
     options.exponential = expo;
-    m(2) = MultiplierConstantDelay2(del,...
-                                    'discrete', false,...
-                                    'basis_poles', -expo * 1.1,...
-                                    'exponential', expo);
-    result = iqcAnalysis(g_del_cl,...
-                         'analysis_options', options,...
-                         'multipliers_delta', m);
+    result = iqcAnalysis(g_del_cl, 'analysis_options', options);
     testCase.verifyFalse(result.valid); 
-    % These tests can be verified with checking the gain/phase margins of delayed plant
+% These tests can be verified with checking the gain/phase margins of delayed plant:
+% %     delay_max = 10;
+% %     z = tf('z');
+% %     delay = 1/z^delay_max;
+% %     margin(delay * gd)
+% %     expo = .993; % 0.994 shows positive gain/phase margin
+% %     g_expo = gd;
+% %     g_expo.a = g_expo.a / expo;
+% %     g_expo.b = g_expo.b / expo;
+% %     delay_expo = 1/ expo^delay_max / z^delay_max;
+% %     margin(delay_expo * g_expo)
+% %     cl_expo = delay_expo * g_expo / (1 + delay_expo * g_expo);
+% %     abs(eig(cl_expo.a))
+end
+
+function testExponentiallyStableMultipliers(testCase)
+    del_slti = DeltaSlti('slti');
+    del_sltvrb = DeltaSltvRateBnd('sltvrb');
+%     del_delay = DeltaConstantDelay2('delay');
     
+    % Check that multipliers with conforming convergence rate pass (continuous time)
+    gc = toLft(ss(-100, 1, 1, 0)) * del_slti * del_sltvrb;% * (1 + del_delay);
+    expo = 0.49;
+    options = AnalysisOptions('verbose', false,...
+                              'exponential', expo,...
+                              'lmi_shift', 1e-5);
+    result = iqcAnalysis(gc, 'analysis_options', options);
+    m_del = MultiplierDeltaCombined(result.multipliers_delta);
+    m_shifted = lftToSs(m_del.shiftMultiplier(expo).filter_lft);
+    testCase.assertTrue(isstable(m_shifted))
+    testCase.verifyTrue(result.valid)
     
+    % Check that multipliers with slower convergence rate fail (continuous time)
+    expo = 0.51;
+    options.exponential = expo;
+    testCase.verifyError(@() iqcAnalysis(gc, 'analysis_options', options),...
+                         'iqcAnalysis:iqcAnalysis')
     
+    % Check that multipliers with conforming convergence rate pass (discrete time)
+    del_z = DeltaDelayZ();
+    gd = del_z * del_slti * del_sltvrb;% * (1 + del_delay);
+    expo = 0.51;
+    options.exponential = expo;
+    result = iqcAnalysis(gd, 'analysis_options', options);
+    m_del = MultiplierDeltaCombined(result.multipliers_delta);
+    m_shifted = lftToSs(m_del.shiftMultiplier(expo).filter_lft);
+    testCase.assertTrue(isstable(m_shifted))
+    testCase.verifyTrue(result.valid)
+    
+    % Check that multipliers with slower convergence rate fail (continuous time)
+    expo = 0.49;
+    options.exponential = expo;
+    testCase.verifyError(@() iqcAnalysis(gd, 'analysis_options', options),...
+                         'iqcAnalysis:iqcAnalysis')
 end
 
 % function testConstantDelayDiscreteTime(testCase)
+% Derived from Stabilization of Discrete-Time Systems with Input Delays - Bin Zhou
 %     n = 4;
 %     dt = 0.1;
 %     a = zeros(n);
@@ -342,46 +373,8 @@ end
 %     testCase.verifyFalse(result.valid);
     
 % end
+end
+end
 
-function testExponentiallyStableMultipliers(testCase)
-    del_slti = DeltaSlti('slti');
-    del_sltvrb = DeltaSltvRateBnd('sltvrb');
-%     del_delay = DeltaConstantDelay2('delay');
-    
-    % Check that multipliers with conforming convergence rate pass (continuous time)
-    gc = toLft(ss(-100, 1, 1, 0)) * del_slti * del_sltvrb;% * (1 + del_delay);
-    expo = 0.49;
-    options = AnalysisOptions('verbose', false,...
-                              'exponential', expo,...
-                              'lmi_shift', 1e-5);
-    result = iqcAnalysis(gc, 'analysis_options', options);
-    m_del = MultiplierDeltaCombined(result.multipliers_delta);
-    m_shifted = lftToSs(m_del.shiftMultiplier(expo).filter_lft);
-    testCase.assertTrue(isstable(m_shifted))
-    testCase.verifyTrue(result.valid)
-    
-    % Check that multipliers with slower convergence rate fail (continuous time)
-    expo = 0.51;
-    options.exponential = expo;
-    testCase.verifyError(@() iqcAnalysis(gc, 'analysis_options', options),...
-                         'iqcAnalysis:iqcAnalysis')
-    
-    % Check that multipliers with conforming convergence rate pass (discrete time)
-    del_z = DeltaDelayZ();
-    gd = del_z * del_slti * del_sltvrb;% * (1 + del_delay);
-    expo = 0.51;
-    options.exponential = expo;
-    result = iqcAnalysis(gd, 'analysis_options', options);
-    m_del = MultiplierDeltaCombined(result.multipliers_delta);
-    m_shifted = lftToSs(m_del.shiftMultiplier(expo).filter_lft);
-    testCase.assertTrue(isstable(m_shifted))
-    testCase.verifyTrue(result.valid)
-    
-    % Check that multipliers with slower convergence rate fail (continuous time)
-    expo = 0.49;
-    options.exponential = expo;
-    testCase.verifyError(@() iqcAnalysis(gd, 'analysis_options', options),...
-                         'iqcAnalysis:iqcAnalysis')
-end
-end
-end
+%%  CHANGELOG
+% Apr. 18, 2021: Added after v0.9.0 - Micah Fry (micah.fry@ll.mit.edu)
