@@ -169,11 +169,12 @@ function this_mult = shiftMultiplier(this_mult, exponential)
         else
             stable = max(real(eig(this_mult.filter.a{1}))) < 0;
         end
-    else
-        filt_lft = addPerformance(this_mult.filter_lft,...
-                                    {PerformanceStable(this_mult.horizon_period)});
-        result = iqcAnalysis(filt_lft);
-        stable = result.valid;
+%     else
+% Uncomment this when functionality for exponential stability is enabled for LTV systems
+%         filt_lft = addPerformance(this_mult.filter_lft,...
+%                                     {PerformanceStable(this_mult.horizon_period)});
+%         result = iqcAnalysis(filt_lft);
+%         stable = result.valid;
     end
     assert(stable, 'MultiplierDelta:shiftMultiplier',...
            ['Shifting Multiplier ', this_mult.name, ' by the exponential rate ',...
