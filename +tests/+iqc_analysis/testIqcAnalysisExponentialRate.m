@@ -68,15 +68,20 @@ function testUncertainSystemsExpoIndependent(testCase)
 %     rng(1649681707) % Makes discrete system fail when P indefinite (even though G and Psi have small enough eigs)
                     % Also makes continuous system fail when P indefinite (even though G and Psi have "left enough" eigs)
   % These tests fail with some Slti, unless I make P > 0 (rather than indefinite)
+  rng(1650397751)
     deltas = {'DeltaSlti','DeltaSltv','DeltaSltvRateBnd','DeltaSectorBounded'};
     del_ind = randi([1, length(deltas)]);
     del_type = deltas{del_ind};
 %     del_type = 'DeltaSlti'; % Uncomment this is topline rng is uncommented
 
     % Discrete-time
-    g = drss(randi([1,5]));
-    g.a = g.a * 0.95;
-    exponential = max(abs(eig(g.a)));
+    valid_exponential = false;
+    while ~valid_exponential
+        g = drss(randi([1,5]));
+        g.a = g.a * 0.95;
+        exponential = max(abs(eig(g.a)));
+        valid_exponential = exponential > 0.3;
+    end
     margin = (1 - exponential) / exponential;
     del_bnd = 1 + margin / 2; % Guaranteed to be greater than 1, will not destabilize
     switch del_type
@@ -103,9 +108,13 @@ function testUncertainSystemsExpoIndependent(testCase)
     testCase.verifyFalse(result.valid)
     
     % Continuous-time
-    g = rss;
-    g.a = g.a - 0.05 * eye(size(g.a));
-    exponential = -max(real(eig(g.a)));
+    valid_exponential = false;
+    while ~valid_exponential
+        g = rss;
+        g.a = g.a - 0.05 * eye(size(g.a));
+        exponential = -max(real(eig(g.a)));
+        valid_exponential = exponential < 2.5;
+    end
     del_bnd = exponential * 0.9;
     switch del_type
         case 'DeltaSlti'
