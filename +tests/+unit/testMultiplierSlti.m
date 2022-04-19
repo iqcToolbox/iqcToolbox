@@ -585,8 +585,6 @@ function testShiftMultiplierForExponential(testCase)
     testCase.verifyEqual(filt_shifted.c{1}, filt.c{1});
     testCase.verifyEqual(filt_shifted.d{1}, filt.d{1});
     % Correct shfiting with default exponential rate (no shift)
-    m_discrete = MultiplierSlti(del);
-    filt = m_discrete.filter_lft;
     m_shifted = m_discrete.shiftMultiplier();
     filt_shifted = m_shifted.filter_lft;
     testCase.verifyEqual(filt_shifted.a{1}, filt.a{1});    
@@ -604,8 +602,6 @@ function testShiftMultiplierForExponential(testCase)
     testCase.verifyEqual(filt_shifted.c{1}, filt.c{1});
     testCase.verifyEqual(filt_shifted.d{1}, filt.d{1});
     % Correct shifting with default exponential rate (no shift)
-    m_continuous = MultiplierSlti(del, 'discrete', false);
-    filt = m_continuous.filter_lft;
     m_shifted = m_continuous.shiftMultiplier();
     filt_shifted = m_shifted.filter_lft;
     testCase.verifyEqual(filt_shifted.a{1}, filt.a{1});        

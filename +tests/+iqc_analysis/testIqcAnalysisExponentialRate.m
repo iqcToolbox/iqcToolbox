@@ -198,8 +198,6 @@ function testConstantDelayContinuousTime(testCase)
                          'analysis_options', options,...
                          'multipliers_delta', m);
     testCase.verifyFalse(result.valid); 
-    % These tests can be verified with checking the gain/phase margins of delayed plant
-    
     
     % Check that robust stability correctly fails (with big enough delay, no exponential specification)
     delay_max = 0.2;
@@ -396,4 +394,4 @@ end
 end
 
 %%  CHANGELOG
-% Apr. 18, 2021: Added after v0.9.0 - Micah Fry (micah.fry@ll.mit.edu)
+% Apr. 18, 2022: Added after v0.9.0 - Micah Fry (micah.fry@ll.mit.edu)

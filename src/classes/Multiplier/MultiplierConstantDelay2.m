@@ -18,8 +18,10 @@ classdef MultiplierConstantDelay2 < MultiplierDelta
 %     dim_outin : double :: dimensions of uncertainty
 %     constraint_q11_kyp : logical :: true if a kyp-based constraint for
 %                                     quad.q11 is desired
-%     constraint_q22_kyp : logical :: true if a kyp-based constraint for
-%                                     quad.q22 is desired
+%     constraint_q2_minus_q1_kyp : logical :: true if a kyp-based constraint for
+%                                     q2 - q1  is desired
+%     constraint_q2_plus_q1_kyp : logical :: true if a kyp-based constraint for
+%                                     q2 + q1  is desired 
 %     delay_max : double :: maximum allowed delay, informs constraints for
 %                           generalized, exponential IQCs
 %
@@ -51,7 +53,7 @@ methods
 function this_mult = MultiplierConstantDelay2(delta, varargin)
 %% MULTIPLIERConstantDelay2 constructor
 %
-%  this_mult = MultiplierConstantDelay2(delta, 'discrete', true, 'basis_length', 2, 'basis_pole', -0.5, 'constraint_q11_kyp', true, 'constraint_q22_kyp', true, 'exponential', [], delay_filter_eps, 0.2)
+%  this_mult = MultiplierConstantDelay2(delta, 'discrete', true, 'basis_length', 2, 'basis_pole', -0.5, 'constraint_q11_kyp', true, 'constraint_q2_minus_q1_kyp', true, 'constraint_q2_plus_q1_kyp', true, 'exponential', [], delay_filter_eps, 0.2)
 %  this_mult = MutliplierConstantDelay2(delta) assumes the values provided above
 %
 %  Variables:
@@ -377,8 +379,6 @@ function this_mult = set.basis_realization(this_mult, basis_realization)
         filter.d12{i} = zeros(dim_out1, dim_in2);
         filter.d21{i} = zeros(dim_out2, dim_in1);
         filter.d22{i} = blk22.d;
-%         filter.c1{i}  = expo_bound * [br.c, zeros(dim_out1, dim_state2)];
-%         filter.d11{i} = expo_bound * br.d;
 
         quad.q11{i} = blkdiag(q1, zeros(dim_out2));
         quad.q12{i} = [zeros(dim_out2); q2];
@@ -394,19 +394,19 @@ function this_mult = set.basis_realization(this_mult, basis_realization)
     if ~this_mult.constraint_q11_kyp
         c_q11 = (q1 >= 0):['Constant Delay Multiplier, ',...
                                    this_mult.name,...
-                                   ', q1 >= 0'];                               %#ok<BDSCA>
+                                   ', q1 >= 0'];                                %#ok<BDSCA>
     else
         kyp_var_q11 = sdpvar(dim_state2);
         lmi_mat_q11 = kypLmiLti(blk22, q1, kyp_var_q11, this_mult.exponential);
         c_q11 = (lmi_mat_q11 >= 0):['Constant Delay Multiplier, ',...
                                     this_mult.name,...
-                                    ', kyp(filter22, q1) >= 0'];               %#ok<BDSCA>
+                                    ', kyp(filter22, q1) >= 0'];                %#ok<BDSCA>
         this_mult.decision_vars{end + 1} = kyp_var_q11;
     end
     if ~this_mult.constraint_q2_minus_q1_kyp
         c_q2_m_q1 = (q2 - q1 <= 0):['Constant Delay Multiplier, ',...
                                    this_mult.name,...
-                                   ', q2 - q1 <= 0'];                               %#ok<BDSCA>
+                                   ', q2 - q1 <= 0'];                           %#ok<BDSCA>
     else
         kyp_var_q2_m_q1 = sdpvar(dim_state2);
         lmi_mat_q2_m_q1 = kypLmiLti(blk22,...
@@ -415,14 +415,14 @@ function this_mult = set.basis_realization(this_mult, basis_realization)
                                     this_mult.exponential);
         c_q2_m_q1 = (lmi_mat_q2_m_q1 <= 0):['Constant Delay Multiplier, ',...
                                       this_mult.name,...
-                                      ', kyp(filter22, q2 - q1) <= 0'];               %#ok<BDSCA>
+                                      ', kyp(filter22, q2 - q1) <= 0'];         %#ok<BDSCA>
         this_mult.decision_vars{end + 1} = kyp_var_q2_m_q1;
     end
     if expo ~= 1
         if ~this_mult.constraint_q2_plus_q1_kyp
             c_q2_p_q1 = (q2 + q1 >= 0):['Constant Delay Multiplier, ',...
                                        this_mult.name,...
-                                       ', q2 + q1 >= 0'];                               %#ok<BDSCA>
+                                       ', q2 + q1 >= 0'];                       %#ok<BDSCA>
         else
             kyp_var_q2_p_q1 = sdpvar(dim_state2);
             lmi_mat_q2_p_q1 = kypLmiLti(blk22,...
@@ -431,7 +431,7 @@ function this_mult = set.basis_realization(this_mult, basis_realization)
                                         this_mult.exponential);
             c_q2_p_q1 = (lmi_mat_q2_p_q1 >= 0):['Constant Delay Multiplier, ',...
                                           this_mult.name,...
-                                          ', kyp(filter22, q2 + q1) >= 0'];               %#ok<BDSCA>
+                                          ', kyp(filter22, q2 + q1) >= 0'];     %#ok<BDSCA>
             this_mult.decision_vars{end + 1} = kyp_var_q2_p_q1;
         end
     else
@@ -445,4 +445,4 @@ end
 end
 
 %%  CHANGELOG
-% Apr. 8, 2021: Added after v0.9.0 - Micah Fry (micah.fry@ll.mit.edu)
+% Apr. 8, 2022: Added after v0.9.0 - Micah Fry (micah.fry@ll.mit.edu)

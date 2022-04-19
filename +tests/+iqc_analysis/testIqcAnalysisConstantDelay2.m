@@ -11,7 +11,7 @@
 %  SPDX-License-Identifier: GPL-2.0
 %%
 
-%% Test class for IQC analysis with Sector-Bounded operators
+%% Test class for IQC analysis with constant time delays (out = (delay - 1) (in))
 classdef testIqcAnalysisConstantDelay2 < matlab.unittest.TestCase
 
 methods (TestMethodSetup)
@@ -50,7 +50,8 @@ function testConstantDelayContinuousTime(testCase)
                                 'analysis_options', options,...
                                 'multipliers_delta', m);
     testCase.verifyTrue(result_no_kyp.valid); 
-%     testCase.verifyGreaterThan(result_no_kyp.performance, result.performance) % This is not always true, removing this test condition
+%     testCase.verifyGreaterThan(result_no_kyp.performance, result.performance) 
+% Prior line should come out true, but it is highly sensitive to each platform's solver, therefore, removing this test condition
     
     % Check non-KYP constraints with exponential convergence specification
     delay_max = 0.1;
@@ -99,3 +100,6 @@ function testConstantDelayDiscreteTime(testCase)
 end
 end
 end
+
+%%  CHANGELOG
+% Apr. 18, 2022: Added after v0.9.0 - Micah Fry (micah.fry@ll.mit.edu)

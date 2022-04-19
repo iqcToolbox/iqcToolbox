@@ -17,6 +17,10 @@ classdef DeltaConstantDelay2 < Delta
 %                        :: Matches delta properties to new horizon_period
 %     deltaToMultiplier(this_delta, varargin)
 %                        :: Method for constructing a multiplier from a delta
+%     sample(this_delta, timestep) 
+%                        :: Produces an LFT object sampled from the admissible set of operators
+%     validateSample(this_delta, value, timestep) 
+%                        :: Checks if the provided value is a valid element of the uncertainty set
 %
 %   See also Delta, DeltaConstantDelay2.DeltaConstantDelay2, DeltaConstantDelay2
 
@@ -237,4 +241,4 @@ end
 end
 
 %%  CHANGELOG
-% Apr. 07, 2021: Added after v0.9.0 - Micah Fry (micah.fry@ll.mit.edu)
+% Apr. 07, 2022: Added after v0.9.0 - Micah Fry (micah.fry@ll.mit.edu)

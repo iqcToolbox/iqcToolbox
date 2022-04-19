@@ -31,7 +31,7 @@ classdef (Abstract) MultiplierDelta < matlab.mixin.Heterogeneous
 %                                     0 for continuous-time or 1 for discrete-time.
 %
 %
-%  See also MultiplierPerformance, MultiplierDisturbance
+%  See also MultiplierDelta/MultiplierDelta, MultiplierPerformance, MultiplierDisturbance
 
 %%
 %  Copyright (c) 2021 Massachusetts Institute of Technology 
@@ -96,7 +96,11 @@ function this_mult = MultiplierDelta(exponential)
 %    Output:
 %       this_mult : MultiplierDelta object :: the base class MultiplierDelta
 %     
-%  See also MultiplierDelta
+%  See also MultiplierDelta, 
+%           MultiplierSlti and MultiplierSltv (examples on exponential-agnostic multipliers)
+%           MultiplierDlti (example of a mult that rejects non-default exponential-rates)
+%           MultiplierConstantDelay and MultiplierConstantDelay2 (examples of mults whose cnstraints depend on exponential-rates)
+
 if nargin == 0
     this_mult.exponential = [];
 elseif nargin == 1
@@ -112,8 +116,8 @@ function this_mult = shiftMultiplier(this_mult, exponential)
 %  This will shift the multiplier's filter depending on the multiplier being discrete- or continuous-time
 %  After shifting, this method checks that the multiplier is still stable.
 %
-%  this_mult = shiftMultiplier@MultiplierDelta(this_mult, exponential) % Shifts A-matrices of this_mult.filter, and sets this_mult.exponential
-%  this_mult = shiftMultiplier@MultiplierDelta(this_mult) % Shifts A-matrices according to pre-defined this_mult.exponential
+%  this_mult = shiftMultiplier@MultiplierDelta(this_mult, exponential) % Shifts state-space matrices of this_mult.filter, and sets this_mult.exponential
+%  this_mult = shiftMultiplier@MultiplierDelta(this_mult) % Shifts state-space matrices according to pre-defined this_mult.exponential
 %
 %  Variables:
 %  ---------

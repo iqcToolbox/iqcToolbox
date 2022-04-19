@@ -1,5 +1,5 @@
 %% Requirements:
-%  1. DeltaConstantDelay shall be defined by it's name, the input/output
+%  1. DeltaConstantDelay shall be defined by its name, the input/output
 %      dimension, the maximum allowable delay, and the
 %      horizon_period
 %  2. Upon construction, and when queried by user, it shall display the
@@ -538,8 +538,7 @@ function testSetBlockRealization(testCase)
                 ['When independently setting block_realization, ',...
                  'basis_realization should set empty (continuous-time)'])
 
-    verifyEqual(testCase, mult.block_realization, block_realization)            
-
+    verifyEqual(testCase, mult.block_realization, block_realization)
 end        
 
 function testBlockRealizationErrors(testCase)
@@ -587,11 +586,7 @@ function testBlockRealizationErrors(testCase)
                 ?MException,...
                 ['Exception should be thrown for providing a tf',...
                  'whose width is greater than delta.dim_out'])                     
-end       
-
-
-
-
+end
 end
 end
 

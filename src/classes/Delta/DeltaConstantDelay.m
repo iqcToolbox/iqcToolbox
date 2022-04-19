@@ -1,12 +1,13 @@
 classdef DeltaConstantDelay < Delta
 %% DELTACONSTANTDELAY class for constant delay operators whose delay is within
 %  a range: delay \in [0, delay_max]. For discrete-time systems, this delay
-%  is measured in timesteps (delay must be an natural number). For continuous-time
+%  is measured in timesteps (delay must be a natural number). For continuous-time
 %  systems, delay is measured in seconds. 
 %
 %  This class differs from DeltaConstantDelay2 in that the operator Delta is 
 %  defined as u_delay = Delta (u).
-%  This formulation means that Delta's nominal value of 0 implies u_delay = 0.
+%  This formulation means that Delta's nominal value of 0 implies u_delay(t) = 0
+%  for all t.
 %
 %   extended methods:
 %     DeltaConstantDelay(name, dim_outin, delay_max, horizon_period) :: Constructor
@@ -15,6 +16,10 @@ classdef DeltaConstantDelay < Delta
 %                        :: Matches delta properties to new horizon_period
 %     deltaToMultiplier(this_delta, varargin)
 %                        :: Method for constructing a multiplier from a delta
+%     sample(this_delta, timestep) 
+%                        :: Produces an LFT object sampled from the admissible set of operators
+%     validateSample(this_delta, value, timestep) 
+%                        :: Checks if the provided value is a valid element of the uncertainty set
 %
 %   See also Delta, DeltaConstantDelay.DeltaConstantDelay, DeltaConstantDelay2
 
@@ -236,4 +241,4 @@ end
 end
 
 %%  CHANGELOG
-% Mar. 29, 2021: Added after v0.9.0 - Micah Fry (micah.fry@ll.mit.edu)
+% Mar. 29, 2022: Added after v0.9.0 - Micah Fry (micah.fry@ll.mit.edu)

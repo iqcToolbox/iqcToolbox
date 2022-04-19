@@ -11,7 +11,7 @@
 %  SPDX-License-Identifier: GPL-2.0
 %%
 
-%% Test class for IQC analysis with Sector-Bounded operators
+%% Test class for IQC analysis with constant time delays (out = delay (in))
 classdef testIqcAnalysisConstantDelay < matlab.unittest.TestCase
 
 methods (TestMethodSetup)
@@ -89,4 +89,4 @@ end
 end
 
 %%  CHANGELOG
-% Mar. 30, 2021: Added after v0.9.0 - Micah Fry (micah.fry@ll.mit.edu)
+% Mar. 30, 2022: Added after v0.9.0 - Micah Fry (micah.fry@ll.mit.edu)

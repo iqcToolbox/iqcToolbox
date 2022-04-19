@@ -30,8 +30,9 @@ methods
     function this_delta = DeltaSectorBounded(name, dim_outin, lower_bound, upper_bound, horizon_period)
     %% DELTASECTORBOUNDED constructor
     %
-    %  d = DeltaSectorBounded(name, dim_outin, horizon_period)
-    %  d = DeltaSectorBounded(name, dim_outin) assumes horizon_period == [0, 1]
+    %  d = DeltaSectorBounded(name, dim_outin, lower_bound, upper_bound, horizon_period)
+    %  d = DeltaSectorBounded(name, dim_outin, lower_bound, upper_bound) assumes horizon_period == [0, 1]
+    %  d = DeltaSectorBounded(name, dim_outin) assumes lower_bound == -1 and upper_bound == 1
     %  d = DeltaSectorBounded(name) also assumes dim_outin == 1
     %
     %  Variables:

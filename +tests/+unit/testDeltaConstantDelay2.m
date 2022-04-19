@@ -1,5 +1,5 @@
 %% Requirements:
-%  1. DeltaConstantDelay2 shall be defined by it's name, the input/output
+%  1. DeltaConstantDelay2 shall be defined by its name, the input/output
 %      dimension, the maximum allowable delay, and the
 %      horizon_period
 %  2. Upon construction, and when queried by user, it shall display the
