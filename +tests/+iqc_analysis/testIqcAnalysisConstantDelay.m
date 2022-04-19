@@ -53,7 +53,7 @@ function testUpperBoundBetweenSltiAndDlti(testCase)
             case 3
                 g = ss(randn(dim_outin, dim_outin));
         end
-        g = g * 0.99 / norm(g, 'inf');
+        g = g * 0.97 / norm(g, 'inf');
         eye_mat = eye(dim_outin);
         g = [eye_mat; eye_mat] * g * [eye_mat, eye_mat];
         if isempty(g.a)
