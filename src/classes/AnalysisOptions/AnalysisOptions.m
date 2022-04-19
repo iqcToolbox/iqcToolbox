@@ -114,7 +114,7 @@ methods
     addParameter(input_parser,...
                  'exponential',...
                  [],...  % [] corresponds to the "default" value for exponential rates (1 for discrete-time, 0 for continuous-time)
-                 @(in) validateattributes(in, 'numeric', {'finite', 'nonnan'}))
+                 @(in) validateattributes(in, {'numeric'}, {'finite', 'nonnan'}))
     
     parse(input_parser, varargin{:})
     

@@ -35,7 +35,7 @@ function testConstantDelayContinuousTime(testCase)
     s = tf('s');
     g = wn^2 / (s^2 + 2 * zeta * wn * s + wn^2);
     g = ss(g);
-    delay_max = 0.1251;
+    delay_max = 0.1;% used to be 0.1251, with verification that result_no_kyp > result
     del = DeltaConstantDelay2('del', 1, delay_max); % 0.1 second delay
     g_del = (1 + del) * g;
     g_del_cl = interconnect(-1, [1; 1] * g_del * [1, 1]);
