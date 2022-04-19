@@ -13,6 +13,7 @@ import matlab.unittest.selectors.HasTag
 import matlab.unittest.constraints.IsEqualTo
 import matlab.unittest.plugins.CodeCoveragePlugin
 import matlab.unittest.plugins.codecoverage.CoberturaFormat
+% import matlab.unittest.plugins.codecoverage.CoverageReport
 runner = TestRunner.withTextOutput;
 top_path = mfilename('fullpath');
 top_path(end - length(mfilename):end) =  [];
@@ -21,6 +22,8 @@ top_path = fullfile(top_path,'..','src');
 cov = CodeCoveragePlugin.forFolder(top_path,...
                                    'IncludingSubfolders', true,...
                                    'Producing', CoberturaFormat('+tests/coverage.xml'));
+% Replace the previous line with the following for an html coverage report
+%                                   'Producing', CoverageReport('+tests/report')); 
 runner.addPlugin(cov)
 suite = TestSuite.fromPackage('tests', 'IncludingSubpackages', true);
 % Check if user has Robust Control Toolbox, skip RCT-dependent tests if not

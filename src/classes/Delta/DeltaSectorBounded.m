@@ -4,7 +4,7 @@ classdef DeltaSectorBounded < Delta
 %  Extends the base class Delta.
 %
 %   extended methods:
-%     DeltaSectorBounded(name, dim_outin, horizon_period) :: Constructor
+%     DeltaSectorBounded(name, dim_outin, lower_bound, upper_bound, horizon_period) :: Constructor
 %     disp(this_delta) :: Display method
 %     matchHorizonPeriod(this_delta, new_horizon_period) 
 %                        :: Matches delta properties to new horizon_period
@@ -30,8 +30,9 @@ methods
     function this_delta = DeltaSectorBounded(name, dim_outin, lower_bound, upper_bound, horizon_period)
     %% DELTASECTORBOUNDED constructor
     %
-    %  d = DeltaSectorBounded(name, dim_outin, horizon_period)
-    %  d = DeltaSectorBounded(name, dim_outin) assumes horizon_period == [0, 1]
+    %  d = DeltaSectorBounded(name, dim_outin, lower_bound, upper_bound, horizon_period)
+    %  d = DeltaSectorBounded(name, dim_outin, lower_bound, upper_bound) assumes horizon_period == [0, 1]
+    %  d = DeltaSectorBounded(name, dim_outin) assumes lower_bound == -1 and upper_bound == 1
     %  d = DeltaSectorBounded(name) also assumes dim_outin == 1
     %
     %  Variables:
@@ -62,7 +63,7 @@ methods
             case 5
             otherwise
                 error('DeltaSectorBounded:DeltaSectorBounded',...
-                      ['Must provide 1, 2, or 4 arguments to construct',...
+                      ['Must provide 1, 2, 4, or 5 arguments to construct',...
                        'DeltaSectorBounded objects'])
         end
         % Calling Delta constructor
@@ -172,7 +173,7 @@ methods
     end
     end
 
-    function multiplier = deltaToMultiplier(this_del, varargin)                 %#ok<VANUS>
+    function multiplier = deltaToMultiplier(this_del, varargin)                 
     %% DELTATOMULTIPLIER function to generate a multiplier from this object
     %
     %  multiplier = deltaToMultiplier(this_del)
@@ -185,7 +186,7 @@ methods
     %        multiplier : MultiplierSectorBounded object
     %
     %  See also DeltaSectorBounded.
-        multiplier = MultiplierSectorBounded(this_del);
+        multiplier = MultiplierSectorBounded(this_del, varargin{:});
     end
     
     function value = sample(this_del, ~)

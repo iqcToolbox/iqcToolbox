@@ -30,7 +30,7 @@ jobs:
 
       # Sets up MATLAB on the GitHub Actions runner
       - name: Setup MATLAB
-        uses: matlab-actions/setup-matlab@v0
+        uses: matlab-actions/setup-matlab@v1
 
       # Use static analyzer and rules from HEAD commit
 #        run: git checkout ${{ github.event.pull_request.head.sha }} -- +tests/static_analyzer_base.m +tests/chkcode_rules.txt
@@ -42,7 +42,7 @@ jobs:
 
       # Run static analysis on base commit
       - name: Base static analysis
-        uses: matlab-actions/run-command@v0
+        uses: matlab-actions/run-command@v1
         with:
           command: addpath(genpath('src')); [info, files] = tests.static_analyzer_base; save('old_results', 'info', 'files');
 
@@ -54,6 +54,6 @@ jobs:
 
       # Run static analysis on merge commit
       - name: Diff static analysis on merge commit
-        uses: matlab-actions/run-command@v0
+        uses: matlab-actions/run-command@v1
         with:
           command: addpath(genpath('src')); load('old_results', 'info', 'files'); [diff_info, diff_files, new_error] = tests.static_analyzer_diff(info, files); assert(~new_error);

@@ -51,7 +51,7 @@ methods
 function this_mult = MultiplierDlti(delta, varargin)
 %% MULTIPLIERDLTI constructor
 %
-%  this_mult = MultiplierDlti(delta, 'discrete', true, 'basis_length', 2, 'basis_pole', -0.5, 'constraint_q11_kyp', true, 'constraint_q12_kyp', false)
+%  this_mult = MultiplierDlti(delta, 'discrete', true, 'basis_length', 2, 'basis_pole', -0.5, 'constraint_q11_kyp', true)
 %  this_mult = MutliplierDlti(delta) assumes the values provided above
 %
 %  Variables:
@@ -116,6 +116,15 @@ addParameter(input_parser,...
              'basis_realization',...
              [],...
              @(br) isa(br, 'ss'))
+% The following parameter is not used to define this multiplier. 
+% Only defined for compatibility with other Multiplier constructor calls.
+% Exponential IQCs only hold for this multiplier when the default value is specified
+% (rho = 1 for discrete-time, alpha = 0 for continuous-time), this constructor
+% checks that such value is specified.
+addParameter(input_parser,... 
+             'exponential',...
+             [],...
+             @(disc) validateattributes(disc, {'numeric'}, {'nonnegative'})) 
 
 % Parsing inputs
 parse(input_parser, delta, varargin{:})
@@ -126,7 +135,27 @@ basis_length        = input_parser.Results.basis_length;
 basis_poles         = input_parser.Results.basis_poles;
 basis_function      = input_parser.Results.basis_function;
 basis_realization   = input_parser.Results.basis_realization;
+exponential         = input_parser.Results.exponential;
+if isempty(exponential)
+% Set default value of exponential depending on continuous- or discrete-time
+    if discrete
+        exponential = 1;
+    else
+        exponential = 0;
+    end
+end
+if discrete
+    assert(exponential == 1,...
+           'MultiplierDlti:MultiplierDlti',...
+           'For this discrete-time multiplier, exponential must be [] or 1')
+else
+    assert(exponential == 0,...
+           'MultiplierDlti:MultiplierDlti',...
+           'For this continuous-time multiplier, exponential must be [] or 0')
+end
 
+%Setting multiplier properties
+this_mult@MultiplierDelta(exponential);
 this_mult.name               = delta.name;
 this_mult.horizon_period     = delta.horizon_period;
 this_mult.upper_bound        = delta.upper_bound;  
@@ -302,12 +331,13 @@ function this_mult = set.block_realization(this_mult, block_realization)
     if ~this_mult.constraint_q11_kyp
         c_q11 = (q11_kernel >= 0):['DLTI Multiplier, ',...
                                    this_mult.name,...
-                                   ', q11__kernel >= 0'];                       %#ok<BDSCA>
+                                   ', q11_kernel >= 0'];                       %#ok<BDSCA>
     else
         kyp_var_q11 = sdpvar(size(this_mult.basis_realization.a, 1));
         lmi_mat_q11 = kypLmiLti(this_mult.basis_realization,...
                                 q11_kernel,...
-                                kyp_var_q11);
+                                kyp_var_q11,...
+                                this_mult.exponential);
         c_q11 = (lmi_mat_q11 >= 0):['DLTI Multiplier, ',...
                                     this_mult.name,...
                                     ', kyp(basis_realization, q11_kernel)>=0']; %#ok<BDSCA>
