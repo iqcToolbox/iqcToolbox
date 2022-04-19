@@ -251,7 +251,7 @@ function this_mult = set.basis_function(this_mult, basis_function)
         assert(size(basis_function, 2) == 1,...
                'MultiplierConstantDelay:set:basis_function',...
                'basis_function must be of size ? x 1')                
-        this_mult.basis_realization = ss(basis_function, 'minimal');
+        this_mult.basis_realization = ss(basis_function, 'minimal');            %#ok<*MCSUP>
     end
 end
 

@@ -172,7 +172,7 @@ methods
     end
     end
 
-    function multiplier = deltaToMultiplier(this_del, varargin)                 %#ok<VANUS>
+    function multiplier = deltaToMultiplier(this_del, varargin)                 
     %% DELTATOMULTIPLIER function to generate a multiplier from this object
     %
     %  multiplier = deltaToMultiplier(this_del)

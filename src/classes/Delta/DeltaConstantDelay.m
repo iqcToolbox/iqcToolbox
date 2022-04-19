@@ -160,7 +160,7 @@ methods
     end
     end
 
-    function multiplier = deltaToMultiplier(this_del, varargin)                 %#ok<VANUS>
+    function multiplier = deltaToMultiplier(this_del, varargin)                 
     %% DELTATOMULTIPLIER function to generate a multiplier from this object
     %
     %  multiplier = deltaToMultiplier(this_del)
@@ -215,7 +215,7 @@ methods
                     ' DeltaConstantDelay'])
         end
         dim_out = this_delta.dim_out(1);
-        input = ones(dim_out, 1) * [1:100];
+        input = ones(dim_out, 1) * (1:100);
         output = value.simulate(input);
         first_match = all(abs(output(1, :) - ones(dim_out, 1))...
                            < 1e-8 * ones(dim_out, 1), 1); 
