@@ -173,7 +173,7 @@ function testConstantDelayContinuousTime(testCase)
     del = DeltaConstantDelay2('del', 1, delay_max); % 0.1 second delay
     g_del = (1 + del) * g;
     g_del_cl = interconnect(-1, [1; 1] * g_del * [1, 1]);
-    options = AnalysisOptions('verbose', false, 'lmi_shift', 1e-6);
+    options = AnalysisOptions('verbose', false, 'lmi_shift', 1e-7);
     result = iqcAnalysis(g_del_cl, 'analysis_options', options);
     testCase.verifyTrue(result.valid); 
     % Include exponential rate bound
