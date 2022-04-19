@@ -67,7 +67,7 @@ new_info = checkcode(src_files,...
 bad_inds = find(cellfun(@(info) ~isempty(info), new_info));
 if ~isempty(bad_inds)
     new_error = true;
-    new_info = new_info(bad_inds);
+    new_info = reshape(new_info(bad_inds), 1, length(new_info));
     new_file = src_files(bad_inds);
     diff_info = [diff_info, new_info];
     diff_files = [diff_files, new_file];
