@@ -6,7 +6,9 @@ classdef (Abstract) MultiplierDelta < matlab.mixin.Heterogeneous
 %  object arrays of this class (and mixtures of subclasses)
 %
 %  methods:
+%     MultiplierDelta(exponential) :: Constructor method (only sets exponential property)
 %     getDefaultScalarElement() :: Necessary method for mixin.Heterogeneous subclasses
+%     shiftExponential(exponential) :: Shifts multiplier filter by exponential factor
 %
 %  properties:
 %     name : char array :: unique ID of multiplier (same as Delta uncertainty)
