@@ -22,6 +22,11 @@ classdef AnalysisOptions
 %                                  have non-zero initial conditions
 %     p0 : double mat / empty :: provides initial lyapunov matrix to solve
 %                                IQC KYP LMIs
+%     exponential : double mat / empty :: Used to analyze exponential rates of systems
+%                                         For analysis of continuous-time systems, 
+%                                           should be within [0, inf)
+%                                         For analysis of discrete-time systems, 
+%                                           should be within (0, 1].
 %
 %   See also AnalysisOptions.AnalysisOptions
 

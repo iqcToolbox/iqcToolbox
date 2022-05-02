@@ -3,7 +3,7 @@ function lmi_mat = kypLmiLti(filter, quad, kyp_var, exponential)
 %  Typically "kyp_var" and "quad" will be an sdpvar object, and the returned
 %  LMI matrix will be in terms of those sdpvars.
 %
-%  lmi_mat = kypLmiLti(filter, quad, kyp_var)
+%  lmi_mat = kypLmiLti(filter, quad, kyp_var, exponential)
 %
 %  The frequency domain inequality:
 %     filter(freq)' * quad * filter(freq) < 0 for all freq in domain(freq),
@@ -18,6 +18,9 @@ function lmi_mat = kypLmiLti(filter, quad, kyp_var, exponential)
 %       filter : ss object :: filter in the KYP frequency domain inequality
 %       quad   : sdpvar or double array :: quad in the KYP frequency domain inequality
 %       kyp_var: sdpvar or double array :: kyp_var which must exist in equivalent KYP LMI condition
+%       exponential : double or empty:: scalar value which determines exponential rate of convergence being
+%                               verified (if empty, will set exponential = 1 for discrete-time
+%                                                        and exponential = 0 for continuous-time)
 %     Output:
 %       lmi_mat : sdpvar or double array :: lmi_mat which must be positive or negative definite 
 %                                           whenever KYP FDI is positive or negative
@@ -33,7 +36,7 @@ assert(isa(quad, 'sdpvar') || isa(quad, 'numeric'),...
        'quad must be either an sdpvar or numeric')
 assert(isa(kyp_var, 'sdpvar') || isa(kyp_var, 'numeric'),...
        'kypLmiLti:kypLmiLti',...
-       'quad must be either an sdpvar or numeric')
+       'kyp_var must be either an sdpvar or numeric')
 if nargin < 4
     exponential = [];
 end

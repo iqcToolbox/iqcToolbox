@@ -60,32 +60,14 @@ end
 methods
 function filter_lft = get.filter_lft(this_mult)
 filt = this_mult.filter;
-a = filt.a;
-
-% b and c matrices are trickier to get because some may be empty
 total_time = sum(this_mult.horizon_period);
+a = filt.a;
 b = cell(1, total_time);
 c = cell(1, total_time);
 for i = 1:total_time
-    % Commented block was necessary before changing combineAllMultipliers, 
-    % maintaining old code in case of regressions
-%     if isempty(filt.b1{i}) && ~isempty(filt.b2{i})
-%         filt.b1{i} = zeros(size(filt.a{i}, 1), size(filt.b1{i}, 2));
-%     elseif isempty(filt.b2{i}) && ~isempty(filt.b1{i})
-%         filt.b2{i} = zeros(size(filt.a{i}, 1), size(filt.b2{i}, 2));
-%     end
     b{i} = [filt.b1{i}, filt.b2{i}];
-
-    % Commented block was necessary before changing combineAllMultipliers, 
-    % maintaining old code in case of regressions
-%     if isempty(filt.c1{i}) && ~isempty(filt.c2{i})
-%         filt.c1{i} = zeros(size(filt.c1{i}, 1), size(filt.a{i}, 2));
-%     elseif isempty(filt.c2{i}) && ~isempty(filt.c1{i})
-%         filt.c2{i} = zeros(size(filt.c2{i}, 1), size(filt.a{i}, 2));
-%     end
     c{i} = [filt.c1{i}; filt.c2{i}];
 end
-
 d = cellfun(@(d11, d12, d21, d22) [d11, d12; d21, d22],...
             filt.d11, filt.d12, filt.d21, filt.d22,...
             'UniformOutput', false);

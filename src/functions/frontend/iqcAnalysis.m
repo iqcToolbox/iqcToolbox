@@ -322,10 +322,14 @@ if valid
 else
     performance = inf;
 end
+ellipse = double(ellipse);
+full_ellipse = nan(length(options.init_cond_states));
+full_ellipse(options.init_cond_states, options.init_cond_states) = ellipse;
+
 
 result.performance             = performance;
 result.state_amplification     = double(state_amplification);
-result.ellipse                 = double(ellipse);
+result.ellipse                 = full_ellipse;
 result.multiplier_combined     = mult;
 result.multipliers_delta       = mults_del;
 result.multipliers_disturbance = mults_dis;

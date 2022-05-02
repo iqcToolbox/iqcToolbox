@@ -14,3 +14,4 @@ Because of this dual-purpose, this documentation has a user-audience portion and
    getting_started
    user
    developer
+   exponential

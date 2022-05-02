@@ -1,7 +1,7 @@
 function [uss_out, delta_map] = lftToRct(ulft_input)
 %% lftToRct for converting Ulft objects to uss objects.
 %
-%     uss_out = lftToRct(ulft_input)
+%     [uss_out, delta_map] = lftToRct(ulft_input)
 %
 %     Variables:
 %     ---------
