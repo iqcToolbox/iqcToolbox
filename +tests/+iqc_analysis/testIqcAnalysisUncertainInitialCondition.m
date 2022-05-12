@@ -95,7 +95,23 @@ function testReachabilityWithUncertainInitialCondition(testCase)
     final_state_bound = result.state_amplification;
     % final_state_bound should be 1. Checking against inflated bound in case
     % platforms have poor solver performance
-    verifyGreaterThan(testCase, final_state_bound, 1)        
+    verifyGreaterThan(testCase, final_state_bound, 1)   
+
+    % Now the same exact results should be recovered if init_cond_states
+    % is a column rather than row vector
+    options = AnalysisOptions('verbose', false,...
+                              'lmi_shift', 1e-6,...
+                              'init_cond_ellipse', ellipse,...
+                              'init_cond_states', uncertain_states');
+    res_col = iqcAnalysis(lft_reach,...
+                             'analysis_options', options,...
+                             'multipliers_performance', mult_perf);
+    verifyLessThan(testCase,...
+                   abs(result.performance - res_col.performance), 1e-4)
+    verifyLessThan(testCase,...
+                   abs(final_state_bound - res_col.state_amplification), 1e-4)
+
+
     
     % Now try to make the initial ellipse an decision variable, should be close to eye(3)
     options = AnalysisOptions('verbose', false,...
@@ -109,20 +125,6 @@ function testReachabilityWithUncertainInitialCondition(testCase)
     diff_ellipse = norm(init_cond_ellipse - eye(3), 2);
     verifyLessThan(testCase, diff_ellipse, 1e-2)       
 end
-
-function testErrorUncertainInitialConditions(testCase)
-    lft = toLft(rss);
-    dim_state = lft.delta.deltas{1}.dim_out;
-    ellipse = eye(dim_state);
-    uncertain_states = true(dim_state, 1);
-    options = AnalysisOptions('verbose', false,...
-                              'init_cond_ellipse', ellipse,...
-                              'init_cond_states', uncertain_states);
-    verifyError(testCase,...
-                @() iqcAnalysis(lft, 'analysis_options', options),...
-                'iqcAnalysis:kypLmi')
-end
-
 end
 end
 
