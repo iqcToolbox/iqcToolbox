@@ -136,6 +136,18 @@ methods
     this_options.p0                = input_parser.Results.p0;
     this_options.exponential       = input_parser.Results.exponential;    
     end
+
+    % Simple setter method to take row or column vectors and make rows
+    function this_opts = set.init_cond_states(this_opts, init_cond_states)
+        acceptableInput = @(s) isempty(s) || isvector(s);
+        assert(acceptableInput(init_cond_states),...
+               'AnalysisOptions:set.init_cond_states',...
+               'init_cond_states must be empty or a row/column vector')
+        if iscolumn(init_cond_states)
+            init_cond_states = init_cond_states';
+        end
+        this_opts.init_cond_states = init_cond_states;
+    end
 end
 end
 
