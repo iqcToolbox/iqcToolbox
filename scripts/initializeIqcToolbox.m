@@ -64,9 +64,17 @@ if ispc
         end
         curr_dir = pwd;
         cd(install_dir_lpsolve)
-        pwd
+        try
+            mxlpsolve('make_lp', 1, 1);
+        catch
+            cd(curr_dir)
+            error('initializeIqcToolbox:initializeIqcToolbox',...
+                  ['Even though the dependency lpsolve is downloaded, ',...
+                   'it is not found on your system. Try copying ',...
+                   install_dir_lpsolve, '/lpsolve55.dll to C:/Windows',...
+                   'and rerun initializeIqcToolbox'])
+        end
         cd(curr_dir)
-        mxlpsolve('make_lp', 1, 1);
     end
 else
     if save_added_paths
