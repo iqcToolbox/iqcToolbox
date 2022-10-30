@@ -29,7 +29,7 @@ jobs:
       - name: Setup MATLAB
         uses: matlab-actions/setup-matlab@v1
         with:
-          release: R2022a
+          release: R2022b
 
       # Install iqcToolbox
       - name: Install iqcToolbox
