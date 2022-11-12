@@ -32,9 +32,9 @@ classdef MultiplierConstantDelay < MultiplierDelta
 properties
     basis_length double
     basis_poles double
-    basis_function tf
-    basis_realization ss
-    block_realization ss
+    basis_function tf = tf() % tf.empty throws errors from R22b and on
+    basis_realization ss = ss() % ss.empty throws errors from R22b and on
+    block_realization ss = ss() % ss.empty throws errors from R22b and on
     delay_max double
     dim_outin double
 end
