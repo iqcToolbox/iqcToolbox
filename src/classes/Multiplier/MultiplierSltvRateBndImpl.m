@@ -58,8 +58,8 @@ properties (SetAccess = immutable)
 end
 
 properties (SetAccess = private)
-    basis_function tf
-    basis_realization ss   
+    basis_function tf = tf() % tf.empty throws errors from R22b and on
+    basis_realization ss = ss() % ss.empty throws errors from R22b and on
     block_realization struct
 end
 
